@@ -27,9 +27,9 @@ def map_result(result):
     download_url = read_text_property(result, "DownloadURL")
 
     return Record(
-        id_=id_,
+        _id=id_,
         name=name,
-        type_=type_,
+        model_type=type_,
         url=url,
         preview_url=preview_url,
         download_url=download_url
@@ -94,10 +94,10 @@ class NotionRepository(Repository):
                 },
                 "properties": {
                     **prop_title("Name", record.name),
-                    **prop_text("Type", record.type_),
+                    **prop_text("Type", record.model_type),
                     **prop_text("URL", record.url),
-                    **prop_text("DownloadURL", record.downloadUrl),
-                    **prop_text("PreviewURL", record.downloadUrl),
+                    **prop_text("DownloadURL", record.download_url),
+                    **prop_text("PreviewURL", record.download_url),
                 }
             }
         )
