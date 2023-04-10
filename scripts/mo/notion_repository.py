@@ -1,7 +1,7 @@
 from notion_client import Client
 
-from scripts.src.models import Record
-from scripts.src.repository import Repository
+from scripts.mo.models import Record
+from scripts.mo.repository import Repository
 
 
 def read_title_property(result, name: str):

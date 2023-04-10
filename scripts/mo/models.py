@@ -16,4 +16,5 @@ class Record:
         self.previewUrl = preview_url
 
     def __str__(self):
-        return f"id={self.id_}, name={self.name}, type={self.type_}, url={self.url}, downloadUrl={self.downloadUrl}, previewUrl={self.previewUrl}"
+        return f"id={self.id_}, name={self.name}, type={self.type_}, url={self.url}, downloadUrl={self.downloadUrl}, " \
+               f"previewUrl={self.previewUrl}"

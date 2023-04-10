@@ -1,4 +1,4 @@
-from scripts.src.repository import Repository
+from scripts.mo.repository import Repository
 
 
 class SQLiteRepository(Repository):

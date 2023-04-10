@@ -1,23 +1,10 @@
-# from sqlite_repository import SQLiteRepository
-from scripts.src.models import Record
-from scripts.src.notion_repository import NotionRepository
+with open('settings.txt') as f:
+    lines = f.readlines()
 
-# db = SQLiteRepository("/content/default.sqlite")
-# print(db.fetchData())
-db = NotionRepository("", "")
-records = db.fetch_data()
-for record in records:
-    print(record)
+my_dict = {}
+for line in lines:
+    key, value = line.strip().split(': ')
+    my_dict[key] = value
 
-response = db.add_record(
-    Record(
-        id_="",
-        name="YAE MIKKO",
-        type_="CHECKPOINT",
-        url="https://url.link",
-        download_url="https://downloadUrl.link",
-        preview_url="https://previewUrl.link"
-    )
-)
-
-print(response)
+print('hello')
+print(my_dict)
