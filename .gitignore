@@ -2,3 +2,4 @@
 .idea/
 __pycache__/
 settings.txt
+database.sqlite

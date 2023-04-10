@@ -65,7 +65,7 @@ def on_save_click(model_state, name: str, model_type: str, download_url: str, ur
         record = model_state
         if record is None:
             record = Record(
-                _id='',
+                id_='',
                 name=name.strip(),
                 model_type=ModelType.by_value(model_type),
                 download_url=download_url.strip(),

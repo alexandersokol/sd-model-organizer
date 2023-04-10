@@ -18,26 +18,32 @@ class ModelType(Enum):
 
 
 class Record:
-    def __init__(self, _id,
-                 name: str, model_type: ModelType, download_url: str,
+    def __init__(self, id_,
+                 name: str,
+                 model_type: ModelType,
+                 download_url: str,
                  url: str = '',
                  download_path: str = '',
                  download_filename: str = '',
                  preview_url: str = '',
                  description: str = '',
                  positive_prompts: str = '',
-                 negative_prompts: str = ''):
-        self.id_ = _id
+                 negative_prompts: str = '',
+                 model_hash: str = '',
+                 md5_hash: str = ''):
+        self.id_ = id_
         self.name = name
         self.model_type = model_type
         self.url = url
         self.download_url = download_url
         self.download_path = download_path
-        self.download_filename = download_filename,
+        self.download_filename = download_filename
         self.preview_url = preview_url
         self.description = description
         self.positive_prompts = positive_prompts
         self.negative_prompts = negative_prompts
+        self.model_hash = model_hash
+        self.md5_hash = md5_hash
 
     def __str__(self):
         return f'id="{self.id_}", ' \
@@ -50,4 +56,6 @@ class Record:
                f'preview_url="{self.preview_url}", ' \
                f'description="{self.description}", ' \
                f'positive_prompts="{self.positive_prompts}", ' \
-               f'negative_prompts="{self.negative_prompts}"'
+               f'negative_prompts="{self.negative_prompts}", ' \
+               f'model_hash="{self.model_hash}", ' \
+               f'md5_hash="{self.md5_hash}"'
