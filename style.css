@@ -1,0 +1,86 @@
+.table {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table-row {
+    display: table-row;
+}
+
+.table-header {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}
+
+.table-cell {
+    display: table-cell;
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.picture-column {
+    width: 108px;
+    white-space: nowrap;
+}
+
+.title-column {
+    width: 30%;
+}
+
+.description-column {
+    width: auto;
+}
+
+.actions-column {
+    width: 10%;
+}
+
+/* Button name styles */
+.button-name {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+/* Preview image styles */
+.preview-image {
+    width: 100px !important;
+    height: 150px !important;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+}
+
+/* Button action styles */
+.button-action {
+    background-color: #008CBA;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.button-download {
+    background-color: #008CBA;
+}
+
+.button-remove {
+    background-color: #f44336;
+}
