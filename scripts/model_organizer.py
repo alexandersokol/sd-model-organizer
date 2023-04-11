@@ -4,7 +4,7 @@ from modules import script_callbacks
 from modules import shared, sd_models, sd_vae
 from modules.shared import OptionInfo
 
-from scripts.mo.environment import env, STORAGE_SQLITE, STORAGE_NOTION
+from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
 
 env.mo_storage_type = lambda: shared.opts.mo_storage_type
@@ -46,3 +46,4 @@ def on_ui_tabs():
 
 script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_ui_tabs(on_ui_tabs)
+script_callbacks.callbacks_before_ui(initialize_storage())

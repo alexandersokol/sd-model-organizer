@@ -1,7 +1,7 @@
 from notion_client import Client
 
 from scripts.mo.models import Record
-from scripts.mo.repository import Repository
+from scripts.mo.storage import Storage
 
 
 def read_title_property(result, name: str):
@@ -70,7 +70,7 @@ def prop_text(name: str, value: str):
     }
 
 
-class NotionRepository(Repository):
+class NotionStorage(Storage):
     def __init__(self, api_token, database_id):
         self.api_token = api_token
         self.database_id = database_id

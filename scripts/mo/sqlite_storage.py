@@ -1,7 +1,7 @@
 import sqlite3
 
 from scripts.mo.models import Record, ModelType
-from scripts.mo.repository import Repository
+from scripts.mo.storage import Storage
 
 db_file = 'database.sqlite'
 db_version = 1
@@ -26,7 +26,7 @@ def map_row_to_record(row) -> Record:
     )
 
 
-class SQLiteRepository(Repository):
+class SQLiteStorage(Storage):
     def __init__(self):
         self.connection = sqlite3.connect(db_file, db_timeout)
         cursor = self.connection.cursor()
@@ -133,7 +133,7 @@ class SQLiteRepository(Repository):
                     model_hash=?,
                     md5_hash=?
                 WHERE id=?
-            """,
+            """, data
         )
 
         self.connection.commit()

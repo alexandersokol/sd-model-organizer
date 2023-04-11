@@ -1,6 +1,6 @@
 import gradio as gr
 
-from scripts.mo.environment import env, STORAGE_SQLITE, STORAGE_NOTION
+from scripts.mo.environment import env, STORAGE_SQLITE, STORAGE_NOTION, initialize_storage
 from scripts.mo.ui_main import main_ui_block
 
 SETTINGS_FILE = 'settings.txt'
@@ -29,6 +29,7 @@ env.mo_vae_path = lambda: settings['mo_vae_path']
 env.mo_lora_path = lambda: settings['mo_lora_path']
 env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
 env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
+initialize_storage()
 
 
 def storage_type_change(value):

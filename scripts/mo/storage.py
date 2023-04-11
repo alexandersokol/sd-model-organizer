@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from scripts.mo.models import Record
 
 
-class Repository(ABC):
+class Storage(ABC):
 
     @abstractmethod
     def fetch_data(self) -> list[Record]:
