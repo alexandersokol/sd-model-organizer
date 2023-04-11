@@ -39,12 +39,12 @@ def generate_random_records(count: int):
     return results
 
 
-records = generate_random_records(10)
+# records = generate_random_records(10)
 storage = SQLiteStorage()
 
-for record in records:
-    storage.add_record(record)
-    print(record)
+# for record in records:
+#     storage.add_record(record)
+#     print(record)
 
 print(f'Done. ')
 

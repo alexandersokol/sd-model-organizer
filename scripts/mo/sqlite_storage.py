@@ -1,11 +1,12 @@
 import sqlite3
+import threading
 
 from scripts.mo.models import Record, ModelType
 from scripts.mo.storage import Storage
 
-db_file = 'database.sqlite'
-db_version = 1
-db_timeout = 30
+_DB_FILE = 'database.sqlite'
+_DB_VERSION = 1
+_DB_TIMEOUT = 30
 
 
 def map_row_to_record(row) -> Record:
@@ -27,34 +28,64 @@ def map_row_to_record(row) -> Record:
 
 
 class SQLiteStorage(Storage):
+
     def __init__(self):
-        self.connection = sqlite3.connect(db_file, db_timeout)
-        cursor = self.connection.cursor()
+        self.local = threading.local()
+        self._initialize()
+
+    def _connection(self):
+        if not hasattr(self.local, "connection"):
+            self.local.connection = sqlite3.connect(_DB_FILE, _DB_TIMEOUT)
+        return self.local.connection
+
+    def _initialize(self):
+        cursor = self._connection().cursor()
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS Record
-                            (id INTEGER PRIMARY KEY,
-                            _name TEXT,
-                            model_type TEXT,
-                            download_url TEXT,
-                            url TEXT DEFAULT '',
-                            download_path TEXT DEFAULT '',
-                            download_filename TEXT DEFAULT '',
-                            preview_url TEXT DEFAULT '',
-                            description TEXT DEFAULT '',
-                            positive_prompts TEXT DEFAULT '',
-                            negative_prompts TEXT DEFAULT '',
-                            model_hash TEXT DEFAULT '',
-                            md5_hash TEXT DEFAULT '')
-                         ''')
+                                    (id INTEGER PRIMARY KEY,
+                                    _name TEXT,
+                                    model_type TEXT,
+                                    download_url TEXT,
+                                    url TEXT DEFAULT '',
+                                    download_path TEXT DEFAULT '',
+                                    download_filename TEXT DEFAULT '',
+                                    preview_url TEXT DEFAULT '',
+                                    description TEXT DEFAULT '',
+                                    positive_prompts TEXT DEFAULT '',
+                                    negative_prompts TEXT DEFAULT '',
+                                    model_hash TEXT DEFAULT '',
+                                    md5_hash TEXT DEFAULT '')
+                                 ''')
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
-                        (version INTEGER DEFAULT {db_version})''')
+                                (version INTEGER DEFAULT {_DB_VERSION})''')
         # cursor.execute("INSERT INTO Version VALUES (1)")  # insert initial version value
         # TODO version check
-        self.connection.commit()
+        self._connection().commit()
+        self._check_database_version()
+
+    def _check_database_version(self):
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT * FROM Version ', )
+        row = cursor.fetchone()
+
+        if row is None:
+            cursor.execute(f'INSERT INTO Version VALUES ({_DB_VERSION})')
+            self._connection().commit()
+
+        version = _DB_VERSION if row is None else row[0]
+        if version != _DB_VERSION:
+            self._run_migration(version)
+
+    def _run_migration(self, current_version):
+        # cursor = self._connection().cursor()
+        # cursor.execute("DELETE FROM Version")
+        # cursor.execute(f'-- INSERT INTO Version VALUES ({current_version})')
+        # self._connection().commit()
+        raise NotImplementedError(f'You have to run migration from {current_version} to {_DB_VERSION}')
 
     def fetch_data(self) -> list[Record]:
-        cursor = self.connection.cursor()
+        cursor = self._connection().cursor()
         cursor.execute('SELECT * FROM Record')
         rows = cursor.fetchall()
         result = []
@@ -63,13 +94,13 @@ class SQLiteStorage(Storage):
         return result
 
     def fetch_data_by_id(self, id_) -> Record:
-        cursor = self.connection.cursor()
+        cursor = self._connection().cursor()
         cursor.execute('SELECT * FROM Record WHERE id=?', (id_,))
         row = cursor.fetchone()
         return None if row is None else map_row_to_record(row)
 
     def add_record(self, record: Record):
-        cursor = self.connection.cursor()
+        cursor = self._connection().cursor()
         data = (
             record.name,
             record.model_type.value,
@@ -99,10 +130,10 @@ class SQLiteStorage(Storage):
                     model_hash,
                     md5_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             data)
-        self.connection.commit()
+        self._connection().commit()
 
     def update_record(self, record: Record):
-        cursor = self.connection.cursor()
+        cursor = self._connection().cursor()
         data = (
             record.name,
             record.model_type.value,
@@ -136,9 +167,9 @@ class SQLiteStorage(Storage):
             """, data
         )
 
-        self.connection.commit()
+        self._connection().commit()
 
     def remove_record(self, _id):
-        cursor = self.connection.cursor()
+        cursor = self._connection().cursor()
         cursor.execute("DELETE FROM Record WHERE id=?", (_id,))
-        self.connection.commit()
+        self._connection().commit()

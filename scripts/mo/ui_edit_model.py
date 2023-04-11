@@ -2,6 +2,7 @@ import re
 
 import gradio as gr
 
+import scripts.mo.ui_styled_html as styled
 from scripts.mo.models import Record, ModelType
 
 
@@ -55,11 +56,7 @@ def on_save_click(model_state, name: str, model_type: str, download_url: str, ur
         errors.append('Preview URL is incorrect.')
 
     if errors:
-        html = "".join([errors[0]] + [f"<br>{s}" for s in errors[1:]])
-        print(errors)
-        print(html)
-        value = f'<span style="color:red">{html}</color>'
-        return gr.HTML.update(value=value, visible=True)
+        return gr.HTML.update(value=styled.alert_danger(errors), visible=True)
     else:
 
         record = model_state

@@ -84,3 +84,13 @@
 .button-remove {
     background-color: #f44336;
 }
+
+#mo-alert-danger {
+    position: relative;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: .25rem;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb
+}

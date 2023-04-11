@@ -1,17 +1,28 @@
 import gradio as gr
 
+import scripts.mo.ui_styled_html as styled
 from scripts.mo.ui_records_list import records_list_ui_block
+from scripts.mo.ui_edit_model import edit_model_ui_block
 from scripts.mo.environment import env
+
+css_styles = f"""
+    <style>
+    {open('style.css', 'r').read()}
+    </style>
+"""
 
 
 def main_ui_block():
     with gr.Blocks() as main_block:
+        gr.HTML(css_styles)
         if env.is_storage_has_errors():
-            gr.Markdown(f'<span style="color:red">{env.storage_error}</color>')
+            gr.HTML(styled.alert_danger(env.storage_error))
             return main_block
         elif not env.is_storage_initialized():
-            gr.Markdown(f'<span style="color:red">Storage not initialized</color>')
+            gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
         records_list_ui_block()
+        # edit_model_ui_block()
+
     return main_block
