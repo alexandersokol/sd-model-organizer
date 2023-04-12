@@ -38,7 +38,7 @@ def _model_type_css_class(model_type: ModelType) -> str:
 
 
 def _no_preview_image_path() -> str:
-    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview.png'
+    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-grey.png'
 
 
 def records_table(records: List[Record]) -> str:
