@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 
 from scripts.mo.environment import env, STORAGE_SQLITE, STORAGE_NOTION, initialize_storage
@@ -29,6 +30,7 @@ env.mo_vae_path = lambda: settings['mo_vae_path']
 env.mo_lora_path = lambda: settings['mo_lora_path']
 env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
 env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
+env.mo_script_dir = lambda: os.getcwd()
 initialize_storage()
 
 

@@ -1,4 +1,5 @@
 import random
+import os
 import string
 from loremipsum import generate_paragraphs, generate_sentence
 from scripts.mo.sqlite_storage import SQLiteStorage
@@ -40,11 +41,12 @@ def generate_random_records(count: int):
 
 
 # records = generate_random_records(10)
-storage = SQLiteStorage()
+# storage = SQLiteStorage()
 
 # for record in records:
 #     storage.add_record(record)
 #     print(record)
 
+print(f'path: {os.getcwd()}')
 print(f'Done. ')
 

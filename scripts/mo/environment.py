@@ -19,6 +19,7 @@ class Environment:
     mo_lora_path: Callable[[], str]
     mo_hypernetworks_path: Callable[[], str]
     mo_embeddings_path: Callable[[], str]
+    mo_script_dir: Callable[[], str]
 
     def is_storage_initialized(self) -> bool:
         return hasattr(self, 'storage')

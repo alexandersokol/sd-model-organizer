@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class ModelType(Enum):
-    STABLE_DIFFUSION = 'Stable Diffusion'
+    CHECKPOINT = 'Stable Diffusion'
     VAE = 'VAE'
     LORA = 'Lora'
     HYPER_NETWORK = 'Hyper Network'

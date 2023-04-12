@@ -1,5 +1,7 @@
 import gradio as gr
 
+import modules.scripts as scripts
+
 from modules import script_callbacks
 from modules import shared, sd_models, sd_vae
 from modules.shared import OptionInfo
@@ -15,6 +17,7 @@ env.mo_vae_path = lambda: shared.opts.mo_vae_path
 env.mo_lora_path = lambda: shared.opts.mo_lora_path
 env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path
 env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path
+env.mo_script_dir = lambda: scripts.basedir()
 
 
 def on_ui_settings():
@@ -38,6 +41,7 @@ def on_ui_settings():
         'mo_embeddings_path': OptionInfo('', f'Embeddings directory (If empty uses default: {embeddings_path}):')
     })
     shared.options_templates.update(mo_options)
+    evn.initialize_storage()
 
 
 def on_ui_tabs():
@@ -46,4 +50,3 @@ def on_ui_tabs():
 
 script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_ui_tabs(on_ui_tabs)
-script_callbacks.callbacks_before_ui(initialize_storage())
