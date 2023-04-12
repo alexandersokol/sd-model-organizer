@@ -3,6 +3,7 @@ import gradio as gr
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.ui_records_list import records_list_ui_block
 from scripts.mo.ui_edit_model import edit_model_ui_block
+from scripts.mo.ui_record_details import record_details_ui_block
 from scripts.mo.environment import env
 
 css_styles = f"""
@@ -22,7 +23,8 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        records_list_ui_block()
+        record_details_ui_block(9)
+        # records_list_ui_block()
         # edit_model_ui_block()
 
     return main_block

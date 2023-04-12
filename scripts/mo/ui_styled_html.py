@@ -1,7 +1,6 @@
 from typing import List
 
 from scripts.mo.models import Record, ModelType
-from scripts.mo.environment import env
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -64,7 +63,7 @@ def records_table(records: List[Record]) -> str:
 
         # Add preview URL column
         table_html += '<div class="mo-col mo-col-preview">'
-        table_html += f'<img class="preview-image" src="{preview_url}" ' \
+        table_html += f'<img class="mo-preview-image" src="{preview_url}" ' \
                       f'alt="Preview image"' \
                       f' onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';">'
         table_html += '</div>'
@@ -96,3 +95,7 @@ def records_table(records: List[Record]) -> str:
     # Close table
     table_html += '</div>'
     return table_html
+
+
+def record_details(record: Record):
+    return f'<h1>Hello there! {record.id_} ${record.name} </h1>'

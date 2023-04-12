@@ -4,21 +4,16 @@ import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env
 
 
-def load_records():
-    return env.storage.fetch_data()
-
-
-def on_refresh_click() -> str:
-    data = load_records()
+def prepare_data() -> str:
+    data = env.storage.fetch_data()
     return styled.records_table(data)
 
 
 def records_list_ui_block():
     with gr.Blocks() as records_list_block:
         refresh_widget = gr.Button("Refresh")
-        data = load_records()
-        content_widget = gr.HTML(styled.records_table(data))
+        content_widget = gr.HTML(prepare_data())
 
-        refresh_widget.click(on_refresh_click, outputs=[content_widget])
+        refresh_widget.click(prepare_data, outputs=[content_widget])
 
     return records_list_block

@@ -2,6 +2,11 @@
     --mo-header-color: #f2f2f2;
     --mo-border-color: #ddd;
     --mo-text-color: #212529;
+    --mo-text-secondary-color: #2d3234;
+    --mo-text-content-positive: #26641e;
+    --mo-text-content-negative: #7c2d2d;
+    --mo-text-content-positive-header: #1d3817;
+    --mo-text-content-negative-header: #4d2121;
 }
 
 /* Alerts */
@@ -86,13 +91,96 @@
     flex: 0 0 auto;
     width: 12%;
     max-width: 14%;
-    text-align:center
+    text-align: center
 }
 
+/* Details container */
+.mo-details-container {
+    width: 70%;
+    margin-right: auto;
+    margin-left: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.mo-details-row {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.mo-details-col {
+    -ms-flex-preferred-size: 0;
+    flex-basis: 0;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.mo-details-col-full{
+    padding: 8px;
+}
+
+.mo-details-col-preview {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: 250px;
+    padding: 8px;
+    max-width: none
+}
+
+.mo-details-sub-container {
+    width: 100%;
+}
+
+.mo-details-sub-row {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.mo-details-sub-col {
+    -ms-flex-preferred-size: 0;
+    flex-basis: 0;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.mo-details-sub-col-header {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: 18%;
+    padding: 8px;
+    max-width: none
+}
+
+/* Badges */
 .mo-badge {
     display: inline-block;
     padding: .25em .4em;
     font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    vertical-align: baseline;
+    border-radius: .25rem
+}
+
+.mo-details-badge {
+    display: inline-block;
+    padding: .25em .4em;
+    font-weight: bold !important;
+    font-size: 0.9rem !important;
     line-height: 1;
     text-align: center;
     vertical-align: baseline;
@@ -136,10 +224,31 @@
 
 .mo-text-header {
     font-weight: bold;
-    background-color: var(--mo-header-color);
     font-size: 0.9rem;
     line-height: 1.5;
     color: var(--mo-text-color);
+}
+
+.mo-text-content {
+    font-weight: normal;
+    font-size: 1rem;
+    color: var(--mo-text-secondary-color);
+}
+
+.mo-text-positive {
+    color: var(--mo-text-content-positive);
+}
+
+.mo-text-negative {
+    color: var(--mo-text-content-negative);
+}
+
+.mo-text-positive-header {
+    color: var(--mo-text-content-positive-header);
+}
+
+.mo-text-negative-header {
+    color: var(--mo-text-content-negative-header);
 }
 
 /* Buttons */
@@ -193,10 +302,31 @@
 }
 
 /* Images */
-.preview-image {
+.mo-preview-image {
     width: 100px !important;
     height: 150px !important;
     object-fit: cover;
     object-position: center;
     border-radius: 8px;
+}
+
+.mo-details-image {
+    width: 250px !important;
+    height: 350px !important;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+}
+
+/* Links */
+.mo-nav-link {
+    display: block;
+    color: #007bff;
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.mo-nav-link:focus, .mo-nav-link:hover {
+    text-decoration: none
 }
