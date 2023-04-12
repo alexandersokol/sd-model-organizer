@@ -3,6 +3,9 @@ from typing import List
 from scripts.mo.models import Record, ModelType
 from scripts.mo.environment import env
 
+_NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
+_NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
+
 
 def alert_danger(value) -> str:
     if isinstance(value, list):
@@ -37,8 +40,8 @@ def _model_type_css_class(model_type: ModelType) -> str:
     return css_class
 
 
-def _no_preview_image_path() -> str:
-    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-grey.png'
+def _no_preview_image_url() -> str:
+    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
 
 
 def records_table(records: List[Record]) -> str:
@@ -61,9 +64,9 @@ def records_table(records: List[Record]) -> str:
 
         # Add preview URL column
         table_html += '<div class="mo-col mo-col-preview">'
-        table_html += f'<img class="preview-image" src="{_no_preview_image_path()}" ' \
+        table_html += f'<img class="preview-image" src="{preview_url}" ' \
                       f'alt="Preview image"' \
-                      f' onerror="this.onerror=null; this.src=\'{_no_preview_image_path()}\';">'
+                      f' onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';">'
         table_html += '</div>'
 
         # Add type column
