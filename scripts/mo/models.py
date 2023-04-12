@@ -30,7 +30,8 @@ class Record:
                  positive_prompts: str = '',
                  negative_prompts: str = '',
                  model_hash: str = '',
-                 md5_hash: str = ''):
+                 md5_hash: str = '',
+                 location: str = ''):
         self.id_ = id_
         self.name = name
         self.model_type = model_type
@@ -44,6 +45,7 @@ class Record:
         self.negative_prompts = negative_prompts
         self.model_hash = model_hash
         self.md5_hash = md5_hash
+        self.location = location
 
     def __str__(self):
         return f'id="{self.id_}", ' \
@@ -58,4 +60,5 @@ class Record:
                f'positive_prompts="{self.positive_prompts}", ' \
                f'negative_prompts="{self.negative_prompts}", ' \
                f'model_hash="{self.model_hash}", ' \
-               f'md5_hash="{self.md5_hash}"'
+               f'md5_hash="{self.md5_hash}", ' \
+               f'location="{self.location}."'

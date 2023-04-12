@@ -6,9 +6,11 @@ from scripts.mo.ui_edit_model import edit_model_ui_block
 from scripts.mo.ui_record_details import record_details_ui_block
 from scripts.mo.environment import env
 
+# TODO add and check dark theme colors
 css_styles = f"""
     <style>
-    {open('style.css', 'r').read()}
+        {open('colors-light.css', 'r').read()}
+        {open('style.css', 'r').read()}
     </style>
 """
 
