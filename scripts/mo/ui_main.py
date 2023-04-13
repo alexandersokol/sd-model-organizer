@@ -25,8 +25,8 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        record_details_ui_block(9)
-        # records_list_ui_block()
+        # record_details_ui_block(9)
+        records_list_ui_block()
         # edit_model_ui_block()
 
     return main_block

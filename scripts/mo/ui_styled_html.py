@@ -20,6 +20,12 @@ def _limit_description(text):
     else:
         return text
 
+def _limit_card_name(text):
+    if text and len(text) > 150:
+        return text[:150] + '...'
+    else:
+        return text
+
 
 def _model_type_css_class(model_type: ModelType) -> str:
     if model_type == ModelType.CHECKPOINT:
@@ -246,5 +252,37 @@ def _details_top(record: Record) -> str:
 def record_details(record: Record) -> str:
     content = '<div class="mo-details-container">'
     content += _details_top(record)
+    content += '</div>'
+    return content
+
+
+def records_cards(records: List[Record]) -> str:
+    content = '<div class="mo-card-grid">'
+
+    for record in records:
+        content += '<div class="mo-card">'
+
+        content += f'<img src="{record.preview_url}" alt="Preview Image" ' \
+                   f'onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';"/>'
+
+        content += f'<div class="mo-card-blur-overlay-bottom">{_limit_card_name(record.name)}</div>'
+
+        content += '<div class="mo-card-content-top">'
+        content += f'<div class="mo-card-text-left"><span class="mo-badge {_model_type_css_class(record.model_type)}"' \
+                   f'>{record.model_type.value}</span></div>'
+        content += '</div>'
+
+        content += '<div class="mo-card-hover">'
+        content += '<div class="mo-card-hover-buttons">'
+
+        content += '<button type="button" class="mo-btn mo-btn-primary">Download</button><br>'
+        content += '<button type="button" class="mo-btn mo-btn-warning">Edit</button><br>'
+        content += '<button type="button" class="mo-btn mo-btn-danger">Remove</button><br>'
+
+        content += '</div>'
+        content += '</div>'
+
+        content += '</div>'
+
     content += '</div>'
     return content

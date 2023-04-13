@@ -6,7 +6,8 @@ from scripts.mo.environment import env
 
 def prepare_data() -> str:
     data = env.storage.fetch_data()
-    return styled.records_table(data)
+    # return styled.records_table(data)
+    return styled.records_cards(data)
 
 
 def records_list_ui_block():

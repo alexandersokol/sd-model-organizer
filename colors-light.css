@@ -49,4 +49,10 @@
     --mo-btn-danger-border-color: #dc3545;
 
     --mo-link-text-color: #007bff;
+
+    --mo-card-border-color: #ccc;
+    --mo-card-box-shadow-color: rgba(0, 0, 0, 0.3);
+    --mo-card-blur-overlay-background: rgba(0, 0, 0, 0.5);
+    --mo-card-blur-overlay-text-color: white;
+    --mo-card-hover-background-color: rgba(0, 0, 0, 0.5);
 }
