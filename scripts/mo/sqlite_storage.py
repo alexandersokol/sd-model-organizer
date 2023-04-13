@@ -1,13 +1,14 @@
 import os
 import sqlite3
 import threading
+import time
 
 from scripts.mo.models import Record, ModelType
 from scripts.mo.storage import Storage
 from scripts.mo.environment import env
 
 _DB_FILE = 'database.sqlite'
-_DB_VERSION = 1
+_DB_VERSION = 2
 _DB_TIMEOUT = 30
 
 
@@ -25,7 +26,8 @@ def map_row_to_record(row) -> Record:
         positive_prompts=row[9],
         negative_prompts=row[10],
         model_hash=row[11],
-        md5_hash=row[12]
+        md5_hash=row[12],
+        created_at=row[13]
     )
 
 
@@ -57,7 +59,8 @@ class SQLiteStorage(Storage):
                                     positive_prompts TEXT DEFAULT '',
                                     negative_prompts TEXT DEFAULT '',
                                     model_hash TEXT DEFAULT '',
-                                    md5_hash TEXT DEFAULT '')
+                                    md5_hash TEXT DEFAULT '',
+                                    created_at INTEGER DEFAULT 0)
                                  ''')
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
@@ -81,11 +84,12 @@ class SQLiteStorage(Storage):
             self._run_migration(version)
 
     def _run_migration(self, current_version):
-        # cursor = self._connection().cursor()
-        # cursor.execute("DELETE FROM Version")
-        # cursor.execute(f'-- INSERT INTO Version VALUES ({current_version})')
-        # self._connection().commit()
-        raise NotImplementedError(f'You have to run migration from {current_version} to {_DB_VERSION}')
+        if current_version == 1 and _DB_VERSION == 2:
+            cursor = self._connection().cursor()
+            cursor.execute('ALTER TABLE Record ADD COLUMN created_at INTEGER DEFAULT 0;')
+            cursor.execute("DELETE FROM Version")
+            cursor.execute(f'INSERT INTO Version VALUES ({_DB_VERSION})')
+            self._connection().commit()
 
     def fetch_data(self) -> list[Record]:
         cursor = self._connection().cursor()
@@ -116,7 +120,8 @@ class SQLiteStorage(Storage):
             record.positive_prompts,
             record.negative_prompts,
             record.model_hash,
-            record.md5_hash
+            record.md5_hash,
+            time.time()
         )
         cursor.execute(
             """INSERT INTO Record(
@@ -131,7 +136,8 @@ class SQLiteStorage(Storage):
                     positive_prompts,
                     negative_prompts,
                     model_hash,
-                    md5_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    md5_hash,
+                    created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)""",
             data)
         self._connection().commit()
 

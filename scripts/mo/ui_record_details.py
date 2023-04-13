@@ -5,17 +5,22 @@ from scripts.mo.models import Record
 import scripts.mo.ui_styled_html as styled
 
 
-def prepare_data(record_id) -> str:
-    data = env.storage.fetch_data_by_id(record_id)
-    return styled.record_details(data)
+def on_id_changed(record_id) -> str:
+    if record_id is not None and record_id:
+        data = env.storage.fetch_data_by_id(record_id)
+        return styled.record_details(data)
+    else:
+        return 'No record id.'
 
 
-def record_details_ui_block(record_id):
-    with gr.Blocks() as records_list_block:
-        details_state = gr.State(record_id)
+def record_details_ui_block():
+    with gr.Blocks():
+        details_id_box = gr.Textbox()
+
         refresh_widget = gr.Button("Refresh")
-        content_widget = gr.HTML(prepare_data(record_id))
+        content_widget = gr.HTML()
 
-        refresh_widget.click(prepare_data, inputs=[details_state], outputs=[content_widget])
+        refresh_widget.click(on_id_changed, inputs=details_id_box, outputs=content_widget)
+        details_id_box.change(on_id_changed, inputs=details_id_box, outputs=content_widget)
 
-    return records_list_block
+    return details_id_box

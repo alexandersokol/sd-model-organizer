@@ -14,10 +14,8 @@ def prepare_data() -> str:
 
 
 def records_list_ui_block():
-    with gr.Blocks() as records_list_block:
+    with gr.Blocks():
         refresh_widget = gr.Button("Refresh")
         content_widget = gr.HTML(prepare_data())
 
         refresh_widget.click(prepare_data, outputs=[content_widget])
-
-    return records_list_block

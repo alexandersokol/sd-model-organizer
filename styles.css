@@ -1,7 +1,7 @@
 /* needed only for IDE. Gradio ignores it*/
 @import "colors-light.css";
 
-:root{
+:root {
     --mo-card-width: 250px;
     --mo-card-height: 350px;
 }
@@ -12,9 +12,9 @@
     padding: .75rem 1.25rem;
     margin-bottom: 1rem;
     border-radius: .25rem;
-    color: var(--mo-alarm-text-color);
-    background-color: var(--mo-alarm-background-color);
-    border-color: var(--mo-alarm-border-color)
+    color: var(--mo-alarm-text-color) !important;
+    background-color: var(--mo-alarm-background-color) !important;
+    border-color: var(--mo-alarm-border-color) !important;
 }
 
 /* Containers */

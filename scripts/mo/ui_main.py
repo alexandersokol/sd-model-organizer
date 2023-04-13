@@ -52,8 +52,10 @@ def _edit_state(record_id, previous_state=None) -> str:
         'screen': 'record_edit',
         'record_id': record_id
     }
-    if previous_state is not None:
-        state['previous'] = previous_state
+
+    # TODO Previous state
+    # if previous_state is not None:
+    #     state['previous'] = previous_state
 
     return json.dumps(state)
 
@@ -88,6 +90,8 @@ def on_json_box_change(json_state):
         gr.Column.update(visible=is_content_list_visible),
         gr.Column.update(visible=is_details_visible),
         gr.Column.update(visible=is_edit_visible),
+        gr.Textbox.update(value=details_record_id),
+        gr.Textbox.update(value=edit_record_id)
     ]
 
 
@@ -121,7 +125,7 @@ def main_ui_block():
 
         with gr.Row():
             content_list_button = gr.Button('Content List')
-            details_button = gr.Button('Details (9)')
+            details_button = gr.Button('Details')
             add_button = gr.Button('Add')
             edit_button = gr.Button('Edit (9)')
             js_button = gr.Button('JS')
@@ -130,14 +134,18 @@ def main_ui_block():
             records_list_ui_block()
 
         with gr.Column(visible=False) as record_details_block:
-            record_details_ui_block(9)
+            details_id_box = record_details_ui_block()
 
         with gr.Column(visible=False) as edit_record_block:
-            edit_model_ui_block()
+            edit_id_box = edit_model_ui_block()
 
         json_box.change(on_json_box_change,
                         inputs=json_box,
-                        outputs=[content_list_block, record_details_block, edit_record_block])
+                        outputs=[content_list_block,
+                                 record_details_block,
+                                 edit_record_block,
+                                 details_id_box,
+                                 edit_id_box])
 
         content_list_button.click(on_content_list_click, outputs=json_box)
         details_button.click(on_details_click, outputs=json_box)
