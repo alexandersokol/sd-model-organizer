@@ -117,13 +117,14 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        json_box = gr.Textbox(_content_list_state())
+        json_box = gr.Textbox(_content_list_state(), elem_id='mo_json_box')
 
         with gr.Row():
             content_list_button = gr.Button('Content List')
             details_button = gr.Button('Details (9)')
             add_button = gr.Button('Add')
             edit_button = gr.Button('Edit (9)')
+            js_button = gr.Button('JS')
 
         with gr.Column(visible=True) as content_list_block:
             records_list_ui_block()
@@ -142,5 +143,7 @@ def main_ui_block():
         details_button.click(on_details_click, outputs=json_box)
         add_button.click(on_add_click, outputs=json_box)
         edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
+
+        js_button.click(None, inputs=json_box, _js='moClickJs')
 
     return main_block
