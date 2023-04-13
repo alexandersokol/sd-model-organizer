@@ -1,6 +1,7 @@
 import re
 import os
 import gradio as gr
+import json
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.ui_records_list import records_list_ui_block
@@ -34,6 +35,78 @@ def _load_mo_css() -> str:
     """
 
 
+def _content_list_state() -> str:
+    return '{}'
+
+
+def _details_state(record_id) -> str:
+    state = {
+        'screen': 'record_details',
+        'record_id': record_id
+    }
+    return json.dumps(state)
+
+
+def _edit_state(record_id, previous_state=None) -> str:
+    state = {
+        'screen': 'record_edit',
+        'record_id': record_id
+    }
+    if previous_state is not None:
+        state['previous'] = previous_state
+
+    return json.dumps(state)
+
+
+def _add_state() -> str:
+    state = {
+        'screen': 'record_edit'
+    }
+    return json.dumps(state)
+
+
+def on_json_box_change(json_state):
+    state = json.loads(json_state)
+
+    is_content_list_visible = False
+    is_details_visible = False
+    is_edit_visible = False
+    details_record_id = ''
+    edit_record_id = ''
+
+    if state.get('screen') is None:
+        is_content_list_visible = True
+    else:
+        if state['screen'] == 'record_details':
+            is_details_visible = True
+            details_record_id = state['record_id']
+        elif state['screen'] == 'record_edit':
+            is_edit_visible = True
+            if state.get('record_id') is not None:
+                edit_record_id = state['record_id']
+    return [
+        gr.Column.update(visible=is_content_list_visible),
+        gr.Column.update(visible=is_details_visible),
+        gr.Column.update(visible=is_edit_visible),
+    ]
+
+
+def on_content_list_click():
+    return _content_list_state()
+
+
+def on_details_click():
+    return _details_state(9)
+
+
+def on_add_click():
+    return _add_state()
+
+
+def on_edit_click(previous_state):
+    return _edit_state(9, previous_state)
+
+
 def main_ui_block():
     with gr.Blocks() as main_block:
         gr.HTML(_load_mo_css())
@@ -44,8 +117,30 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        # record_details_ui_block(9)
-        records_list_ui_block()
-        # edit_model_ui_block()
+        json_box = gr.Textbox(_content_list_state())
+
+        with gr.Row():
+            content_list_button = gr.Button('Content List')
+            details_button = gr.Button('Details (9)')
+            add_button = gr.Button('Add')
+            edit_button = gr.Button('Edit (9)')
+
+        with gr.Column(visible=True) as content_list_block:
+            records_list_ui_block()
+
+        with gr.Column(visible=False) as record_details_block:
+            record_details_ui_block(9)
+
+        with gr.Column(visible=False) as edit_record_block:
+            edit_model_ui_block()
+
+        json_box.change(on_json_box_change,
+                        inputs=json_box,
+                        outputs=[content_list_block, record_details_block, edit_record_block])
+
+        content_list_button.click(on_content_list_click, outputs=json_box)
+        details_button.click(on_details_click, outputs=json_box)
+        add_button.click(on_add_click, outputs=json_box)
+        edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
 
     return main_block
