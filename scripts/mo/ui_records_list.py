@@ -1,13 +1,16 @@
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env
+from scripts.mo.environment import env, LAYOUT_CARDS
 
 
 def prepare_data() -> str:
     data = env.storage.fetch_data()
-    # return styled.records_table(data)
-    return styled.records_cards(data)
+
+    if env.mo_layout() == LAYOUT_CARDS:
+        return styled.records_cards(data)
+    else:
+        return styled.records_table(data)
 
 
 def records_list_ui_block():

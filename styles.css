@@ -1,6 +1,11 @@
 /* needed only for IDE. Gradio ignores it*/
 @import "colors-light.css";
 
+:root{
+    --mo-card-width: 250px;
+    --mo-card-height: 350px;
+}
+
 /* Alerts */
 .mo-alert-danger {
     position: relative;
@@ -346,8 +351,8 @@
 .mo-card-grid {
     display: grid;
     /*grid-template-columns: 250px repeat(auto-fit, minmax(250px, 1fr));*/
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    grid-auto-rows: 400px;
+    grid-template-columns: repeat(auto-fill, minmax(var(--mo-card-width), 1fr));
+    grid-auto-rows: var(--mo-card-height);
     justify-items: center;
     align-items: start;
 
@@ -357,8 +362,8 @@
 }
 
 .mo-card {
-    height: 400px;
-    width: 250px;
+    height: var(--mo-card-height);
+    width: var(--mo-card-width);
     border: 1px solid var(--mo-card-border-color);
     box-shadow: 2px 2px 5px var(--mo-card-box-shadow-color);
     border-radius: 8px;

@@ -1,8 +1,10 @@
+import os
 import sqlite3
 import threading
 
 from scripts.mo.models import Record, ModelType
 from scripts.mo.storage import Storage
+from scripts.mo.environment import env
 
 _DB_FILE = 'database.sqlite'
 _DB_VERSION = 1
@@ -35,7 +37,8 @@ class SQLiteStorage(Storage):
 
     def _connection(self):
         if not hasattr(self.local, "connection"):
-            self.local.connection = sqlite3.connect(_DB_FILE, _DB_TIMEOUT)
+            db_file_path = os.path.join(env.mo_script_dir, _DB_FILE)
+            self.local.connection = sqlite3.connect(db_file_path, _DB_TIMEOUT)
         return self.local.connection
 
     def _initialize(self):

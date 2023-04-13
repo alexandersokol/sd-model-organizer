@@ -8,7 +8,11 @@ from modules.shared import OptionInfo
 
 from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
+from scripts.mo.init_storage import initialize_storage
 
+env.mo_layout = lambda: shared.opts.mo_layout
+env.mo_card_width = lambda: shared.opts.mo_card_width
+env.mo_card_height = lambda: shared.opts.mo_card_height
 env.mo_storage_type = lambda: shared.opts.mo_storage_type
 env.mo_notion_api_token = lambda: shared.opts.mo_notion_api_token
 env.mo_notion_db_id = lambda: shared.opts.mo_notion_db_id
@@ -17,7 +21,7 @@ env.mo_vae_path = lambda: shared.opts.mo_vae_path
 env.mo_lora_path = lambda: shared.opts.mo_lora_path
 env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path
 env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path
-env.mo_script_dir = lambda: scripts.basedir()
+env.mo_script_dir = scripts.basedir()
 
 
 def on_ui_settings():
@@ -28,8 +32,12 @@ def on_ui_settings():
     embeddings_path = shared.cmd_opts.embeddings_dir
 
     mo_options = shared.options_section(('mo', 'Model Organizer'), {
+        'mo_layout': OptionInfo(LAYOUT_CARDS, "Layout Type:", gr.Radio,
+                                {"choices": [LAYOUT_CARDS, LAYOUT_TABLE]}),
+        'mo_card_width': OptionInfo(0, 'Card width (default if 0):'),
+        'mo_card_height': OptionInfo(0, 'Card height (default if 0):'),
         'mo_storage_type': OptionInfo(STORAGE_SQLITE, "Storage Type:", gr.Radio,
-                                   {"choices": [STORAGE_SQLITE, STORAGE_NOTION]}),
+                                      {"choices": [STORAGE_SQLITE, STORAGE_NOTION]}),
         'mo_notion_api_token': OptionInfo('', 'Notion API Token:'),
         'mo_notion_db_id': OptionInfo('', 'Notion Database Id:'),
 
@@ -41,7 +49,7 @@ def on_ui_settings():
         'mo_embeddings_path': OptionInfo('', f'Embeddings directory (If empty uses default: {embeddings_path}):')
     })
     shared.options_templates.update(mo_options)
-    evn.initialize_storage()
+    initialize_storage()
 
 
 def on_ui_tabs():

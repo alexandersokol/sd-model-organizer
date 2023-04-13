@@ -1,7 +1,7 @@
-import os
 import gradio as gr
 
-from scripts.mo.environment import env, STORAGE_SQLITE, STORAGE_NOTION, initialize_storage
+from scripts.mo.environment import *
+from scripts.mo.init_storage import initialize_storage
 from scripts.mo.ui_main import main_ui_block
 
 SETTINGS_FILE = 'settings.txt'
@@ -30,7 +30,10 @@ env.mo_vae_path = lambda: settings['mo_vae_path']
 env.mo_lora_path = lambda: settings['mo_lora_path']
 env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
 env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
-env.mo_script_dir = lambda: os.getcwd()
+env.mo_script_dir = ''
+env.mo_layout = lambda: settings['mo_layout']
+env.mo_card_width = lambda: settings['mo_card_width']
+env.mo_card_height = lambda: settings['mo_card_height']
 initialize_storage()
 
 
@@ -74,6 +77,21 @@ def embeddings_path_change(value):
     print(f'mo_embeddings_path updated: {value}')
 
 
+def layout_type_change(value):
+    settings['mo_layout'] = value
+    print(f'mo_layout updated: {value}')
+
+
+def card_width_change(value):
+    settings['mo_card_width'] = value
+    print(f'mo_card_width updated: {value}')
+
+
+def card_height_change(value):
+    settings['mo_card_height'] = value
+    print(f'mo_card_height updated: {value}')
+
+
 def save_click():
     with open(SETTINGS_FILE, 'w') as f:
         for key, value in settings.items():
@@ -83,6 +101,11 @@ def save_click():
 
 def settings_block():
     with gr.Column():
+        layout_type = gr.Dropdown([LAYOUT_CARDS, LAYOUT_TABLE], value=[env.mo_layout()],
+                                  label="Layout type:", info='Select records layout type.')
+        card_width = gr.Textbox(env.mo_card_width, label='Cards width:')
+        card_height = gr.Textbox(env.mo_card_height, label='Cards height:')
+
         storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_NOTION], value=[env.mo_storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
         notion_api_token = gr.Textbox(env.mo_notion_api_token(), label="Notion Api Token:")
@@ -102,6 +125,10 @@ def settings_block():
     lora_path.change(lora_path_change, inputs=lora_path)
     hypernetworks_path.change(hypernetworks_path_change, inputs=hypernetworks_path)
     embeddings_path.change(embeddings_path_change, inputs=embeddings_path)
+    layout_type.change(layout_type_change, inputs=layout_type)
+    card_width.change(card_width_change, inputs=card_height)
+    card_height.change(card_height_change, inputs=card_height)
+
     button.click(save_click)
 
 
