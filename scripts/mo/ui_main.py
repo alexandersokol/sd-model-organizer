@@ -5,11 +5,13 @@ import json
 
 import scripts.mo.ui_styled_html as styled
 import scripts.mo.ui_navigation as nav
+from scripts.mo.environment import env
 from scripts.mo.ui_home import home_ui_block
 from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_details import details_ui_block
 from scripts.mo.ui_remove import remove_ui_block
-from scripts.mo.environment import env
+from scripts.mo.ui_download_test import download_ui_test_block
+from scripts.mo.ui_download import download_ui_block
 
 
 def _load_mo_css() -> str:
@@ -60,9 +62,11 @@ def on_json_box_change(json_state):
         gr.Column.update(visible=state['is_details_visible']),
         gr.Column.update(visible=state['is_edit_visible']),
         gr.Column.update(visible=state['is_remove_visible']),
+        gr.Column.update(visible=state['is_download_visible']),
         gr.Textbox.update(value=state['details_record_id']),
         gr.Textbox.update(value=state['edit_record_id']),
-        gr.Textbox.update(value=state['remove_record_id'])
+        gr.Textbox.update(value=state['remove_record_id']),
+        gr.Textbox.update(value=state['download_record_id'])
     ]
 
 
@@ -86,6 +90,10 @@ def on_remove_click():
     return nav.navigate_remove(19)
 
 
+def on_download_click():
+    return nav.navigate_download(20)
+
+
 def main_ui_block():
     with gr.Blocks() as main_block:
         gr.HTML(_load_mo_css())
@@ -104,6 +112,7 @@ def main_ui_block():
             add_button = gr.Button('Add')
             edit_button = gr.Button('Edit (9)')
             remove_button = gr.Button('Remove (19)')
+            download_button = gr.Button('Download (20)')
 
         with gr.Column(visible=True) as home_block:
             home_ui_block()
@@ -117,20 +126,27 @@ def main_ui_block():
         with gr.Column(visible=False) as remove_record_block:
             remove_id_box = remove_ui_block()
 
+        with gr.Column(visible=False) as download_block:
+            download_id_box = download_ui_block()
+
         json_box.change(on_json_box_change,
                         inputs=json_box,
                         outputs=[home_block,
                                  record_details_block,
                                  edit_record_block,
                                  remove_record_block,
+                                 download_block,
+
                                  details_id_box,
                                  edit_id_box,
-                                 remove_id_box])
+                                 remove_id_box,
+                                 download_id_box])
 
         home_button.click(on_home_click, outputs=json_box)
         details_button.click(on_details_click, outputs=json_box)
         add_button.click(on_add_click, outputs=json_box)
         edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
         remove_button.click(on_remove_click, outputs=json_box)
+        download_button.click(on_download_click, outputs=json_box)
 
     return main_block

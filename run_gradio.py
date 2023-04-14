@@ -145,4 +145,5 @@ with gr.Blocks() as demo:
     with gr.Tab("Testing"):
         testing_block()
 
+demo.queue()
 demo.launch()
