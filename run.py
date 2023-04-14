@@ -1,17 +1,19 @@
-import random
 import os
+import random
 import string
-from loremipsum import generate_paragraphs, generate_sentence
-from scripts.mo.sqlite_storage import SQLiteStorage
 
+from loremipsum import generate_paragraphs, generate_sentence
 
 from scripts.mo.models import Record, ModelType
+
 
 def generate_random_url():
     protocol = random.choice(['http', 'https'])
     domain = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(2, 10))) + '.com'
-    path = '/'.join(''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(2, 10))) for _ in range(random.randint(1, 5)))
-    query_params = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(5, 10))) + '=' + ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(5, 10)))
+    path = '/'.join(''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(2, 10))) for _ in
+                    range(random.randint(1, 5)))
+    query_params = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(5, 10))) + '=' + ''.join(
+        random.choice(string.ascii_lowercase) for _ in range(random.randint(5, 10)))
     return f"{protocol}://{domain}/{path}?{query_params}"
 
 
@@ -47,6 +49,6 @@ def generate_random_records(count: int):
 #     storage.add_record(record)
 #     print(record)
 
+
 print(f'path: {os.getcwd()}')
 print(f'Done. ')
-

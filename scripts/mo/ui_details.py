@@ -13,7 +13,7 @@ def on_id_changed(record_id) -> str:
         return 'No record id.'
 
 
-def record_details_ui_block():
+def details_ui_block():
     with gr.Blocks():
         details_id_box = gr.Textbox()
 

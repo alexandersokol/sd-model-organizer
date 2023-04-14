@@ -1,3 +1,5 @@
+import html
+import json
 from typing import List
 
 from scripts.mo.models import Record, ModelType
@@ -19,6 +21,7 @@ def _limit_description(text):
         return text[:600] + '...'
     else:
         return text
+
 
 def _limit_card_name(text):
     if text and len(text) > 150:
@@ -258,6 +261,13 @@ def record_details(record: Record) -> str:
 
 def records_cards(records: List[Record]) -> str:
     content = '<div class="mo-card-grid">'
+    content += """
+    <script>
+    function handleRemoveClick(recordId) {
+    console.log('remove: ' + recordId)
+    }
+    </script>
+    """
 
     for record in records:
         content += '<div class="mo-card">'
@@ -275,9 +285,23 @@ def records_cards(records: List[Record]) -> str:
         content += '<div class="mo-card-hover">'
         content += '<div class="mo-card-hover-buttons">'
 
-        content += '<button type="button" class="mo-btn mo-btn-primary">Download</button><br>'
-        content += '<button type="button" class="mo-btn mo-btn-warning">Edit</button><br>'
-        content += '<button type="button" class="mo-btn mo-btn-danger">Remove</button><br>'
+        content += '<button type="button" class="mo-btn mo-btn-success" '
+
+        details = {
+            'screen': 'record_details',
+            'record_id': record.id_
+        }
+        details_json = html.escape(json.dumps(details))
+
+        content += '<button type="button" class="mo-btn mo-btn-success" ' \
+                   f'onclick="moJsonDelivery(\'{details_json}\')"">Details</button><br>'
+
+        content += '<button type="button" class="mo-btn mo-btn-primary" ' \
+                   f'onclick="handleDownloadClick(\'{record.id_}\')"">Download</button><br>'
+        content += '<button type="button" class="mo-btn mo-btn-warning" ' \
+                   f'onclick="handleEditClick(\'{record.id_}\')"">Edit</button><br>'
+        content += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                   f'onclick="handleRemoveClick(\'{record.id_}\')">Remove</button><br>'
 
         content += '</div>'
         content += '</div>'

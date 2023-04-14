@@ -4,9 +4,11 @@ import gradio as gr
 import json
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.ui_records_list import records_list_ui_block
-from scripts.mo.ui_edit_model import edit_model_ui_block
-from scripts.mo.ui_record_details import record_details_ui_block
+import scripts.mo.ui_navigation as nav
+from scripts.mo.ui_home import home_ui_block
+from scripts.mo.ui_edit import edit_ui_block
+from scripts.mo.ui_details import details_ui_block
+from scripts.mo.ui_remove import remove_ui_block
 from scripts.mo.environment import env
 
 
@@ -36,66 +38,35 @@ def _load_mo_css() -> str:
 
 
 def _content_list_state() -> str:
-    return '{}'
+    return nav.navigate_home()
 
 
 def _details_state(record_id) -> str:
-    state = {
-        'screen': 'record_details',
-        'record_id': record_id
-    }
-    return json.dumps(state)
+    return nav.navigate_details(record_id)
 
 
-def _edit_state(record_id, previous_state=None) -> str:
-    state = {
-        'screen': 'record_edit',
-        'record_id': record_id
-    }
-
-    # TODO Previous state
-    # if previous_state is not None:
-    #     state['previous'] = previous_state
-
-    return json.dumps(state)
+def _edit_state() -> str:
+    return nav.navigate_edit(9)
 
 
 def _add_state() -> str:
-    state = {
-        'screen': 'record_edit'
-    }
-    return json.dumps(state)
+    return nav.navigate_add()
 
 
 def on_json_box_change(json_state):
-    state = json.loads(json_state)
-
-    is_content_list_visible = False
-    is_details_visible = False
-    is_edit_visible = False
-    details_record_id = ''
-    edit_record_id = ''
-
-    if state.get('screen') is None:
-        is_content_list_visible = True
-    else:
-        if state['screen'] == 'record_details':
-            is_details_visible = True
-            details_record_id = state['record_id']
-        elif state['screen'] == 'record_edit':
-            is_edit_visible = True
-            if state.get('record_id') is not None:
-                edit_record_id = state['record_id']
+    state = nav.get_nav_state(json_state)
     return [
-        gr.Column.update(visible=is_content_list_visible),
-        gr.Column.update(visible=is_details_visible),
-        gr.Column.update(visible=is_edit_visible),
-        gr.Textbox.update(value=details_record_id),
-        gr.Textbox.update(value=edit_record_id)
+        gr.Column.update(visible=state['is_home_visible']),
+        gr.Column.update(visible=state['is_details_visible']),
+        gr.Column.update(visible=state['is_edit_visible']),
+        gr.Column.update(visible=state['is_remove_visible']),
+        gr.Textbox.update(value=state['details_record_id']),
+        gr.Textbox.update(value=state['edit_record_id']),
+        gr.Textbox.update(value=state['remove_record_id'])
     ]
 
 
-def on_content_list_click():
+def on_home_click():
     return _content_list_state()
 
 
@@ -108,7 +79,11 @@ def on_add_click():
 
 
 def on_edit_click(previous_state):
-    return _edit_state(9, previous_state)
+    return nav.navigate_edit(9)
+
+
+def on_remove_click():
+    return nav.navigate_remove(19)
 
 
 def main_ui_block():
@@ -124,34 +99,38 @@ def main_ui_block():
         json_box = gr.Textbox(_content_list_state(), elem_id='mo_json_box')
 
         with gr.Row():
-            content_list_button = gr.Button('Content List')
+            home_button = gr.Button('Content List')
             details_button = gr.Button('Details')
             add_button = gr.Button('Add')
             edit_button = gr.Button('Edit (9)')
-            js_button = gr.Button('JS')
+            remove_button = gr.Button('Remove (19)')
 
-        with gr.Column(visible=True) as content_list_block:
-            records_list_ui_block()
+        with gr.Column(visible=True) as home_block:
+            home_ui_block()
 
         with gr.Column(visible=False) as record_details_block:
-            details_id_box = record_details_ui_block()
+            details_id_box = details_ui_block()
 
         with gr.Column(visible=False) as edit_record_block:
-            edit_id_box = edit_model_ui_block()
+            edit_id_box = edit_ui_block()
+
+        with gr.Column(visible=False) as remove_record_block:
+            remove_id_box = remove_ui_block()
 
         json_box.change(on_json_box_change,
                         inputs=json_box,
-                        outputs=[content_list_block,
+                        outputs=[home_block,
                                  record_details_block,
                                  edit_record_block,
+                                 remove_record_block,
                                  details_id_box,
-                                 edit_id_box])
+                                 edit_id_box,
+                                 remove_id_box])
 
-        content_list_button.click(on_content_list_click, outputs=json_box)
+        home_button.click(on_home_click, outputs=json_box)
         details_button.click(on_details_click, outputs=json_box)
         add_button.click(on_add_click, outputs=json_box)
         edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
-
-        js_button.click(None, inputs=json_box, _js='moClickJs')
+        remove_button.click(on_remove_click, outputs=json_box)
 
     return main_block

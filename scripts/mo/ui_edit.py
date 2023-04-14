@@ -105,9 +105,9 @@ def _on_id_changed(record_id):
             positive_prompts, negative_prompts]
 
 
-def edit_model_ui_block():
+def edit_ui_block():
     with gr.Blocks():
-        edit_id_box = gr.Textbox('## Add model')
+        id_box = gr.Textbox('## Add model')
 
         title_widget = gr.Markdown()
         with gr.Row():
@@ -163,17 +163,17 @@ def edit_model_ui_block():
                                                      max_lines=20,
                                                      info='Model negative prompts (Optional)')
 
-            edit_id_box.change(_on_id_changed,
-                               inputs=edit_id_box,
+            id_box.change(_on_id_changed,
+                               inputs=id_box,
                                outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
                                         preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                         description_widget, positive_prompts_widget, negative_prompts_widget]
                                )
 
             save_widget.click(on_save_click,
-                              inputs=[edit_id_box, name_widget, model_type_widget, download_url_widget, url_widget,
+                              inputs=[id_box, name_widget, model_type_widget, download_url_widget, url_widget,
                                       download_path_widget, download_filename_widget, preview_url_widget,
                                       description_widget, positive_prompts_widget, negative_prompts_widget],
                               outputs=[error_widget])
 
-            return edit_id_box
+            return id_box

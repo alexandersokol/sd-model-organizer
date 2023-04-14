@@ -13,7 +13,7 @@ def prepare_data() -> str:
         return styled.records_table(data)
 
 
-def records_list_ui_block():
+def home_ui_block():
     with gr.Blocks():
         refresh_widget = gr.Button("Refresh")
         content_widget = gr.HTML(prepare_data())

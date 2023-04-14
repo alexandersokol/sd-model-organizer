@@ -302,6 +302,12 @@
     border-color: var(--mo-btn-primary-border-color) !important
 }
 
+.mo-btn-success {
+    color: var(--mo-btn-success-text-color) !important;
+    background-color: var(--mo-btn-success-background-color) !important;
+    border-color: var(--mo-btn-success-border-color) !important
+}
+
 .mo-btn-warning {
     color: var(--mo-btn-warning-text-color) !important;
     background-color: var(--mo-btn-warning-background-color) !important;
@@ -438,4 +444,11 @@
 
 .mo-card:hover .mo-card-hover {
     display: flex;
+}
+
+/* Gradio styles by ids */
+#mo_button_remove {
+    color: var(--mo-btn-danger-text-color) !important;
+    background-color: var(--mo-btn-danger-background-color) !important;
+    background: none;
 }
