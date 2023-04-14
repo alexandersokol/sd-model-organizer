@@ -5,10 +5,11 @@ from tqdm import tqdm
 
 from scripts.mo.environment import env
 
-temp_dir = os.path.join(env.mo_script_dir, 'tmp')
 
-def _download_file(progress = gr.Progress(track_tqdm=True)):
-
+def _download_file(progress=gr.Progress(track_tqdm=True)):
+    temp_dir = os.path.join(env.mo_script_dir, 'tmp')
+    if not os.path.isdir(temp_dir):
+        os.mkdir(temp_dir)
 
     url = 'https://huggingface.co/Linaqruf/anything-v3.0/resolve/main/vae/diffusion_pytorch_model.bin'
     # url = 'https://huggingface.co/wavymulder/Analog-Diffusion/raw/main/tokenizer/vocab.json'
@@ -18,7 +19,7 @@ def _download_file(progress = gr.Progress(track_tqdm=True)):
     block_size = 1024  # 1 Kibibyte
     progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc='File 1')
 
-    with open('downloaded_file.zip', 'wb') as file:
+    with open(os.path.join(temp_dir, 'downloaded_file_1.zip'), 'wb') as file:
         for data in response.iter_content(block_size):
             progress_bar.update(len(data))
             file.write(data)
@@ -32,7 +33,7 @@ def _download_file(progress = gr.Progress(track_tqdm=True)):
     block_size = 1024  # 1 Kibibyte
     progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc='File 2')
 
-    with open('downloaded_file.zip', 'wb') as file:
+    with open(os.path.join(temp_dir, 'downloaded_file_2.zip'), 'wb') as file:
         for data in response.iter_content(block_size):
             progress_bar.update(len(data))
             file.write(data)

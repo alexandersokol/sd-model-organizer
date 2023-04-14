@@ -10,7 +10,6 @@ from scripts.mo.ui_home import home_ui_block
 from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_details import details_ui_block
 from scripts.mo.ui_remove import remove_ui_block
-from scripts.mo.ui_download_test import download_ui_test_block
 from scripts.mo.ui_download import download_ui_block
 
 
