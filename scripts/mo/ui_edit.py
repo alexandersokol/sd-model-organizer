@@ -28,7 +28,7 @@ def is_blank(s):
 
 def on_save_click(record_id, name: str, model_type: str, download_url: str, url: str, download_path: str,
                   download_filename: str, preview_url: str, description: str, positive_prompts: str,
-                  negative_prompts: str):
+                  negative_prompts: str, groups: list[str]):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -70,7 +70,8 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
             preview_url=preview_url.strip(),
             description=description.strip(),
             positive_prompts=positive_prompts.strip(),
-            negative_prompts=negative_prompts.strip()
+            negative_prompts=negative_prompts.strip(),
+            groups=groups
         )
 
         print(record)
@@ -100,16 +101,46 @@ def _on_id_changed(record_id):
     description = '' if record is None else record.description
     positive_prompts = '' if record is None else record.positive_prompts
     negative_prompts = '' if record is None else record.negative_prompts
+    record_groups = '' if record is None else record.groups
+
+    available_groups = env.storage.get_available_groups()
+    available_groups.sort()
+    groups = gr.Dropdown.update(choices=available_groups, value=record_groups)
 
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, description,
-            positive_prompts, negative_prompts]
+            positive_prompts, negative_prompts, groups, available_groups]
+
+
+def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
+    print(f'new groups string: {new_groups_str}')
+    print(f'selected groups: {selected_groups}')
+    print(f'available_groups: {available_groups}')
+
+    if available_groups is None:
+        available_groups = []
+
+    if selected_groups is None:
+        selected_groups = []
+
+    if new_groups_str:
+        new_groups = new_groups_str.split(',')
+        new_groups = [x.strip() for x in new_groups]
+        available_groups.extend(new_groups)
+        selected_groups.extend(new_groups)
+        print(f'new groups list: {new_groups}')
+
+    return [
+        gr.Textbox.update(value=''),
+        gr.Dropdown.update(choices=available_groups, value=selected_groups)
+    ]
 
 
 def edit_ui_block():
     with gr.Blocks():
-        id_box = gr.Textbox('## Add model')
-
+        id_box = gr.Textbox(label='id_box')
         title_widget = gr.Markdown()
+        available_groups_state = gr.State()
+
         with gr.Row():
             with gr.Column():
                 cancel_widget = gr.Button('Cancel')
@@ -150,6 +181,20 @@ def edit_ui_block():
             with gr.Column():
                 save_widget = gr.Button('Save')
                 error_widget = gr.HTML(visible=False)
+                groups_widget = gr.Dropdown(label='Groups',
+                                            multiselect=True,
+                                            info='Select existing groups or add new.',
+                                            interactive=True,
+                                            elem_id='mo-groups-widget'
+                                            )
+                with gr.Accordion(label='Add groups', open=False):
+                    with gr.Row():
+                        add_groups_box = gr.Textbox(label='Add new group',
+                                                    max_lines=1,
+                                                    info='Type comma-separated group names',
+                                                    elem_id='mo-add-groups-box')
+                        add_groups_button = gr.Button('Add Group')
+
                 description_widget = gr.Textbox(label='Description:',
                                                 value='',
                                                 max_lines=20,
@@ -164,16 +209,26 @@ def edit_ui_block():
                                                      info='Model negative prompts (Optional)')
 
             id_box.change(_on_id_changed,
-                               inputs=id_box,
-                               outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
-                                        preview_url_widget, url_widget, download_path_widget, download_filename_widget,
-                                        description_widget, positive_prompts_widget, negative_prompts_widget]
-                               )
+                          inputs=id_box,
+                          outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
+                                   preview_url_widget, url_widget, download_path_widget, download_filename_widget,
+                                   description_widget, positive_prompts_widget, negative_prompts_widget, groups_widget,
+                                   available_groups_state]
+                          )
 
             save_widget.click(on_save_click,
                               inputs=[id_box, name_widget, model_type_widget, download_url_widget, url_widget,
                                       download_path_widget, download_filename_widget, preview_url_widget,
-                                      description_widget, positive_prompts_widget, negative_prompts_widget],
+                                      description_widget, positive_prompts_widget, negative_prompts_widget,
+                                      groups_widget],
                               outputs=[error_widget])
+
+            add_groups_button.click(_on_add_groups_button_click,
+                                    inputs=[add_groups_box, groups_widget, available_groups_state],
+                                    outputs=[add_groups_box, groups_widget])
+
+            # groups_widget.change(fn=lambda x: print(f'on change: {x}'), inputs=groups_widget)
+            # add_groups_box.change(_on_add_groups_box_change,
+            #                       inputs=[add_groups_box, groups_widget)
 
             return id_box

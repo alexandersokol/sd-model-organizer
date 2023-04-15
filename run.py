@@ -9,8 +9,43 @@ from mega import Mega
 
 from loremipsum import generate_paragraphs, generate_sentence
 
+from scripts.mo.environment import env
+from scripts.mo.init_storage import initialize_storage
 from scripts.mo.models import Record, ModelType
+from scripts.mo.sqlite_storage import SQLiteStorage
 
+
+SETTINGS_FILE = 'settings.txt'
+
+
+def read_settings():
+    with open(SETTINGS_FILE) as f:
+        lines = f.readlines()
+
+    result = {}
+    for line in lines:
+        key, value = line.strip().split(': ')
+        result[key] = value
+        print(f'{key}: {value}')
+    print('Settings loaded.')
+    return result
+
+
+settings = read_settings()
+
+env.mo_storage_type = lambda: settings['mo_storage_type']
+env.mo_notion_api_token = lambda: settings['mo_notion_api_token']
+env.mo_notion_db_id = lambda: settings['mo_notion_db_id']
+env.mo_model_path = lambda: settings['mo_model_path']
+env.mo_vae_path = lambda: settings['mo_vae_path']
+env.mo_lora_path = lambda: settings['mo_lora_path']
+env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
+env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
+env.mo_script_dir = ''
+env.mo_layout = lambda: settings['mo_layout']
+env.mo_card_width = lambda: settings['mo_card_width']
+env.mo_card_height = lambda: settings['mo_card_height']
+initialize_storage()
 
 def generate_random_url():
     protocol = random.choice(['http', 'https'])
@@ -78,9 +113,11 @@ response = requests.get(url, headers={'Range': 'bytes=0-1'})
 # m = mega.login()
 # m.download_url(m_url, dest_path='/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp')
 
-total = 12412
-downloaded = 1231
 
-print(int((downloaded / total) * 100))
+initialize_storage()
 
+storage = SQLiteStorage()
+records = storage.fetch_data()
+
+print(storage.get_available_groups())
 print(f'Done. ')

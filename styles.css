@@ -234,6 +234,16 @@
     background-color: var(--mo-badge-other-background-color) !important;
 }
 
+.mo-badge-group {
+    margin-right: 0.4em !important;
+    padding-right: 0.6em !important;
+    padding-left: 0.6em !important;
+    border-radius: 10rem !important;
+    color: var(--mo-badge-group-text-color) !important;
+    background-color: var(--mo-badge-group-background-color) !important;
+    cursor: pointer;
+}
+
 /* Text */
 .mo-text-header {
     font-weight: bold;

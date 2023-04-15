@@ -1,8 +1,7 @@
 import gradio as gr
 
-from scripts.mo.environment import env
-from scripts.mo.models import Record
 import scripts.mo.ui_styled_html as styled
+from scripts.mo.environment import env
 
 
 def on_id_changed(record_id) -> str:

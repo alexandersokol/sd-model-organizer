@@ -32,7 +32,8 @@ class Record:
                  model_hash: str = '',
                  md5_hash: str = '',
                  location: str = '',
-                 created_at: float = 0):
+                 created_at: float = 0,
+                 groups: list[str] = []):
         self.id_ = id_
         self.name = name
         self.model_type = model_type
@@ -48,6 +49,7 @@ class Record:
         self.md5_hash = md5_hash
         self.location = location
         self.created_at = created_at
+        self.groups = groups
 
     def __str__(self):
         return f'id="{self.id_}", ' \
@@ -64,4 +66,5 @@ class Record:
                f'model_hash="{self.model_hash}", ' \
                f'md5_hash="{self.md5_hash}", ' \
                f'location="{self.location}", ' \
-               f'created_at="{self.created_at}".'
+               f'created_at="{self.created_at}", ' \
+               f'groups="{self.groups}".'

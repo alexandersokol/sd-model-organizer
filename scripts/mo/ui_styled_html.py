@@ -122,6 +122,13 @@ def _create_content_link(link: str) -> str:
     return f'<a class="mo-nav-link" target="_blank" href="{link}">{link}</a>'
 
 
+def _create_groups(groups: list[str]) -> str:
+    groups_html = ''
+    for group in groups:
+        groups_html += f'<span class="mo-badge mo-badge-group" onclick="">{group}</span>'
+    return groups_html
+
+
 def _create_top_fields_dict(record: Record) -> dict:
     result = {
         'Name': _create_content_text(record.name),
@@ -139,6 +146,9 @@ def _create_top_fields_dict(record: Record) -> dict:
 
     if record.url:
         result['Model page'] = _create_content_link(record.url)
+
+    if record.groups:
+        result['Groups'] = _create_groups(record.groups)
 
     if record.download_url:
         result['Download URL'] = _create_content_link(record.download_url)

@@ -8,7 +8,7 @@ from scripts.mo.storage import Storage
 from scripts.mo.environment import env
 
 _DB_FILE = 'database.sqlite'
-_DB_VERSION = 2
+_DB_VERSION = 3
 _DB_TIMEOUT = 30
 
 
@@ -27,7 +27,8 @@ def map_row_to_record(row) -> Record:
         negative_prompts=row[10],
         model_hash=row[11],
         md5_hash=row[12],
-        created_at=row[13]
+        created_at=row[13],
+        groups=row[14].split(",")
     )
 
 
@@ -60,7 +61,8 @@ class SQLiteStorage(Storage):
                                     negative_prompts TEXT DEFAULT '',
                                     model_hash TEXT DEFAULT '',
                                     md5_hash TEXT DEFAULT '',
-                                    created_at INTEGER DEFAULT 0)
+                                    created_at INTEGER DEFAULT 0,
+                                    groups TEXT DEFAULT '')
                                  ''')
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
@@ -85,11 +87,25 @@ class SQLiteStorage(Storage):
 
     def _run_migration(self, current_version):
         if current_version == 1 and _DB_VERSION == 2:
-            cursor = self._connection().cursor()
-            cursor.execute('ALTER TABLE Record ADD COLUMN created_at INTEGER DEFAULT 0;')
-            cursor.execute("DELETE FROM Version")
-            cursor.execute(f'INSERT INTO Version VALUES ({_DB_VERSION})')
-            self._connection().commit()
+            self._migrate_1_to_2()
+            current_version = 2
+
+        if current_version == 2 and _DB_VERSION == 3:
+            self._migrate_2_to_3()
+
+    def _migrate_1_to_2(self):
+        cursor = self._connection().cursor()
+        cursor.execute('ALTER TABLE Record ADD COLUMN created_at INTEGER DEFAULT 0;')
+        cursor.execute("DELETE FROM Version")
+        cursor.execute('INSERT INTO Version VALUES (2)')
+        self._connection().commit()
+
+    def _migrate_2_to_3(self):
+        cursor = self._connection().cursor()
+        cursor.execute("ALTER TABLE Record ADD COLUMN groups TEXT DEFAULT '';")
+        cursor.execute("DELETE FROM Version")
+        cursor.execute('INSERT INTO Version VALUES (3)')
+        self._connection().commit()
 
     def fetch_data(self) -> list[Record]:
         cursor = self._connection().cursor()
@@ -121,7 +137,8 @@ class SQLiteStorage(Storage):
             record.negative_prompts,
             record.model_hash,
             record.md5_hash,
-            time.time()
+            time.time(),
+            ",".join(record.groups)
         )
         cursor.execute(
             """INSERT INTO Record(
@@ -137,7 +154,8 @@ class SQLiteStorage(Storage):
                     negative_prompts,
                     model_hash,
                     md5_hash,
-                    created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)""",
+                    created_at,
+                    groups) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             data)
         self._connection().commit()
 
@@ -156,6 +174,7 @@ class SQLiteStorage(Storage):
             record.negative_prompts,
             record.model_hash,
             record.md5_hash,
+            ",".join(record.groups),
             record.id_
         )
         cursor.execute(
@@ -171,7 +190,8 @@ class SQLiteStorage(Storage):
                     positive_prompts=?,
                     negative_prompts=?,
                     model_hash=?,
-                    md5_hash=?
+                    md5_hash=?,
+                    groups=?,
                 WHERE id=?
             """, data
         )
@@ -182,3 +202,14 @@ class SQLiteStorage(Storage):
         cursor = self._connection().cursor()
         cursor.execute("DELETE FROM Record WHERE id=?", (_id,))
         self._connection().commit()
+
+    def get_available_groups(self) -> list[str]:
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT groups FROM Record')
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.extend(row[0].split(","))
+
+        result = list(set(result))
+        return list(filter(None, result))

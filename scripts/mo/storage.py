@@ -24,3 +24,7 @@ class Storage(ABC):
     @abstractmethod
     def remove_record(self, _id):
         pass
+
+    @abstractmethod
+    def get_available_groups(self) -> list[str]:
+        pass
