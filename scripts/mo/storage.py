@@ -6,11 +6,11 @@ from scripts.mo.models import Record
 class Storage(ABC):
 
     @abstractmethod
-    def fetch_data(self) -> list[Record]:
+    def get_all_records(self) -> list[Record]:
         pass
 
     @abstractmethod
-    def fetch_data_by_id(self, _id) -> Record:
+    def get_record_by_id(self, _id) -> Record:
         pass
 
     @abstractmethod
@@ -27,4 +27,8 @@ class Storage(ABC):
 
     @abstractmethod
     def get_available_groups(self) -> list[str]:
+        pass
+
+    @abstractmethod
+    def get_records_by_group(self, group: str) -> list[Record]:
         pass

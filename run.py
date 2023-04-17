@@ -14,7 +14,6 @@ from scripts.mo.init_storage import initialize_storage
 from scripts.mo.models import Record, ModelType
 from scripts.mo.sqlite_storage import SQLiteStorage
 
-
 SETTINGS_FILE = 'settings.txt'
 
 
@@ -46,6 +45,7 @@ env.mo_layout = lambda: settings['mo_layout']
 env.mo_card_width = lambda: settings['mo_card_width']
 env.mo_card_height = lambda: settings['mo_card_height']
 initialize_storage()
+
 
 def generate_random_url():
     protocol = random.choice(['http', 'https'])
@@ -117,7 +117,14 @@ response = requests.get(url, headers={'Range': 'bytes=0-1'})
 initialize_storage()
 
 storage = SQLiteStorage()
-records = storage.fetch_data()
+records = storage.get_records_by_group('first')
+
+print('----')
+counter = 1
+for record in records:
+    print(f'{counter}. {record.groups}')
+    counter += 1
+print('----')
 
 print(storage.get_available_groups())
 print(f'Done. ')

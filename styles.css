@@ -20,10 +20,26 @@
     border-color: var(--mo-alert-primary-border-color) !important;
 }
 
+.mo-alert-primary h2 {
+    color: var(--mo-alert-primary-text-color) !important;
+}
+
+.mo-alert-primary p {
+    color: var(--mo-alert-primary-text-color) !important;
+}
+
 .mo-alert-secondary {
     color: var(--mo-alert-secondary-text-color) !important;
     background-color: var(--mo-alert-secondary-background-color) !important;
     border-color: var(--mo-alert-secondary-border-color) !important;
+}
+
+.mo-alert-secondary h2{
+    color: var(--mo-alert-secondary-text-color) !important;
+}
+
+.mo-alert-secondary p{
+    color: var(--mo-alert-secondary-text-color) !important;
 }
 
 .mo-alert-success {
@@ -32,10 +48,40 @@
     border-color: var(--mo-alert-success-border-color) !important;
 }
 
+.mo-alert-success h2 {
+    color: var(--mo-alert-success-text-color) !important;
+}
+
+.mo-alert-success p {
+    color: var(--mo-alert-success-text-color) !important;
+}
+
+.mo-alert-info {
+    color: var(--mo-alert-info-text-color) !important;
+    background-color: var(--mo-alert-info-background-color) !important;
+    border-color: var(--mo-alert-info-border-color) !important;
+}
+
+.mo-alert-info h2 {
+    color: var(--mo-alert-info-text-color) !important;
+}
+
+.mo-alert-info p {
+    color: var(--mo-alert-info-text-color) !important;
+}
+
 .mo-alert-danger {
     color: var(--mo-alert-danger-text-color) !important;
     background-color: var(--mo-alert-danger-background-color) !important;
     border-color: var(--mo-alert-danger-border-color) !important;
+}
+
+.mo-alert-danger h2 {
+    color: var(--mo-alert-danger-text-color) !important;
+}
+
+.mo-alert-danger p {
+    color: var(--mo-alert-danger-text-color) !important;
 }
 
 /* Containers */
@@ -507,9 +553,9 @@
     -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
-    color: #fff;
+    color: #fff !important;
     text-align: center;
-    background-color: #007bff;
+    background-color: #007bff !important;
     transition: width 0.5s ease;
     animation: progress-bar-stripes 1s linear infinite;
 }
@@ -525,7 +571,7 @@
 
 /* Downloads container */
 .mo-downloads-container {
-    width: 50%;
+    width: 70%;
     margin-right: auto;
     margin-left: auto;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -537,10 +583,6 @@
     padding: 16px;
     width: 100%;
     position: relative;
-}
-
-mo-downloads-card-completed {
-
 }
 
 .mo-downloads-header {

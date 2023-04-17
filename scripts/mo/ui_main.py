@@ -1,16 +1,16 @@
-import re
 import os
-import gradio as gr
-import json
+import re
 
-import scripts.mo.ui_styled_html as styled
+import gradio as gr
+
 import scripts.mo.ui_navigation as nav
+import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env
-from scripts.mo.ui_home import home_ui_block
-from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_details import details_ui_block
-from scripts.mo.ui_remove import remove_ui_block
 from scripts.mo.ui_download import download_ui_block
+from scripts.mo.ui_edit import edit_ui_block
+from scripts.mo.ui_home import home_ui_block
+from scripts.mo.ui_remove import remove_ui_block
 
 
 def _load_mo_css() -> str:
@@ -65,7 +65,7 @@ def on_json_box_change(json_state):
         gr.Textbox.update(value=state['details_record_id']),
         gr.Textbox.update(value=state['edit_record_id']),
         gr.Textbox.update(value=state['remove_record_id']),
-        gr.Textbox.update(value=state['download_record_id'])
+        gr.Textbox.update(value=state['download_info'])
     ]
 
 
@@ -90,7 +90,11 @@ def on_remove_click():
 
 
 def on_download_click():
-    return nav.navigate_download(20)
+    return nav.navigate_download_single(20)
+
+
+def on_download_group_click():
+    return nav.navigate_download_group('First')
 
 
 def main_ui_block():
@@ -112,6 +116,7 @@ def main_ui_block():
             edit_button = gr.Button('Edit (9)')
             remove_button = gr.Button('Remove (19)')
             download_button = gr.Button('Download (20)')
+            download_group_button = gr.Button('Download ("First")')
 
         with gr.Column(visible=True) as home_block:
             home_ui_block()
@@ -147,5 +152,6 @@ def main_ui_block():
         edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
         remove_button.click(on_remove_click, outputs=json_box)
         download_button.click(on_download_click, outputs=json_box)
+        download_group_button.click(on_download_group_click, outputs=json_box)
 
     return main_block

@@ -77,7 +77,7 @@ class NotionStorage(Storage):
         self.notion = Client(auth=api_token)
         self.database = self.notion.databases.retrieve(database_id)
 
-    def fetch_data(self):
+    def get_all_records(self):
         results = self.notion.databases.query(
             **{
                 "database_id": self.database_id,

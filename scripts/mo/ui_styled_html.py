@@ -320,3 +320,70 @@ def records_cards(records: List[Record]) -> str:
 
     content += '</div>'
     return content
+
+
+def _downloads_header(record_id, title) -> str:
+    content = '<div class="mo-downloads-header">'
+    content += f'<h2 style="margin: 0;" id="title-{record_id}">{title}</h2>'
+    content += f'<p style="margin: 0; white-space: nowrap;" id="status-{record_id}">Pending</p>'
+    content += '</div>'
+    return content
+
+
+def _download_url(record_id, url: str, is_preview: bool) -> str:
+    preview = '-preview' if is_preview else ''
+    content = f'<p style="margin-top: 2rem; display: block" id="url{preview}-{record_id}">' \
+              f'{url}</p>'
+    return content
+
+
+def _download_info(record_id, is_preview: bool) -> str:
+    preview = '-preview' if is_preview else ''
+    content = f'<div class="mo-download-info" id="info-bar{preview}-{record_id}" style="display: none !important">'
+    content += f'<p style="margin: 0;" id="progress-info-left{preview}-{record_id}"></p>'
+    content += f'<p style="margin: 0;" id="progress-info-center{preview}-{record_id}"></p>'
+    content += f'<p style="margin: 0;" id="progress-info-right{preview}-{record_id}"></p>'
+    content += '</div>'
+    return content
+
+
+def _download_progress_bar(record_id, is_preview: bool) -> str:
+    preview = '-preview' if is_preview else ''
+    content = '<div class="mo-progress" style="height: 1.2rem; margin-top: 1rem; display: none" ' \
+              f'id="progress{preview}-{record_id}">'
+    content += '<div class="mo-progress-bar" role="progressbar" style="width: 0"'
+    content += 'aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"'
+    content += f'id="progress-bar{preview}-{record_id}">0%</div>'
+    content += '</div>'
+    return content
+
+
+def download_cards(records: list[Record]) -> str:
+    content = '<div class="mo-downloads-container">'
+    counter = 0
+    for record in records:
+        id_ = record.id_
+
+        card_margin_top = '0' if counter == 0 else '2rem'
+        content += f'<div class="mo-downloads-card mo-alert-secondary" id="download-card-{id_}" ' \
+                   f'style="margin-top: {card_margin_top}">'
+
+        content += _downloads_header(id_, record.name)
+
+        content += _download_url(id_, record.download_url, False)
+        content += _download_info(id_, False)
+        content += _download_progress_bar(id_, False)
+
+        if record.preview_url:
+            content += _download_url(id_, record.preview_url, True)
+            content += _download_info(id_, True)
+            content += _download_progress_bar(id_, True)
+
+        content += f'<div id="result-box-{id_}" style="margin-top: 1rem">'
+        content += '</div>'
+
+        content += '</div>'
+        counter += 1
+
+    content += '</div>'
+    return content

@@ -1,12 +1,16 @@
+import json
+import os
 import time
 
 import gradio as gr
 import requests
-import os
-from tqdm import tqdm
 from mega import Mega
+from tqdm import tqdm
 
+import scripts.mo.ui_navigation as nav
+import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env
+from scripts.mo.download_state import DownloadState
 
 
 def _download_file_mega():
@@ -130,20 +134,152 @@ def _download_without_progress():
     return 'Done'
 
 
+# def download_ui_block():
+#     with gr.Blocks():
+#         id_box = gr.Textbox()
+#         gr.Markdown('## Downloading')
+#         load_button = gr.Button('Download')
+#         dummy_widget = gr.HTML('<br><br><br>')
+#         progress_box = gr.Textbox()
+#         progress_widget = gr.HTML(f"""
+#                        <div class="mo-progress" style="height: 20px;">
+#                            <div id="progress-moid-x" class="mo-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+#                        </div>
+#                        """, elem_id='html-progress-buddy')
+#
+#         load_button.click(_download_file, outputs=progress_box)
+#         progress_box.change(None, inputs=progress_box, _js='progressBuddy')
+#
+#     return id_box
+
+
+_STATE_PENDING = 'Pending'
+_STATE_IN_PROGRESS = 'In Progress'
+_STATE_COMPLETED = 'Completed'
+_STATE_EXISTS = 'Exists'
+_STATE_ERROR = 'Error'
+
+
+def _on_id_change(data):
+    records = []
+    record_id = nav.get_download_record_id(data)
+    group = nav.get_download_group(data)
+
+    if record_id is not None:
+        records.append(env.storage.get_record_by_id(record_id))
+
+    if group is not None:
+        records.extend(env.storage.get_records_by_group(group))
+
+    return [
+        gr.HTML.update(value=styled.download_cards(records)),
+        gr.Button.update(visible=True)
+    ]
+
+
+def _build_update_dict(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
+                       progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
+                       progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
+                       progress_preview=None) -> str:
+    update = {'id': record_id}
+
+    if state is not None:
+        update['state'] = state
+
+    if result_text is not None:
+        update['result_text'] = result_text
+
+    if result_title is not None:
+        update['result_title'] = result_title
+
+    if progress_info_left is not None:
+        update['progress_info_left'] = progress_info_left
+
+    if progress_info_center is not None:
+        update['progress_info_center'] = progress_info_center
+
+    if progress_info_right is not None:
+        update['progress_info_right'] = progress_info_right
+
+    if progress_preview_info_left is not None:
+        update['progress_preview_info_left'] = progress_preview_info_left
+
+    if progress_preview_info_center is not None:
+        update['progress_preview_info_center'] = progress_preview_info_center
+
+    if progress_preview_info_right is not None:
+        update['progress_preview_info_right'] = progress_preview_info_right
+
+    if progress is not None:
+        update['progress'] = progress
+
+    if progress_preview is not None:
+        update['progress_preview'] = progress_preview
+
+    return json.dumps(update)
+
+
+def _on_test_clicked():
+    id_ = 20
+
+    DownloadState.get_instance().is_download_cancelled = False
+
+    yield _build_update_dict(record_id=id_,
+                             state=_STATE_IN_PROGRESS,
+                             result_title='Here is some result',
+                             result_text=['result 1', 'result 2', 'result 3'],
+                             progress_info_left='left',
+                             progress_info_center='center',
+                             progress_info_right='right',
+                             progress_preview_info_left='left preview',
+                             progress_preview_info_center='center preview',
+                             progress_preview_info_right='right preview',
+                             progress=0,
+                             progress_preview=0)
+    for i in range(1, 101):
+        print(DownloadState.get_instance().is_download_cancelled)
+        if DownloadState.get_instance().is_download_cancelled:
+            yield _build_update_dict(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
+                                     result_text='Download has been canceled by user.')
+            return
+        yield _build_update_dict(record_id=id_, progress=i)
+        time.sleep(0.5)
+
+    for i in range(1, 101):
+        print(DownloadState.get_instance().is_download_cancelled)
+        if DownloadState.get_instance().is_download_cancelled:
+            yield _build_update_dict(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
+                                     result_text='Download has been canceled by user.')
+            return
+        yield _build_update_dict(record_id=id_, progress_preview=i)
+        time.sleep(0.2)
+
+    yield _build_update_dict(record_id=id_, state=_STATE_COMPLETED)
+    return _build_update_dict(record_id=id_, state=_STATE_COMPLETED)
+
+
+def _on_cancel_click():
+    print('Cancel clicked')
+    DownloadState.get_instance().is_download_cancelled = True
+
+
 def download_ui_block():
     with gr.Blocks():
         id_box = gr.Textbox()
-        gr.Markdown('## Downloading')
-        load_button = gr.Button('Download')
-        dummy_widget = gr.HTML('<br><br><br>')
-        progress_box = gr.Textbox()
-        progress_widget = gr.HTML(f"""
-                       <div class="mo-progress" style="height: 20px;">
-                           <div id="progress-moid-x" class="mo-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                       </div>
-                       """, elem_id='html-progress-buddy')
+        gr.Markdown('## Downloads')
+        with gr.Row():
+            gr.Markdown()
+            start_button = gr.Button('Start download')
+            gr.Markdown()
+        html_widget = gr.HTML()
+        test_box = gr.Textbox()
+        test_button = gr.Button('Test')
+        cancel_button = gr.Button('Cancel')
 
-        load_button.click(_download_file, outputs=progress_box)
-        progress_box.change(None, inputs=progress_box, _js='progressBuddy')
+    id_box.change(_on_id_change, inputs=id_box, outputs=[html_widget, start_button])
+
+    test_box.change(fn=None, inputs=test_box, _js='handleProgressUpdates')
+    test_button.click(_on_test_clicked, outputs=test_box)
+    cancel_button.click(_on_cancel_click)
 
     return id_box

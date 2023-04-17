@@ -5,7 +5,7 @@ from scripts.mo.environment import env
 
 
 def _on_id_change(record_id):
-    record = env.storage.fetch_data_by_id(record_id)
+    record = env.storage.get_record_by_id(record_id)
     return [
         gr.HTML.update(value=styled.alert_danger(f'Are you sure you what to remove "{record.name}"?')),
         gr.Button.update(visible=True),

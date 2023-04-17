@@ -8,6 +8,7 @@ _DOWNLOAD = 'download'
 
 _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
+_NODE_GROUP = 'group'
 
 
 def navigate_home() -> str:
@@ -45,10 +46,18 @@ def navigate_remove(record_id) -> str:
     return json.dumps(nav_dict)
 
 
-def navigate_download(record_id) -> str:
+def navigate_download_single(record_id) -> str:
     nav_dict = {
         _NODE_SCREEN: _DOWNLOAD,
         _NODE_RECORD_ID: record_id
+    }
+    return json.dumps(nav_dict)
+
+
+def navigate_download_group(group) -> str:
+    nav_dict = {
+        _NODE_SCREEN: _DOWNLOAD,
+        _NODE_GROUP: group
     }
     return json.dumps(nav_dict)
 
@@ -64,7 +73,7 @@ def get_nav_state(json_nav) -> dict:
         'details_record_id': '',
         'edit_record_id': '',
         'remove_record_id': '',
-        'download_record_id': ''
+        'download_info': ''
     }
 
     if nav_dict.get(_NODE_SCREEN) is None:
@@ -85,6 +94,30 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _DOWNLOAD:
             state['is_download_visible'] = True
-            state['download_record_id'] = nav_dict[_NODE_RECORD_ID]
+            download_dict = {}
+
+            if nav_dict.get(_NODE_RECORD_ID) is not None:
+                download_dict[_NODE_RECORD_ID] = nav_dict[_NODE_RECORD_ID]
+
+            if nav_dict.get(_NODE_GROUP) is not None:
+                download_dict[_NODE_GROUP] = nav_dict[_NODE_GROUP]
+
+            state['download_info'] = json.dumps(download_dict)
 
     return state
+
+
+def get_download_record_id(data):
+    download_dict = json.loads(data)
+    if download_dict.get(_NODE_RECORD_ID) is None:
+        return None
+    else:
+        return download_dict[_NODE_RECORD_ID]
+
+
+def get_download_group(data):
+    download_dict = json.loads(data)
+    if download_dict.get(_NODE_GROUP) is None:
+        return None
+    else:
+        return download_dict[_NODE_GROUP]

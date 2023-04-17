@@ -107,7 +107,7 @@ class SQLiteStorage(Storage):
         cursor.execute('INSERT INTO Version VALUES (3)')
         self._connection().commit()
 
-    def fetch_data(self) -> list[Record]:
+    def get_all_records(self) -> list[Record]:
         cursor = self._connection().cursor()
         cursor.execute('SELECT * FROM Record')
         rows = cursor.fetchall()
@@ -116,11 +116,20 @@ class SQLiteStorage(Storage):
             result.append(map_row_to_record(row))
         return result
 
-    def fetch_data_by_id(self, id_) -> Record:
+    def get_record_by_id(self, id_) -> Record:
         cursor = self._connection().cursor()
         cursor.execute('SELECT * FROM Record WHERE id=?', (id_,))
         row = cursor.fetchone()
         return None if row is None else map_row_to_record(row)
+
+    def get_records_by_group(self, group: str) -> list[Record]:
+        cursor = self._connection().cursor()
+        cursor.execute(f"SELECT * FROM Record WHERE LOWER(groups) LIKE '%{group}%'")
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.append(map_row_to_record(row))
+        return result
 
     def add_record(self, record: Record):
         cursor = self._connection().cursor()

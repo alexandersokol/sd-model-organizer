@@ -6,7 +6,7 @@ from scripts.mo.environment import env
 
 def on_id_changed(record_id) -> str:
     if record_id is not None and record_id:
-        data = env.storage.fetch_data_by_id(record_id)
+        data = env.storage.get_record_by_id(record_id)
         return styled.record_details(data)
     else:
         return 'No record id.'

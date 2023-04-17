@@ -4,12 +4,16 @@
     --mo-alert-primary-border-color: #b8daff;
 
     --mo-alert-secondary-text-color: #383d41;
-    --mo-alert-secondary-background-color: #e2e3e5;
+    --mo-alert-secondary-background-color: #efefef;
     --mo-alert-secondary-border-color: #d6d8db;
 
     --mo-alert-success-text-color: #155724;
     --mo-alert-success-background-color: #d4edda;
     --mo-alert-success-border-color: #c3e6cb;
+
+    --mo-alert-info-text-color: #0c5460;
+    --mo-alert-info-background-color: #d1ecf1;
+    --mo-alert-info-border-color: #bee5eb;
 
     --mo-alert-danger-text-color: #721c24;
     --mo-alert-danger-background-color: #f8d7da;

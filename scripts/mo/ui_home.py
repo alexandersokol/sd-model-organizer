@@ -5,7 +5,7 @@ from scripts.mo.environment import env, LAYOUT_CARDS
 
 
 def prepare_data() -> str:
-    data = env.storage.fetch_data()
+    data = env.storage.get_all_records()
 
     if env.mo_layout() == LAYOUT_CARDS:
         return styled.records_cards(data)

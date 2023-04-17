@@ -86,7 +86,7 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
 
 def _on_id_changed(record_id):
     if record_id is not None and record_id:
-        record = env.storage.fetch_data_by_id(record_id)
+        record = env.storage.get_record_by_id(record_id)
     else:
         record = None
 
