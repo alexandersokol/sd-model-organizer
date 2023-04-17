@@ -7,14 +7,35 @@
 }
 
 /* Alerts */
-.mo-alert-danger {
+.mo-alert {
     position: relative;
     padding: .75rem 1.25rem;
     margin-bottom: 1rem;
     border-radius: .25rem;
-    color: var(--mo-alarm-text-color) !important;
-    background-color: var(--mo-alarm-background-color) !important;
-    border-color: var(--mo-alarm-border-color) !important;
+}
+
+.mo-alert-primary {
+    color: var(--mo-alert-primary-text-color) !important;
+    background-color: var(--mo-alert-primary-background-color) !important;
+    border-color: var(--mo-alert-primary-border-color) !important;
+}
+
+.mo-alert-secondary {
+    color: var(--mo-alert-secondary-text-color) !important;
+    background-color: var(--mo-alert-secondary-background-color) !important;
+    border-color: var(--mo-alert-secondary-border-color) !important;
+}
+
+.mo-alert-success {
+    color: var(--mo-alert-success-text-color) !important;
+    background-color: var(--mo-alert-success-background-color) !important;
+    border-color: var(--mo-alert-success-border-color) !important;
+}
+
+.mo-alert-danger {
+    color: var(--mo-alert-danger-text-color) !important;
+    background-color: var(--mo-alert-danger-background-color) !important;
+    border-color: var(--mo-alert-danger-border-color) !important;
 }
 
 /* Containers */
@@ -494,10 +515,43 @@
 }
 
 @keyframes progress-bar-stripes {
-  0% {
-    background-position: 1rem 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
+    0% {
+        background-position: 1rem 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
+
+/* Downloads container */
+.mo-downloads-container {
+    width: 50%;
+    margin-right: auto;
+    margin-left: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.mo-downloads-card {
+    border: 1px solid var(--mo-card-border-color);
+    border-radius: 8px;
+    padding: 16px;
+    width: 100%;
+    position: relative;
+}
+
+mo-downloads-card-completed {
+
+}
+
+.mo-downloads-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mo-download-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
 }

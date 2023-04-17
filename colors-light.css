@@ -1,7 +1,19 @@
 :root {
-    --mo-alarm-text-color: #721c24;
-    --mo-alarm-background-color: #f8d7da;
-    --mo-alarm-border-color: #f5c6cb;
+    --mo-alert-primary-text-color: #004085;
+    --mo-alert-primary-background-color: #cce5ff;
+    --mo-alert-primary-border-color: #b8daff;
+
+    --mo-alert-secondary-text-color: #383d41;
+    --mo-alert-secondary-background-color: #e2e3e5;
+    --mo-alert-secondary-border-color: #d6d8db;
+
+    --mo-alert-success-text-color: #155724;
+    --mo-alert-success-background-color: #d4edda;
+    --mo-alert-success-border-color: #c3e6cb;
+
+    --mo-alert-danger-text-color: #721c24;
+    --mo-alert-danger-background-color: #f8d7da;
+    --mo-alert-danger-border-color: #f5c6cb;
 
     --mo-table-header-background-color: #f2f2f2;
     --mo-table-border-color: #ddd;

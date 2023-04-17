@@ -13,7 +13,7 @@ def alert_danger(value) -> str:
         text = "<br>".join(value)
     else:
         text = value
-    return f'<div class="mo-alert-danger">{text}</div>'
+    return f'<div class="mo-alert mo-alert-danger">{text}</div>'
 
 
 def _limit_description(text):
