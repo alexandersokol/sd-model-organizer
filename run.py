@@ -1,24 +1,17 @@
-import os
 import random
-
-import gdown
-import requests
 import string
-from urllib.parse import urlparse
-from mega import Mega
+import time
 
 from loremipsum import generate_paragraphs, generate_sentence
 
+from scripts.mo.download import fetch_filename
 from scripts.mo.environment import env
 from scripts.mo.init_storage import initialize_storage
 from scripts.mo.models import Record, ModelType
-from scripts.mo.sqlite_storage import SQLiteStorage
-
-SETTINGS_FILE = 'settings.txt'
 
 
 def read_settings():
-    with open(SETTINGS_FILE) as f:
+    with open('settings.txt') as f:
         lines = f.readlines()
 
     result = {}
@@ -89,42 +82,29 @@ def generate_random_records(count: int):
 #     storage.add_record(record)
 #     print(record)
 
-url = 'https://civitai.com/api/download/models/11745'
-response = requests.get(url, headers={'Range': 'bytes=0-1'})
 
-# if response.status_code == 200 or response.status_code == 206:
-#     # Extract filename from Content-Disposition header
-#     if 'Content-Disposition' in response.headers:
-#         content_disp = response.headers['Content-Disposition']
-#         filename = content_disp.split(';')[1].split('=')[1].strip('\"')
-#     else:
-#         # If Content-Disposition header not present, extract filename from URL
-#         filename = os.path.basename(urlparse(url).path)
-#     print(f"Filename: {filename}")
-# else:
-#     print("Error: could not download file.")
-
-# g_url = 'https://drive.google.com/file/d/1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ/view?usp=share_link'
-# os.chdir('/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp')
-# gdown.download(url=g_url, quiet=False, fuzzy=True)
-
-# m_url = 'https://mega.nz/file/Z5cy1L7J#YK9tSVGdfipONiHNjJU8ju1e3ahnUsouFIVFKLRWVg4'
-# mega = Mega()
-# m = mega.login()
-# m.download_url(m_url, dest_path='/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp')
+# initialize_storage()
+#
+# storage = SQLiteStorage()
+# records = storage.get_records_by_group('first')
 
 
-initialize_storage()
+urls = [
+    'https://drive.google.com/file/d/1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ/view?usp=share_link',
+    'https://drive.google.com/uc?id=1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ',
+    'https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=sharing',
+    'https://civitai.com/api/download/models/7425',
+    'https://civitai.com/api/download/models/5057',
+    'https://huggingface.co/Linaqruf/anything-v3.0/resolve/main/anything-v3-fp32-pruned.safetensors',
+    'https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt',
+    'https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=share_link',
+    'https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=share_link',
+    'https://mega.nz/file/sg9hwJKA#Xs0oDDS81Qlo0OdVxc8aAiweZq5ANrD5YG-9CKn-QyI',
+    'https://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I'
+]
 
-storage = SQLiteStorage()
-records = storage.get_records_by_group('first')
+for url in urls:
+    print(f'{fetch_filename(url)} : {url}')
+    # time.sleep(2)
 
-print('----')
-counter = 1
-for record in records:
-    print(f'{counter}. {record.groups}')
-    counter += 1
-print('----')
-
-print(storage.get_available_groups())
 print(f'Done. ')

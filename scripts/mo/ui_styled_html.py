@@ -16,6 +16,30 @@ def alert_danger(value) -> str:
     return f'<div class="mo-alert mo-alert-danger">{text}</div>'
 
 
+def alert_primary(value) -> str:
+    if isinstance(value, list):
+        text = "<br>".join(value)
+    else:
+        text = value
+    return f'<div class="mo-alert mo-alert-primary">{text}</div>'
+
+
+def alert_success(value) -> str:
+    if isinstance(value, list):
+        text = "<br>".join(value)
+    else:
+        text = value
+    return f'<div class="mo-alert mo-alert-success">{text}</div>'
+
+
+def alert_warning(value) -> str:
+    if isinstance(value, list):
+        text = "<br>".join(value)
+    else:
+        text = value
+    return f'<div class="mo-alert mo-alert-warning">{text}</div>'
+
+
 def _limit_description(text):
     if text and len(text) > 600:
         return text[:600] + '...'

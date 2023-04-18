@@ -15,6 +15,10 @@
     --mo-alert-info-background-color: #d1ecf1;
     --mo-alert-info-border-color: #bee5eb;
 
+    --mo-alert-warning-text-color: #856404;;
+    --mo-alert-warning-background-color: #fff3cd;
+    --mo-alert-warning-border-color: #ffeeba;
+
     --mo-alert-danger-text-color: #721c24;
     --mo-alert-danger-background-color: #f8d7da;
     --mo-alert-danger-border-color: #f5c6cb;

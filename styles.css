@@ -70,6 +70,20 @@
     color: var(--mo-alert-info-text-color) !important;
 }
 
+.mo-alert-warning {
+    color: var(--mo-alert-warning-text-color) !important;
+    background-color: var(--mo-alert-warning-background-color) !important;
+    border-color: var(--mo-alert-warning-border-color) !important;
+}
+
+.mo-alert-warning h2 {
+    color: var(--mo-alert-warning-text-color) !important;
+}
+
+.mo-alert-warning p {
+    color: var(--mo-alert-warning-text-color) !important;
+}
+
 .mo-alert-danger {
     color: var(--mo-alert-danger-text-color) !important;
     background-color: var(--mo-alert-danger-background-color) !important;

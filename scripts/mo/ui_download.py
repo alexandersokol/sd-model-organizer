@@ -9,8 +9,8 @@ from tqdm import tqdm
 
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
+from scripts.mo.download import DownloadState, clean_up_temp_dir
 from scripts.mo.environment import env
-from scripts.mo.download_state import DownloadState
 
 
 def _download_file_mega():
@@ -160,27 +160,10 @@ _STATE_EXISTS = 'Exists'
 _STATE_ERROR = 'Error'
 
 
-def _on_id_change(data):
-    records = []
-    record_id = nav.get_download_record_id(data)
-    group = nav.get_download_group(data)
-
-    if record_id is not None:
-        records.append(env.storage.get_record_by_id(record_id))
-
-    if group is not None:
-        records.extend(env.storage.get_records_by_group(group))
-
-    return [
-        gr.HTML.update(value=styled.download_cards(records)),
-        gr.Button.update(visible=True)
-    ]
-
-
-def _build_update_dict(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
-                       progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
-                       progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
-                       progress_preview=None) -> str:
+def _build_progress_update(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
+                           progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
+                           progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
+                           progress_preview=None) -> str:
     update = {'id': record_id}
 
     if state is not None:
@@ -219,43 +202,95 @@ def _build_update_dict(record_id, state=None, result_text=None, result_title=Non
     return json.dumps(update)
 
 
+def _build_update(progress_update=None, status_message=None, is_start_button_visible=None,
+                  is_cancel_button_visible=None,
+                  is_back_button_visible=None):
+    return [
+        gr.HTML.update() if status_message is None else gr.HTML.update(value=status_message, visible=True),
+        gr.Button.update() if is_start_button_visible is None else gr.Button.update(visible=is_start_button_visible),
+        gr.Button.update() if is_cancel_button_visible is None else gr.Button.update(visible=is_cancel_button_visible),
+        gr.Button.update() if is_back_button_visible is None else gr.Button.update(visible=is_back_button_visible),
+        gr.Textbox.update() if progress_update is None else gr.Textbox.update(value=progress_update)
+    ]
+
+
+def _on_start_click(records):
+    DownloadState.get_instance().is_download_cancelled = False
+
+    yield _build_update(
+        status_message=styled.alert_danger('Download finished with errors'),
+        is_start_button_visible=False,
+        is_cancel_button_visible=True,
+        is_back_button_visible=False,
+    )
+
+    for record in records:
+        pass
+
+    return upd
+
+
+def _download_record(record):
+    clean_up_temp_dir()
+
+
+    pass
+
+
+def _on_id_change(data):
+    records = []
+    record_id = nav.get_download_record_id(data)
+    group = nav.get_download_group(data)
+
+    if record_id is not None:
+        records.append(env.storage.get_record_by_id(record_id))
+
+    if group is not None:
+        records.extend(env.storage.get_records_by_group(group))
+
+    return [
+        gr.HTML.update(value=styled.download_cards(records)),
+        gr.State.update(value=records)
+    ]
+
+
 def _on_test_clicked():
     id_ = 20
 
     DownloadState.get_instance().is_download_cancelled = False
 
-    yield _build_update_dict(record_id=id_,
-                             state=_STATE_IN_PROGRESS,
-                             result_title='Here is some result',
-                             result_text=['result 1', 'result 2', 'result 3'],
-                             progress_info_left='left',
-                             progress_info_center='center',
-                             progress_info_right='right',
-                             progress_preview_info_left='left preview',
-                             progress_preview_info_center='center preview',
-                             progress_preview_info_right='right preview',
-                             progress=0,
-                             progress_preview=0)
+    yield _build_progress_update(record_id=id_,
+                                 state=_STATE_IN_PROGRESS,
+                                 result_title='Here is some result',
+                                 result_text=['result 1', 'result 2', 'result 3'],
+                                 progress_info_left='left',
+                                 progress_info_center='center',
+                                 progress_info_right='right',
+                                 progress_preview_info_left='left preview',
+                                 progress_preview_info_center='center preview',
+                                 progress_preview_info_right='right preview',
+                                 progress=0,
+                                 progress_preview=0)
     for i in range(1, 101):
         print(DownloadState.get_instance().is_download_cancelled)
         if DownloadState.get_instance().is_download_cancelled:
-            yield _build_update_dict(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
-                                     result_text='Download has been canceled by user.')
+            yield _build_progress_update(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
+                                         result_text='Download has been canceled by user.')
             return
-        yield _build_update_dict(record_id=id_, progress=i)
+        yield _build_progress_update(record_id=id_, progress=i)
         time.sleep(0.5)
 
     for i in range(1, 101):
         print(DownloadState.get_instance().is_download_cancelled)
         if DownloadState.get_instance().is_download_cancelled:
-            yield _build_update_dict(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
-                                     result_text='Download has been canceled by user.')
+            yield _build_progress_update(record_id=id_, state=_STATE_ERROR, result_title='Download canceled',
+                                         result_text='Download has been canceled by user.')
             return
-        yield _build_update_dict(record_id=id_, progress_preview=i)
+        yield _build_progress_update(record_id=id_, progress_preview=i)
         time.sleep(0.2)
 
-    yield _build_update_dict(record_id=id_, state=_STATE_COMPLETED)
-    return _build_update_dict(record_id=id_, state=_STATE_COMPLETED)
+    yield _build_progress_update(record_id=id_, state=_STATE_COMPLETED)
+    return _build_progress_update(record_id=id_, state=_STATE_COMPLETED)
 
 
 def _on_cancel_click():
@@ -265,21 +300,26 @@ def _on_cancel_click():
 
 def download_ui_block():
     with gr.Blocks():
-        id_box = gr.Textbox()
+        download_state = gr.State()
+        id_box = gr.Textbox()  # TODO Hide
+        download_progress_box = gr.Textbox()  # TODO Hide
         gr.Markdown('## Downloads')
+        status_message_widget = gr.HTML(visible=False)
         with gr.Row():
             gr.Markdown()
-            start_button = gr.Button('Start download')
+            back_button = gr.Button('Back', visible=True)
+            start_button = gr.Button('Start Download', visible=True)
+            cancel_button = gr.Button('Cancel Download', visible=False)
             gr.Markdown()
+        gr.HTML('</hr>')
         html_widget = gr.HTML()
-        test_box = gr.Textbox()
-        test_button = gr.Button('Test')
-        cancel_button = gr.Button('Cancel')
 
-    id_box.change(_on_id_change, inputs=id_box, outputs=[html_widget, start_button])
+    id_box.change(_on_id_change, inputs=id_box, outputs=[html_widget, download_state])
+    download_progress_box.change(fn=None, inputs=download_progress_box, _js='handleProgressUpdates')
 
-    test_box.change(fn=None, inputs=test_box, _js='handleProgressUpdates')
-    test_button.click(_on_test_clicked, outputs=test_box)
-    cancel_button.click(_on_cancel_click)
+    start_button.click(_on_start_click, inputs=download_state,
+                       outputs=[status_message_widget, start_button, cancel_button, back_button, download_progress_box])
+
+    cancel_button.click(_on_cancel_click)  # TODO on cancel clicked
 
     return id_box
