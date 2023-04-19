@@ -1,6 +1,7 @@
 import os
 import re
 import threading
+import traceback
 
 import requests
 from urllib.parse import urlparse
@@ -37,6 +38,10 @@ def _verify_filename(filename):
         return False
 
 
+def temp_dir():
+    return os.path.join(env.mo_script_dir, 'tmp')
+
+
 def fetch_filename(url: str):
     try:
         url_filename = os.path.basename(urlparse(url).path)
@@ -51,16 +56,12 @@ def fetch_filename(url: str):
             return odwn.fetch_filename(url)
 
     except Exception as ex:
-        print(ex)
+        print(type(ex).__name__, str(ex))
         return None
 
 
-def download():
-    pass
-
-
-def temp_dir():
-    return os.path.join(env.mo_script_dir, 'tmp')
+def download_from_url(url: str, destination_file: str):
+    yield from odwn.download_from_url(url, destination_file, temp_dir())
 
 
 def clean_up_temp_dir():

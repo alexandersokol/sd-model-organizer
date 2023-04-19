@@ -200,7 +200,7 @@ class SQLiteStorage(Storage):
                     negative_prompts=?,
                     model_hash=?,
                     md5_hash=?,
-                    groups=?,
+                    groups=?
                 WHERE id=?
             """, data
         )

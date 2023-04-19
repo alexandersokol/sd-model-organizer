@@ -72,7 +72,7 @@ def accepts_url(url) -> bool:
 
 
 def download(url):
-    # g_url = 'https://drive.google.com/file/d/1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ/view?usp=share_link'
+    g_url = 'https://drive.google.com/file/d/1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ/view?usp=share_link'
     # os.chdir('/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp')
     gdown.download(url=g_url, quiet=False, fuzzy=True)
     pass

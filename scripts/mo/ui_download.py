@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.download import DownloadState, clean_up_temp_dir
+import scripts.mo.download as dwn
+from scripts.mo.download import DownloadState
 from scripts.mo.environment import env
 
 
@@ -160,6 +161,42 @@ _STATE_EXISTS = 'Exists'
 _STATE_ERROR = 'Error'
 
 
+def _format_percentage(part, total):
+    return int((part / total) * 100)
+
+
+def _format_bytes(bytes):
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    i = 0
+    while bytes >= 1000 and i < len(units) - 1:
+        bytes /= 1000
+        i += 1
+    return f"{bytes:.2f} {units[i]}"
+
+
+def _format_time(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 0:
+        return f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
+    else:
+        return f"{int(m):02d}:{int(s):02d}"
+
+
+def _format_download_speed(speed):
+    if speed is None:
+        return 'Undefined'
+
+    units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
+    unit_index = 0
+
+    while speed >= 1000 and unit_index < len(units) - 1:
+        speed /= 1000.0
+        unit_index += 1
+
+    return '{:.2f}{}'.format(speed, units[unit_index])
+
+
 def _build_progress_update(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
                            progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
                            progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
@@ -205,39 +242,78 @@ def _build_progress_update(record_id, state=None, result_text=None, result_title
 def _build_update(progress_update=None, status_message=None, is_start_button_visible=None,
                   is_cancel_button_visible=None,
                   is_back_button_visible=None):
-    return [
+    upd = [
         gr.HTML.update() if status_message is None else gr.HTML.update(value=status_message, visible=True),
         gr.Button.update() if is_start_button_visible is None else gr.Button.update(visible=is_start_button_visible),
         gr.Button.update() if is_cancel_button_visible is None else gr.Button.update(visible=is_cancel_button_visible),
         gr.Button.update() if is_back_button_visible is None else gr.Button.update(visible=is_back_button_visible),
         gr.Textbox.update() if progress_update is None else gr.Textbox.update(value=progress_update)
     ]
+    return upd
 
 
 def _on_start_click(records):
     DownloadState.get_instance().is_download_cancelled = False
 
     yield _build_update(
-        status_message=styled.alert_danger('Download finished with errors'),
+        status_message=styled.alert_primary('Download in progress.'),
         is_start_button_visible=False,
         is_cancel_button_visible=True,
         is_back_button_visible=False,
     )
 
     for record in records:
-        pass
+        yield from _download_record(record)
 
-    return upd
+    return _build_update()
 
 
 def _download_record(record):
-    clean_up_temp_dir()
+    dwn.clean_up_temp_dir()
 
+    filename = dwn.fetch_filename(record.url)
+    preview_filename = dwn.fetch_filename(record.preview_url) if record.preview_url else ''
 
-    pass
+    yield _build_update(
+        progress_update=_build_progress_update(
+            record_id=record.id_,
+            state=_STATE_IN_PROGRESS,
+            progress_info_left=filename,
+            progress_preview_info_left=preview_filename
+        )
+    )
+    previous_progress = -1
+    print(f'filename= {filename}')
+    for upd in dwn.download_from_url(record.download_url, 'filename.png'):
+        progress = _format_percentage(upd['bytes_ready'], upd['bytes_total'])
+        if progress != previous_progress:
+            previous_progress = progress
+            bytes_ready_str = _format_bytes(upd['bytes_ready'])
+            bytes_total_str = _format_bytes(upd['bytes_total'])
+            speed_str = _format_download_speed(upd['speed_rate'])
+            time_str = _format_time(upd['elapsed'])
+
+            yield _build_update(
+                progress_update=_build_progress_update(
+                    record_id=record.id_,
+                    progress=_format_percentage(upd['bytes_ready'], upd['bytes_total']),
+                    progress_info_center=f'{bytes_ready_str}/{bytes_total_str}',
+                    progress_info_right=f'{speed_str}   {time_str}'
+                )
+            )
+
+    yield _build_update(
+        progress_update=_build_progress_update(
+            record_id=record.id_,
+            state=_STATE_COMPLETED,
+            progress_info_left=filename,
+            progress_preview_info_left=preview_filename
+        )
+    )
 
 
 def _on_id_change(data):
+    print('download id data changed = ', data)
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
@@ -250,7 +326,7 @@ def _on_id_change(data):
 
     return [
         gr.HTML.update(value=styled.download_cards(records)),
-        gr.State.update(value=records)
+        records
     ]
 
 
@@ -300,7 +376,7 @@ def _on_cancel_click():
 
 def download_ui_block():
     with gr.Blocks():
-        download_state = gr.State()
+        download_state = gr.State(value=[])
         id_box = gr.Textbox()  # TODO Hide
         download_progress_box = gr.Textbox()  # TODO Hide
         gr.Markdown('## Downloads')

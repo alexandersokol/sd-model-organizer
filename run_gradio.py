@@ -1,3 +1,5 @@
+import time
+
 import gradio as gr
 
 from scripts.mo.environment import *
@@ -132,10 +134,24 @@ def settings_block():
     button.click(save_click)
 
 
+def generator_outer():
+    numbers = [1, 2, 3, 4, 5]
+    yield 'start'
+    for number in numbers:
+        yield from generator_inner(number)
+    yield 'end'
+
+
+def generator_inner(number):
+    time.sleep(1)
+    yield f'my number is {number}'
+
+
 def testing_block():
     with gr.Column():
-        gr.Textbox("Tab block for feature testing", interactive=False)
-
+        output_widget = gr.Textbox("Tab block for feature testing", interactive=False)
+        button = gr.Button("Start")
+    button.click(generator_outer, outputs=output_widget)
 
 with gr.Blocks() as demo:
     with gr.Tab("Model Organizer"):

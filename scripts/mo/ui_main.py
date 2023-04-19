@@ -82,7 +82,7 @@ def on_add_click():
 
 
 def on_edit_click(previous_state):
-    return nav.navigate_edit(9)
+    return nav.navigate_edit(20)
 
 
 def on_remove_click():
@@ -113,7 +113,7 @@ def main_ui_block():
             home_button = gr.Button('Content List')
             details_button = gr.Button('Details')
             add_button = gr.Button('Add')
-            edit_button = gr.Button('Edit (9)')
+            edit_button = gr.Button('Edit (20)')
             remove_button = gr.Button('Remove (19)')
             download_button = gr.Button('Download (20)')
             download_group_button = gr.Button('Download ("First")')
