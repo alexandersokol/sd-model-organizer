@@ -1,5 +1,6 @@
 from typing import Callable
 
+from scripts.mo.models import ModelType
 from scripts.mo.storage import Storage
 
 STORAGE_SQLITE = 'SQLite'
@@ -31,6 +32,21 @@ class Environment:
 
     def is_storage_has_errors(self) -> bool:
         return hasattr(self, 'storage_error')
+
+    def get_model_path(self, model_type: ModelType):
+        if model_type == ModelType.CHECKPOINT:
+            path = self.mo_model_path()
+        elif model_type == ModelType.VAE:
+            path = self.mo_vae_path()
+        elif model_type == ModelType.LORA:
+            path = self.mo_lora_path()
+        elif model_type.HYPER_NETWORK:
+            path = self.mo_hypernetworks_path()
+        elif model_type.EMBEDDING:
+            path = self.mo_embeddings_path()
+        else:
+            return None
+        return path.strip()
 
 
 env = Environment()

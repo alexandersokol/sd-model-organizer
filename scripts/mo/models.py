@@ -29,11 +29,15 @@ class Record:
                  description: str = '',
                  positive_prompts: str = '',
                  negative_prompts: str = '',
-                 model_hash: str = '',
+                 sha256_hash: str = '',
                  md5_hash: str = '',
                  location: str = '',
                  created_at: float = 0,
-                 groups: list[str] = []):
+                 groups=None,
+                 subdir: str = ''):
+        if groups is None:
+            groups = []
+
         self.id_ = id_
         self.name = name
         self.model_type = model_type
@@ -45,11 +49,12 @@ class Record:
         self.description = description
         self.positive_prompts = positive_prompts
         self.negative_prompts = negative_prompts
-        self.model_hash = model_hash
+        self.sha256_hash = sha256_hash
         self.md5_hash = md5_hash
         self.location = location
         self.created_at = created_at
         self.groups = groups
+        self.subdir = subdir
 
     def __str__(self):
         return f'id="{self.id_}", ' \
@@ -63,8 +68,9 @@ class Record:
                f'description="{self.description}", ' \
                f'positive_prompts="{self.positive_prompts}", ' \
                f'negative_prompts="{self.negative_prompts}", ' \
-               f'model_hash="{self.model_hash}", ' \
+               f'sha256_hash="{self.sha256_hash}", ' \
                f'md5_hash="{self.md5_hash}", ' \
                f'location="{self.location}", ' \
                f'created_at="{self.created_at}", ' \
-               f'groups="{self.groups}".'
+               f'groups="{self.groups}", ' \
+               f'subdir="{self.subdir}".'

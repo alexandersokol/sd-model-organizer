@@ -1,9 +1,10 @@
+import os.path
 import random
 import string
+from urllib.parse import urlparse
 
 from loremipsum import generate_paragraphs, generate_sentence
 
-import scripts.mo.download as dwn
 from scripts.mo.environment import env
 from scripts.mo.init_storage import initialize_storage
 from scripts.mo.models import Record, ModelType
@@ -99,49 +100,8 @@ urls = [
     'https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=share_link',
     'https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=share_link',
     'https://mega.nz/file/sg9hwJKA#Xs0oDDS81Qlo0OdVxc8aAiweZq5ANrD5YG-9CKn-QyI',
-    'https://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I'
+    'https://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I',
+    'ftp://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I'
 ]
-
-
-def format_bytes(bytes):
-    units = ['B', 'KB', 'MB', 'GB', 'TB']
-    i = 0
-    while bytes >= 1000 and i < len(units) - 1:
-        bytes /= 1000
-        i += 1
-    return f"{bytes:.2f} {units[i]}"
-
-
-def format_time(seconds):
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    if h > 0:
-        return f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
-    else:
-        return f"{int(m):02d}:{int(s):02d}"
-
-
-def format_download_speed(speed):
-    if speed is None:
-        return 'Undefined'
-
-    units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
-    unit_index = 0
-
-    while speed >= 1000 and unit_index < len(units) - 1:
-        speed /= 1000.0
-        unit_index += 1
-
-    return '{:.2f}{}'.format(speed, units[unit_index])
-
-
-du = 'https://huggingface.co/Linaqruf/anything-v3.0/resolve/main/vae/diffusion_pytorch_model.bin'
-df = 'diffusion_pytorch_model.bin'
-for update in dwn.download_from_url(du, df):
-    bytes_ready = update['bytes_ready']
-    bytes_total = update['bytes_total']
-    speed_rate = update['speed_rate']
-    elapsed = update['elapsed']
-    print(f'{format_bytes(bytes_ready)}, {format_bytes(bytes_total)}, {format_download_speed(speed_rate)}, {format_time(elapsed)}')
 
 print(f'Done. ')
