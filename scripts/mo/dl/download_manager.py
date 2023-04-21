@@ -118,6 +118,7 @@ class DownloadManager:
         self._stop_event.set()
 
         self._state = {}
+        self.latest_state = {}
         self._thread = None
 
         self._downloaders: list[Downloader] = [
@@ -161,19 +162,17 @@ class DownloadManager:
         self._stop_event.set()
         self._thread.join()
 
+    def _state_update(self, general_state=None, exception=None, record_id=None, record_state=None):
+
+        pass
+
     def _download_loop(self, records: list[Record]):
         try:
             for record in records:
                 for upd in self._download_record(record):
-                    # print('[STATE]: ', self._state)
-                    # print('[UPDATE]: ', upd)
-                    # print(f'[{record.id_}]: ', self._state['records'].get(record.id_))
                     if self._state['records'].get(record.id_) is None:
                         self._state['records'][record.id_] = upd
                     else:
-                        # if len(self._state['records'][record.id_]) == 0:
-                        #     self._state['records'][record.id_].append(upd)
-                        # else:
                         self._state['records'][record.id_].update(upd)
 
                     if self._stop_event.is_set():
