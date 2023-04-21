@@ -2,6 +2,7 @@ import threading
 from urllib.parse import urlparse
 
 from scripts.mo.dl.downloader import Downloader
+from scripts.mo.environment import logger
 
 
 class MegaDownloader(Downloader):
@@ -16,7 +17,7 @@ class MegaDownloader(Downloader):
                 import mega
                 return True
             except ImportError:
-                print("mega.py package is required to download ", url)
+                logger.warning("mega.py package is required for ", url)
 
         return False
 

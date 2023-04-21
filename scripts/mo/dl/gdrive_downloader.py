@@ -37,6 +37,7 @@ import tqdm
 from bs4 import BeautifulSoup
 
 from scripts.mo.dl.downloader import Downloader
+from scripts.mo.environment import logger
 
 CHUNK_SIZE = 512 * 1024  # 512KB
 home = osp.expanduser("~")
@@ -248,18 +249,12 @@ def _download(
                 existing_tmp_files.append(osp.join(osp.dirname(output), file))
         if resume and existing_tmp_files:
             if len(existing_tmp_files) != 1:
-                print(
-                    "There are multiple temporary files to resume:",
-                    file=sys.stderr,
-                )
-                print("\n")
+                logger.warning("There are multiple temporary files to resume:")
+                logger.warning("\n")
                 for file in existing_tmp_files:
-                    print("\t", file, file=sys.stderr)
-                print("\n")
-                print(
-                    "Please remove them except one to resume downloading.",
-                    file=sys.stderr,
-                )
+                    logger.warning(f"\t{file}")
+                logger.warning("\n")
+                logger.warning("Please remove them except one to resume downloading.")
                 return
             tmp_file = existing_tmp_files[0]
         else:
@@ -286,19 +281,15 @@ def _download(
     if stop_event.is_set():
         return
 
-    print("Downloading...", file=sys.stderr)
+    logger.info("Downloading...")
     if resume:
-        print("Resume:", tmp_file, file=sys.stderr)
+        logger.info(f"Resume: {tmp_file}")
     if url_origin != url:
-        print("From (uriginal):", url_origin, file=sys.stderr)
-        print("From (redirected):", url, file=sys.stderr)
+        logger.info(f"From (uriginal): {url_origin}")
+        logger.info(f"From (redirected): {url}")
     else:
-        print("From:", url, file=sys.stderr)
-    print(
-        "To:",
-        osp.abspath(output) if output_is_path else output,
-        file=sys.stderr,
-    )
+        logger.info(f"From: {url}")
+    logger.info(f"To: {osp.abspath(output) if output_is_path else output}")
 
     if stop_event.is_set():
         return
@@ -364,7 +355,7 @@ class GDriveDownloader(Downloader):
             sess = _get_session(use_cookies=True, return_cookies_file=False)
             res = sess.get(url, stream=True, verify=True)
         except Exception as e:
-            print(e)
+            logger.warning(e)
             return None
 
         if res.status_code == 200:

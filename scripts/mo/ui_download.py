@@ -6,7 +6,7 @@ import gradio as gr
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.dl.download_manager import DownloadManager
-from scripts.mo.environment import env
+from scripts.mo.environment import env, logger
 
 _STATE_PENDING = 'Pending'
 _STATE_IN_PROGRESS = 'In Progress'
@@ -142,20 +142,20 @@ def _on_start_click(records):
     DownloadManager.instance().start_download(records)
 
     while DownloadManager.instance().is_running():
-        print('Total state: ', DownloadManager.instance().get_state())
-        print('Latest state: ', DownloadManager.instance().get_latest_state())
+        logger.debug('Total state: ', DownloadManager.instance().get_state())
+        logger.debug('Latest state: ', DownloadManager.instance().get_latest_state())
         time.sleep(0.2)
 
-    print('Final state:')
-    print('Total state: ', DownloadManager.instance().get_state())
-    print('Latest state: ', DownloadManager.instance().get_latest_state())
-    print('Completed.')
+    logger.debug('Final state:')
+    logger.debug('Total state: ', DownloadManager.instance().get_state())
+    logger.debug('Latest state: ', DownloadManager.instance().get_latest_state())
+    logger.debug('Completed.')
 
     return _build_update()
 
 
 def _on_id_change(data):
-    print('download id data changed = ', data)
+    logger.info('download id data changed = ', data)
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
@@ -174,7 +174,6 @@ def _on_id_change(data):
 
 def _on_cancel_click():
     DownloadManager.instance().stop_download()
-    print('Cancel clicked')
 
 
 def download_ui_block():

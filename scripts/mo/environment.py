@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 from scripts.mo.models import ModelType
@@ -8,6 +9,40 @@ STORAGE_NOTION = 'Notion'
 
 LAYOUT_CARDS = 'Cards'
 LAYOUT_TABLE = 'Table'
+
+
+class CustomFormatter(logging.Formatter):
+    light_green = '\033[92m'
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "[%(levelname)s] %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: light_green + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        _formatter = logging.Formatter(log_fmt)
+        return _formatter.format(record)
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+
+handler.setFormatter(CustomFormatter())
+
+logger.addHandler(handler)
 
 
 class Environment:

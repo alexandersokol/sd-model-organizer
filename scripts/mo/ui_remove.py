@@ -1,7 +1,7 @@
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env
+from scripts.mo.environment import env, logger
 
 
 def _on_id_change(record_id):
@@ -15,11 +15,12 @@ def _on_id_change(record_id):
 
 def _on_remove_click(record_id):
     env.storage.remove_record(record_id)
-    print(f'record removed {record_id}')
+    logger.info(f'record removed {record_id}')
 
 
 def _on_cancel_click():
-    print(f'on cancel clicked ')
+    # TODO cancel click
+    logger.debug(f'on cancel clicked ')
 
 
 def remove_ui_block():

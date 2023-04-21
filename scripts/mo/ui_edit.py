@@ -4,7 +4,7 @@ import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.models import Record, ModelType
-from scripts.mo.environment import env
+from scripts.mo.environment import env, logger
 
 
 def is_unix_directory_path(path):
@@ -74,7 +74,7 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
             groups=groups
         )
 
-        print(record)
+        logger.info(f'record to save: {record}')
 
         if record_id is not None and record_id:
             env.storage.update_record(record)
@@ -112,10 +112,6 @@ def _on_id_changed(record_id):
 
 
 def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
-    print(f'new groups string: {new_groups_str}')
-    print(f'selected groups: {selected_groups}')
-    print(f'available_groups: {available_groups}')
-
     if available_groups is None:
         available_groups = []
 
@@ -127,7 +123,6 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
         new_groups = [x.strip() for x in new_groups]
         available_groups.extend(new_groups)
         selected_groups.extend(new_groups)
-        print(f'new groups list: {new_groups}')
 
     return [
         gr.Textbox.update(value=''),

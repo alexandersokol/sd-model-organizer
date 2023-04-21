@@ -17,8 +17,8 @@ def read_settings():
     for line in lines:
         key, value = line.strip().split(': ')
         result[key] = value
-        print(f'{key}: {value}')
-    print('Settings loaded.')
+        logger.info(f'{key}: {value}')
+    logger.info('Settings loaded.')
     return result
 
 
@@ -41,64 +41,64 @@ initialize_storage()
 
 def storage_type_change(value):
     settings['mo_storage_type'] = value
-    print(f'mo_storage_type updated: {value}')
+    logger.info(f'mo_storage_type updated: {value}')
 
 
 def notion_api_token_change(value):
     settings['mo_notion_api_token'] = value
-    print(f'mo_notion_api_token updated: {value}')
+    logger.info(f'mo_notion_api_token updated: {value}')
 
 
 def notion_db_id_change(value):
     settings['mo_notion_db_id'] = value
-    print(f'mo_notion_db_id updated: {value}')
+    logger.info(f'mo_notion_db_id updated: {value}')
 
 
 def model_path_change(value):
     settings['mo_model_path'] = value
-    print(f'mo_model_path updated: {value}')
+    logger.info(f'mo_model_path updated: {value}')
 
 
 def vae_path_change(value):
     settings['mo_vae_path'] = value
-    print(f'mo_vae_path updated: {value}')
+    logger.info(f'mo_vae_path updated: {value}')
 
 
 def lora_path_change(value):
     settings['mo_lora_path'] = value
-    print(f'mo_lora_path updated: {value}')
+    logger.info(f'mo_lora_path updated: {value}')
 
 
 def hypernetworks_path_change(value):
     settings['mo_hypernetworks_path'] = value
-    print(f'mo_hypernetworks_path updated: {value}')
+    logger.info(f'mo_hypernetworks_path updated: {value}')
 
 
 def embeddings_path_change(value):
     settings['mo_embeddings_path'] = value
-    print(f'mo_embeddings_path updated: {value}')
+    logger.info(f'mo_embeddings_path updated: {value}')
 
 
 def layout_type_change(value):
     settings['mo_layout'] = value
-    print(f'mo_layout updated: {value}')
+    logger.info(f'mo_layout updated: {value}')
 
 
 def card_width_change(value):
     settings['mo_card_width'] = value
-    print(f'mo_card_width updated: {value}')
+    logger.info(f'mo_card_width updated: {value}')
 
 
 def card_height_change(value):
     settings['mo_card_height'] = value
-    print(f'mo_card_height updated: {value}')
+    logger.info(f'mo_card_height updated: {value}')
 
 
 def save_click():
     with open(SETTINGS_FILE, 'w') as f:
         for key, value in settings.items():
             f.write(f'{key}: {value}\n')
-        print('Settings saved')
+        logger.info('Settings saved')
 
 
 def settings_block():
@@ -152,6 +152,7 @@ def testing_block():
         output_widget = gr.Textbox("Tab block for feature testing", interactive=False)
         button = gr.Button("Start")
     button.click(generator_outer, outputs=output_widget)
+
 
 with gr.Blocks() as demo:
     with gr.Tab("Model Organizer"):
