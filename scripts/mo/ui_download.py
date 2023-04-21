@@ -142,9 +142,13 @@ def _on_start_click(records):
     DownloadManager.instance().start_download(records)
 
     while DownloadManager.instance().is_running():
-        print(DownloadManager.instance().get_state())
+        print('Total state: ', DownloadManager.instance().get_state())
+        print('Latest state: ', DownloadManager.instance().get_latest_state())
         time.sleep(0.2)
 
+    print('Final state:')
+    print('Total state: ', DownloadManager.instance().get_state())
+    print('Latest state: ', DownloadManager.instance().get_latest_state())
     print('Completed.')
 
     return _build_update()

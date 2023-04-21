@@ -1,10 +1,12 @@
 import hashlib
 import os
+import queue
 import shutil
 import tempfile
 import threading
 import traceback
 from urllib.parse import urlparse
+from copy import deepcopy
 
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.dl.gdrive_downloader import GDriveDownloader
@@ -13,10 +15,10 @@ from scripts.mo.dl.mega_downloader import MegaDownloader
 from scripts.mo.environment import env
 from scripts.mo.models import Record
 
-GENERAL_STATE_IN_PROGRESS = 'In Progress'
-GENERAL_STATE_CANCELLED = 'Cancelled'
-GENERAL_STATE_ERROR = 'Error'
-GENERAL_STATE_COMPLETED = 'Completed'
+GENERAL_STATUS_IN_PROGRESS = 'In Progress'
+GENERAL_STATUS_CANCELLED = 'Cancelled'
+GENERAL_STATUS_ERROR = 'Error'
+GENERAL_STATUS_COMPLETED = 'Completed'
 
 STATE_PENDING = 'Pending'
 STATE_IN_PROGRESS = 'In Progress'
@@ -118,7 +120,7 @@ class DownloadManager:
         self._stop_event.set()
 
         self._state = {}
-        self.latest_state = {}
+        self._latest_state = {}
         self._thread = None
 
         self._downloaders: list[Downloader] = [
@@ -141,16 +143,18 @@ class DownloadManager:
     def get_state(self) -> dict:
         return self._state
 
+    def get_latest_state(self) -> dict:
+        return self._latest_state
+
     def start_download(self, records: list[Record]):
         if not self._stop_event.is_set():
             print('Download already running')
             return
 
         self._stop_event.clear()
-        self._state = {
-            'general_state': GENERAL_STATE_IN_PROGRESS,
-            'records': {}
-        }
+        self._state = {}
+        self._latest_state = {}
+        self._state_update(general_status=GENERAL_STATUS_IN_PROGRESS)
         self._thread = threading.Thread(target=self._download_loop, args=(records,))
         self._thread.start()
 
@@ -162,21 +166,41 @@ class DownloadManager:
         self._stop_event.set()
         self._thread.join()
 
-    def _state_update(self, general_state=None, exception=None, record_id=None, record_state=None):
+    def _state_update(self, general_status=None, exception=None, record_id=None, record_state=None):
+        new_general_state = deepcopy(self._state)
 
-        pass
+        latest_state = {}
+
+        if general_status is not None:
+            new_general_state['general_status'] = general_status
+            latest_state['general_status'] = general_status
+
+        if exception is not None:
+            new_general_state['exception'] = str(exception)
+            latest_state['exception'] = str(exception)
+
+        if record_id is not None and record_state is not None:
+            if new_general_state.get('records') is None:
+                new_general_state['records'] = {}
+
+            if new_general_state['records'].get(record_id) is None:
+                new_general_state['records'][record_id] = record_state
+            else:
+                new_general_state['records'][record_id].update(record_state)
+
+            latest_state['records'] = {record_id: record_state}
+
+        self._state = new_general_state
+        self._latest_state = latest_state
 
     def _download_loop(self, records: list[Record]):
         try:
             for record in records:
                 for upd in self._download_record(record):
-                    if self._state['records'].get(record.id_) is None:
-                        self._state['records'][record.id_] = upd
-                    else:
-                        self._state['records'][record.id_].update(upd)
+                    self._state_update(record_id=record.id_, record_state=upd)
 
                     if self._stop_event.is_set():
-                        self._state['general_state'] = GENERAL_STATE_CANCELLED
+                        self._state_update(general_status=GENERAL_STATUS_CANCELLED)
                         return
 
             has_errors = False
@@ -186,13 +210,13 @@ class DownloadManager:
                     break
 
             if has_errors:
-                self._state['general_state'] = GENERAL_STATE_COMPLETED
+                self._state_update(general_status=GENERAL_STATUS_ERROR)
             else:
-                self._state['general_state'] = GENERAL_STATE_ERROR
+                self._state_update(general_status=GENERAL_STATUS_COMPLETED)
+                # TODO add error into main state
 
         except Exception as ex:
-            self._state['general_state'] = GENERAL_STATE_ERROR
-            self._state['exception'] = ex
+            self._state_update(general_status=GENERAL_STATUS_ERROR, exception=str(ex))
             traceback.print_exc()
 
         self._stop_event.set()
@@ -200,7 +224,7 @@ class DownloadManager:
 
     def _download_record(self, record: Record):
         try:
-            yield {'state:': STATE_IN_PROGRESS}
+            yield {'state': STATE_IN_PROGRESS}
 
             downloader = self._get_downloader(record.download_url)
             print('Start download record with id: ', record.id_)
