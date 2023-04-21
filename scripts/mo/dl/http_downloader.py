@@ -21,7 +21,7 @@ class HttpDownloader(Downloader):
         else:
             return None
 
-    def download(self, url: str, destination_file: str, stop_event: threading.Event):
+    def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         if stop_event.is_set():
             return
 
@@ -35,7 +35,7 @@ class HttpDownloader(Downloader):
         if stop_event.is_set():
             return
 
-        progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=destination_file)
+        progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=description)
 
         with open(destination_file, 'wb') as file:
 

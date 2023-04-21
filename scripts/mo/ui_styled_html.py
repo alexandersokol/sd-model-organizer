@@ -164,7 +164,7 @@ def _create_top_fields_dict(record: Record) -> dict:
 
     if record.md5_hash:
         result['MD5 Hash'] = _create_content_hash(record.md5_hash)
-        
+
     if record.sha256_hash:
         result['SHA256 Hash'] = _create_content_hash(record.sha256_hash)
 

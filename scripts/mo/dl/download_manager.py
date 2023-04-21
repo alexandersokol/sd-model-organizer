@@ -223,7 +223,7 @@ class DownloadManager:
 
             with tempfile.NamedTemporaryFile(delete=False) as temp:
                 print('Downloading into tmp file: ', temp.name)
-                for upd in downloader.download(record.download_url, temp.name, self._stop_event):
+                for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
                 shutil.move(temp.name, destination_file_path)
@@ -254,7 +254,8 @@ class DownloadManager:
 
                 with tempfile.NamedTemporaryFile(delete=False) as temp:
                     print('Downloading preview into tmp file: ', temp.name)
-                    for upd in preview_downloader.download(record.preview_url, temp.name, self._stop_event):
+                    for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
+                                                           self._stop_event):
                         yield {'preview_dl': upd}
 
                     shutil.move(temp.name, preview_destination_file_path)

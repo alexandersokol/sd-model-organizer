@@ -12,5 +12,5 @@ class Downloader(ABC):
         pass
 
     @abstractmethod
-    def download(self, url: str, destination_file: str, stop_event: threading.Event):
+    def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         pass

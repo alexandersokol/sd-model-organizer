@@ -1,10 +1,13 @@
 import os.path
 import random
 import string
+import threading
 from urllib.parse import urlparse
 
+import gdown
 from loremipsum import generate_paragraphs, generate_sentence
 
+from scripts.mo.dl.gdrive_downloader import GDriveDownloader
 from scripts.mo.environment import env
 from scripts.mo.init_storage import initialize_storage
 from scripts.mo.models import Record, ModelType
@@ -103,5 +106,27 @@ urls = [
     'https://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I',
     'ftp://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I'
 ]
+
+
+def progress_hook(progress_dict):
+    if "percentage" in progress_dict:
+        print(f"Download progress: {progress_dict['percentage']}%")
+
+
+# url = "https://drive.google.com/file/d/1-cSYdG-b2MGNJrARjSZEDDf0J_3dKvzZ/view?usp=share_link"
+# output = "temp.file"
+#
+# gdown.download(url, output, quiet=False, progress_hooks=[progress_hook])
+
+g_url = 'https://drive.google.com/file/d/1kTWkSQ-cLs9q1PKfBp4VIDtAbs1NHzNZ/view?usp=share_link'
+tmp_dir = '/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp'
+os.chdir('/Users/alexander/Projects/Python/stable-diffusion-webui/extensions/sd-model-organizer/tmp')
+
+dwn = GDriveDownloader()
+filename = dwn.fetch_filename(g_url)
+print(filename)
+
+for upd in dwn.download(g_url, os.path.join(tmp_dir, filename), filename, threading.Event()):
+    print(upd)
 
 print(f'Done. ')

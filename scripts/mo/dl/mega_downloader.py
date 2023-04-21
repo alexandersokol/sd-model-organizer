@@ -23,7 +23,7 @@ class MegaDownloader(Downloader):
     def fetch_filename(self, url: str):
         raise NotImplementedError('MEGA not implemented yet')
 
-    def download(self, url: str, destination_file: str, stop_event: threading.Event):
+    def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         raise NotImplementedError('MEGA not implemented yet')
 
 # _mega_instance = None
