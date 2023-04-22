@@ -5,7 +5,9 @@ import gradio as gr
 
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.dl.download_manager import DownloadManager
+from scripts.mo.dl.download_manager import DownloadManager, RECORD_STATUS_ERROR, RECORD_STATUS_EXISTS, \
+    RECORD_STATUS_COMPLETED, GENERAL_STATUS_COMPLETED, GENERAL_STATUS_ERROR, GENERAL_STATUS_CANCELLED, \
+    GENERAL_STATUS_IN_PROGRESS
 from scripts.mo.environment import env, logger
 
 _STATE_PENDING = 'Pending'
@@ -106,6 +108,138 @@ def _build_update(progress_update=None, status_message=None, is_start_button_vis
     return upd
 
 
+def _generate_info_center(bytes_ready, bytes_total):
+    if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
+        return f"{_format_bytes(bytes_ready)} / {_format_bytes(bytes_total)}"
+    else:
+        if isinstance(bytes_ready, int):
+            return _format_bytes(bytes_ready)
+    return ''
+
+
+def _generate_progress(bytes_ready, bytes_total):
+    if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
+        return _format_percentage(bytes_ready, bytes_total)
+    else:
+        return 0
+
+
+def _generate_info_right(speed_rate, elapsed):
+    speed = _format_download_speed(speed_rate) if isinstance(speed_rate, float) and speed_rate > 0 else ''
+    elapsed = '' if not isinstance(elapsed, float) or elapsed == 0 else _format_time(elapsed)
+    right_info = ''
+    if speed:
+        right_info += speed
+    if speed and elapsed:
+        right_info += ' | '
+    if elapsed:
+        right_info += elapsed
+
+    return right_info
+
+
+def _generate_js_record_update(record_id, update):
+    result = {'id': record_id}
+
+    status = update.get('status')
+    if status is not None:
+        result['status'] = status
+
+    if status is not None:
+        if status == RECORD_STATUS_EXISTS:
+            result['result_title'] = 'File already exists.'
+            if update.get('destination') is not None:
+                result['result_text'] = update['destination']
+
+        elif status == RECORD_STATUS_COMPLETED:
+            result['result_title'] = 'Download completed.'
+            result_text = ''
+
+            if update.get('destination') is not None:
+                result_text += update['destination']
+
+            if update.get('preview_destination'):
+                result_text += '<br>' if len(result_text) > 0 else ''
+                result_text += update['preview_destination']
+
+            if len(result_text) > 0:
+                result['result_text'] = result_text
+
+        elif status == RECORD_STATUS_ERROR:
+            result['result_title'] = 'Download failed.'
+            if update.get('exception') is not None:
+                result['result_text'] = update['exception']
+
+    if update.get('filename') is not None:
+        result['progress_info_left'] = update['filename']
+
+    if update.get('dl') is not None:
+        dl = update['dl']
+        result['progress_info_center'] = _generate_info_center(dl['bytes_ready'], dl['bytes_total'])
+        result['progress_info_right'] = _generate_info_right(dl['speed_rate'], dl['elapsed'])
+        result['progress'] = _generate_progress(dl['bytes_ready'], dl['bytes_total'])
+
+    if update.get('preview_dl') is not None:
+        dl = update['preview_dl']
+        result['progress_preview_info_center'] = _generate_info_center(dl['bytes_ready'], dl['bytes_total'])
+        result['progress_preview_info_right'] = _generate_info_right(dl['speed_rate'], dl['elapsed'])
+        result['progress_preview'] = _generate_progress(dl['bytes_ready'], dl['bytes_total'])
+
+    return result
+
+    # {
+    #   "general_status": "Completed",
+    #   "records": {
+    #     "20": {
+    #       "status": "Completed",
+    #       "filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "dl": {
+    #         "bytes_ready": 61134280,
+    #         "bytes_total": 61134280,
+    #         "speed_rate": 0,
+    #         "elapsed": 0
+    #       },
+    #       "preview_filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "preview_destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "preview_dl": {
+    #         "bytes_ready": 0,
+    #         "bytes_total": 0,
+    #         "speed_rate": 0,
+    #         "elapsed": 0
+    #       }
+    #     }
+    #   }
+    # }
+    pass
+
+
+def _generate_js_general_update(update):
+    status_message = ''
+    if update.get('general_status') is not None:
+        if update['general_status'] == GENERAL_STATUS_IN_PROGRESS:
+            status_message = styled.alert_primary('Download in progress.')
+        elif update['general_status'] == GENERAL_STATUS_COMPLETED:
+            status_message = styled.alert_success('Download completed.')
+        elif update['general_status'] == GENERAL_STATUS_CANCELLED:
+            status_message = styled.alert_warning('Download cancelled')
+        elif update['general_status'] == GENERAL_STATUS_ERROR:
+            stat = ['Download failed.']
+            if update.get('exception') is not None:
+                stat.append(update['exception'])
+            status_message = styled.alert_danger(stat)
+
+    js_result = {}
+    if update.get('records') is not None:
+        upd_list = []
+        for record_id, upd in update['records'].items():
+            upd_list.append(_generate_js_record_update(record_id, upd))
+        js_result['records'] = upd_list
+
+    #   TODO make other updates
+    return json.dumps(js_result)
+
+
 def _on_start_click(records):
     yield _build_update(
         status_message=styled.alert_primary('Download in progress.'),
@@ -115,47 +249,65 @@ def _on_start_click(records):
     )
 
     # {
-    #    "general_state":"In Progress",
-    #    "records":{
-    #       "20":{
-    #          "state:":"In Progress",
-    #          "filename":"yaeMikoRealistic_yaemikoMixed.safetensors",
-    #          "destination":"/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #          "dl":{
-    #             "bytes_ready":61134280,
-    #             "bytes_total":61134280,
-    #             "speed_rate":0,
-    #             "elapsed":0
-    #          },
-    #          "preview_filename":"yaeMikoRealistic_yaemikoMixed.safetensors",
-    #          "preview_destination":"/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #          "preview_dl":{
-    #             "bytes_ready":0,
-    #             "bytes_total":0,
-    #             "speed_rate":0,
-    #             "elapsed":0
-    #          }
+    #   "general_status": "Completed",
+    #   "records": {
+    #     "20": {
+    #       "status": "Completed",
+    #       "filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "dl": {
+    #         "bytes_ready": 61134280,
+    #         "bytes_total": 61134280,
+    #         "speed_rate": 0,
+    #         "elapsed": 0
+    #       },
+    #       "preview_filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "preview_destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
+    #       "preview_dl": {
+    #         "bytes_ready": 0,
+    #         "bytes_total": 0,
+    #         "speed_rate": 0,
+    #         "elapsed": 0
     #       }
-    #    }
+    #     }
+    #   }
     # }
 
     DownloadManager.instance().start_download(records)
 
     while DownloadManager.instance().is_running():
-        logger.debug('Total state: ', DownloadManager.instance().get_state())
-        logger.debug('Latest state: ', DownloadManager.instance().get_latest_state())
+        general_state = DownloadManager.instance().get_state()
+        logger.debug('Total state: %s', general_state)
+        logger.info('-T-> %s', _generate_js_general_update(general_state))
+
+        latest_state = DownloadManager.instance().get_latest_state()
+        logger.debug('Latest state: %s', latest_state)
+        logger.info('-L-> %s', _generate_js_general_update(latest_state))
+        yield _build_update(
+            progress_update=_generate_js_general_update(general_state)
+        )
         time.sleep(0.2)
 
     logger.debug('Final state:')
-    logger.debug('Total state: ', DownloadManager.instance().get_state())
-    logger.debug('Latest state: ', DownloadManager.instance().get_latest_state())
+
+    general_state = DownloadManager.instance().get_state()
+    logger.debug('Total state: %s', general_state)
+    logger.info('-T-> %s', _generate_js_general_update(general_state))
+
+    latest_state = DownloadManager.instance().get_latest_state()
+    logger.debug('Latest state: %s', latest_state)
+    logger.info('-L-> %s', _generate_js_general_update(latest_state))
+    yield _build_update(
+        progress_update=_generate_js_general_update(general_state)
+    )
+
     logger.debug('Completed.')
 
-    return _build_update()
+    yield _build_update()
 
 
 def _on_id_change(data):
-    logger.info('download id data changed = ', data)
+    logger.info(f'download id data changed = {data}')
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)

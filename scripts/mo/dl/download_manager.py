@@ -18,11 +18,11 @@ GENERAL_STATUS_CANCELLED = 'Cancelled'
 GENERAL_STATUS_ERROR = 'Error'
 GENERAL_STATUS_COMPLETED = 'Completed'
 
-STATE_PENDING = 'Pending'
-STATE_IN_PROGRESS = 'In Progress'
-STATE_COMPLETED = 'Completed'
-STATE_EXISTS = 'Exists'
-STATE_ERROR = 'Error'
+RECORD_STATUS_PENDING = 'Pending'
+RECORD_STATUS_IN_PROGRESS = 'In Progress'
+RECORD_STATUS_COMPLETED = 'Completed'
+RECORD_STATUS_EXISTS = 'Exists'
+RECORD_STATUS_ERROR = 'Error'
 
 
 def _get_destination_file_path(filename: str, record: Record) -> str:
@@ -153,7 +153,7 @@ class DownloadManager:
         self._state = {}
         self._latest_state = {}
         self._state_update(general_status=GENERAL_STATUS_IN_PROGRESS)
-        self._thread = threading.Thread(target=self._download_loop, args=(records,))
+        self._thread = threading.Thread(target=self._download_loop, args=(records,), daemon=True)
         self._thread.start()
 
     def stop_download(self):
@@ -222,34 +222,34 @@ class DownloadManager:
 
     def _download_record(self, record: Record):
         try:
-            yield {'state': STATE_IN_PROGRESS}
+            yield {'status': RECORD_STATUS_IN_PROGRESS}
 
             downloader = self._get_downloader(record.download_url)
-            logger.debug('Start download record with id: ', record.id_)
+            logger.debug('Start download record with id: %s', record.id_)
 
             filename = _get_filename(downloader, record)
-            logger.debug('filename: ', filename)
+            logger.debug('filename: %s', filename)
 
             yield {'filename': filename}
 
             destination_file_path = _get_destination_file_path(filename, record)
-            logger.debug('destination_file_path: ', destination_file_path)
+            logger.debug('destination_file_path: %s', destination_file_path)
 
             yield {'destination': destination_file_path}
 
             if os.path.exists(destination_file_path):
                 logger.debug('File already exists')
-                yield {'state': STATE_EXISTS}
+                yield {'status': RECORD_STATUS_EXISTS}
                 return
 
             with tempfile.NamedTemporaryFile(delete=False) as temp:
-                logger.debug('Downloading into tmp file: ', temp.name)
+                logger.debug('Downloading into tmp file: %s', temp.name)
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
                 shutil.move(temp.name, destination_file_path)
                 os.chmod(destination_file_path, 0o644)
-                logger.debug('Move from tmp file to destination: ', destination_file_path)
+                logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
             record.md5_hash = _calculate_md5(destination_file_path)
             record.sha256_hash = _calculate_sha256(destination_file_path)
@@ -257,36 +257,36 @@ class DownloadManager:
             env.storage.update_record(record)
 
         except Exception as ex:
-            yield {'state': STATE_ERROR, 'exception': ex}
+            yield {'status': RECORD_STATUS_ERROR, 'exception': ex}
             logger.exception(ex)
             return
 
         if record.preview_url:
             try:
                 preview_filename = _get_preview_filename(record.preview_url, filename)
-                logger.debug('Preview image name: ', preview_filename)
-                yield {'preview_filename': filename}
+                logger.debug('Preview image name: %s', preview_filename)
+                yield {'preview_filename': preview_filename}
 
                 preview_destination_file_path = _get_destination_file_path(preview_filename, record)
-                logger.debug('preview_destination_file_path: ', preview_destination_file_path)
-                yield {'preview_destination': destination_file_path}
+                logger.debug('preview_destination_file_path: %s', preview_destination_file_path)
+                yield {'preview_destination': preview_destination_file_path}
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
                 with tempfile.NamedTemporaryFile(delete=False) as temp:
-                    logger.debug('Downloading preview into tmp file: ', temp.name)
+                    logger.debug('Downloading preview into tmp file: %s', temp.name)
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):
                         yield {'preview_dl': upd}
 
                     shutil.move(temp.name, preview_destination_file_path)
                     os.chmod(destination_file_path, 0o644)
-                    logger.debug('Move from tmp file to preview destination: ', preview_destination_file_path)
+                    logger.debug('Move from tmp file to preview destination: %s', preview_destination_file_path)
             except Exception as ex:
                 yield {'exception_preview': ex}
                 logger.exception(ex)
 
-        yield {'state': STATE_COMPLETED}
+        yield {'status': RECORD_STATUS_COMPLETED}
 
     def _get_downloader(self, url: str) -> Downloader:
         for downloader in self._downloaders:

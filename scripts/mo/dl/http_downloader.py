@@ -25,7 +25,7 @@ class HttpDownloader(Downloader):
         if stop_event.is_set():
             return
 
-        yield {'bytes_ready': 0, 'bytes_total': 0, 'speed_rate': 0, 'elapsed': 0}
+        yield {'bytes_ready': 'None', 'bytes_total': 'None', 'speed_rate': 'None', 'elapsed': 'None'}
 
         response = requests.get(url, stream=True)
         total_size = int(response.headers.get('content-length', 0))
@@ -59,10 +59,10 @@ class HttpDownloader(Downloader):
                     'speed_rate': format_dict['rate'],
                     'elapsed': format_dict['elapsed']
                 }
-            yield {
-                'bytes_ready': total_size,
-                'bytes_total': total_size,
-                'speed_rate': 0,
-                'elapsed': 0
-            }
-            progress_bar.close()
+        yield {
+            'bytes_ready': format_dict['n'],
+            'bytes_total': format_dict['n'],
+            'speed_rate': format_dict['rate'],
+            'elapsed': format_dict['elapsed']
+        }
+        progress_bar.close()

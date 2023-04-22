@@ -17,7 +17,7 @@ class MegaDownloader(Downloader):
                 import mega
                 return True
             except ImportError:
-                logger.warning("mega.py package is required for ", url)
+                logger.warning("mega.py package is required for %s", url)
 
         return False
 

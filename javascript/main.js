@@ -76,12 +76,12 @@ function updateResultText(id, title, text) {
         let resultContent = '<p>' + title + ':</p>'
         if (Array.isArray(text)) {
             text.forEach(function (txt) {
-                resultContent += '<p style="margin-left: 1rem; padding: 0 !important; line-height: 0.8 !important;">'
+                resultContent += '<p style="margin-left: 1rem; padding: 0 !important; line-height: 1.4 !important;">'
                 resultContent += txt
                 resultContent += '</p>'
             });
         } else {
-            resultContent += '<p style="margin-left: 1rem; padding: 0 !important; line-height: 0.8 !important;">'
+            resultContent += '<p style="margin-left: 1rem; padding: 0 !important; line-height: 1.4 !important;">'
             resultContent += text
             resultContent += '</p>'
         }
@@ -108,13 +108,22 @@ function updateProgressBar(id, tag, isPreview, value) {
 }
 
 function handleProgressUpdates(value) {
-    console.log(value)
     const data = JSON.parse(value);
 
+    if (data.hasOwnProperty('records')) {
+        data.records.forEach(function (item, index) {
+            handleRecordUpdates(item)
+        });
+    }
+
+    return []
+}
+
+function handleRecordUpdates(data) {
     const id = data.id;
 
-    if (data.hasOwnProperty('state')) {
-        updateDownloadCardState(id, data.state)
+    if (data.hasOwnProperty('status')) {
+        updateDownloadCardState(id, data.status)
     }
 
     if (data.hasOwnProperty('result_text')) {
@@ -153,8 +162,6 @@ function handleProgressUpdates(value) {
     if (data.hasOwnProperty('progress_preview')) {
         updateProgressBar(id, 'progress-bar', true, data.progress_preview)
     }
-
-    return []
 }
 
 /*
