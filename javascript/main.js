@@ -164,6 +164,13 @@ function generateUUID() {
     });
 }
 
+function navigateHome() {
+    log('Navigate home screen')
+    const navObj = {};
+    deliverNavObject(navObj)
+    return []
+}
+
 function navigateDetails(id) {
     log('Navigate details screen for id: ' + id)
     const navObj = {

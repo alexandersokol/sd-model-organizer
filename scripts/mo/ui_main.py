@@ -31,10 +31,8 @@ def _load_mo_css() -> str:
         styles_css = re.sub(r'--mo-card-height:\s*\d+px;', f'--mo-card-height: {card_height}px;', styles_css)
 
     return f"""
-        <style>
             {colors_css}
             {styles_css}
-        </style>
     """
 
 
@@ -66,8 +64,9 @@ def on_home_click():
 
 
 def main_ui_block():
-    with gr.Blocks() as main_block:
-        gr.HTML(_load_mo_css())
+    css_styles = _load_mo_css()
+    with gr.Blocks(css=css_styles) as main_block:
+        gr.HTML(f'<style>{css_styles}</style>')
         if env.is_storage_has_errors():
             gr.HTML(styled.alert_danger(env.storage_error))
             return main_block
@@ -75,7 +74,7 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        _json_nav_box = gr.Textbox(label='mo_json_nav_box', elem_id='mo_json_nav_box')
+        _json_nav_box = gr.Textbox(label='mo_json_nav_box', elem_id='mo_json_nav_box', elem_classes='mo-alert-warning')
 
         with gr.Row():
             home_button = gr.Button('Content List')

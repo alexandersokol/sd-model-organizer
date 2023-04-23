@@ -122,7 +122,7 @@ def records_table(records: List[Record]) -> str:
                       f'onclick="navigateEdit(\'{record.id_}\')">Edit</button>'
         table_html += '<br>'
         table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                      f'onclick="navigateRemove(\'{record.id_}\')">Remove</button>'  # TODO
+                      f'onclick="navigateRemove(\'{record.id_}\')">Remove</button>'
         table_html += '</div>'
         # Close row
         table_html += '</div>'
@@ -332,7 +332,7 @@ def records_cards(records: List[Record]) -> str:
                    f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                   f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'  # TODO
+                   f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
 
         content += '</div>'
         content += '</div>'

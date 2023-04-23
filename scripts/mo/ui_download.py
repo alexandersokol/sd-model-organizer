@@ -53,6 +53,10 @@ def _format_download_speed(speed):
     return '{:.2f}{}'.format(speed, units[unit_index])
 
 
+def _format_exception(ex):
+    return f"{type(ex).__name__}: {str(ex)}".replace('"', '\\"').replace("'", "\\'")
+
+
 def _build_progress_update(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
                            progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
                            progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
@@ -166,9 +170,9 @@ def _generate_js_record_update(record_id, update):
                 result['result_text'] = result_text
 
         elif status == RECORD_STATUS_ERROR:
-            result['result_title'] = 'Download failed.'
+            result['result_title'] = 'Download failed'
             if update.get('exception') is not None:
-                result['result_text'] = update['exception']
+                result['result_text'] = _format_exception(update['exception'])
 
     if update.get('filename') is not None:
         result['progress_info_left'] = update['filename']
@@ -187,32 +191,6 @@ def _generate_js_record_update(record_id, update):
 
     return result
 
-    # {
-    #   "general_status": "Completed",
-    #   "records": {
-    #     "20": {
-    #       "status": "Completed",
-    #       "filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "dl": {
-    #         "bytes_ready": 61134280,
-    #         "bytes_total": 61134280,
-    #         "speed_rate": 0,
-    #         "elapsed": 0
-    #       },
-    #       "preview_filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "preview_destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "preview_dl": {
-    #         "bytes_ready": 0,
-    #         "bytes_total": 0,
-    #         "speed_rate": 0,
-    #         "elapsed": 0
-    #       }
-    #     }
-    #   }
-    # }
-    pass
-
 
 def _generate_js_general_update(update):
     status_message = ''
@@ -226,7 +204,7 @@ def _generate_js_general_update(update):
         elif update['general_status'] == GENERAL_STATUS_ERROR:
             stat = ['Download failed.']
             if update.get('exception') is not None:
-                stat.append(update['exception'])
+                stat.append(_format_exception(update['exception']))
             status_message = styled.alert_danger(stat)
 
     js_result = {}
@@ -247,31 +225,6 @@ def _on_start_click(records):
         is_cancel_button_visible=True,
         is_back_button_visible=False,
     )
-
-    # {
-    #   "general_status": "Completed",
-    #   "records": {
-    #     "20": {
-    #       "status": "Completed",
-    #       "filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "dl": {
-    #         "bytes_ready": 61134280,
-    #         "bytes_total": 61134280,
-    #         "speed_rate": 0,
-    #         "elapsed": 0
-    #       },
-    #       "preview_filename": "yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "preview_destination": "/Users/alexander/Projects/Python/mo_files/models/VAE/yaeMikoRealistic_yaemikoMixed.safetensors",
-    #       "preview_dl": {
-    #         "bytes_ready": 0,
-    #         "bytes_total": 0,
-    #         "speed_rate": 0,
-    #         "elapsed": 0
-    #       }
-    #     }
-    #   }
-    # }
 
     DownloadManager.instance().start_download(records)
 
@@ -331,8 +284,8 @@ def _on_cancel_click():
 def download_ui_block():
     with gr.Blocks():
         download_state = gr.State(value=[])
-        id_box = gr.Textbox()  # TODO Hide
-        download_progress_box = gr.Textbox()  # TODO Hide
+        download_id_box = gr.Textbox(label='download_id_box', elem_classes='mo-alert-warning')  # TODO Hide
+        download_progress_box = gr.Textbox(label='download_progress_box', elem_classes='mo-alert-warning')  # TODO Hide
         gr.Markdown('## Downloads')
         status_message_widget = gr.HTML(visible=False)
         with gr.Row():
@@ -344,12 +297,13 @@ def download_ui_block():
         gr.HTML('</hr>')
         html_widget = gr.HTML()
 
-    id_box.change(_on_id_change, inputs=id_box, outputs=[html_widget, download_state])
+    download_id_box.change(_on_id_change, inputs=download_id_box, outputs=[html_widget, download_state])
     download_progress_box.change(fn=None, inputs=download_progress_box, _js='handleProgressUpdates')
 
     start_button.click(_on_start_click, inputs=download_state,
                        outputs=[status_message_widget, start_button, cancel_button, back_button, download_progress_box])
 
     cancel_button.click(_on_cancel_click)  # TODO on cancel clicked
+    back_button.click(fn=None, _js='navigateHome')
 
-    return id_box
+    return download_id_box
