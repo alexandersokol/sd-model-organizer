@@ -69,14 +69,6 @@ def on_remove_click():
     return nav.navigate_remove(19)
 
 
-def on_download_click():
-    return nav.navigate_download_single(20)
-
-
-def on_download_group_click():
-    return nav.navigate_download_group('First')
-
-
 def main_ui_block():
     with gr.Blocks() as main_block:
         gr.HTML(_load_mo_css())
@@ -92,8 +84,6 @@ def main_ui_block():
         with gr.Row():
             home_button = gr.Button('Content List')
             remove_button = gr.Button('Remove (19)')
-            download_button = gr.Button('Download (20)')
-            download_group_button = gr.Button('Download ("First")')
 
         with gr.Column(visible=True) as home_block:
             home_ui_block()
@@ -125,7 +115,5 @@ def main_ui_block():
 
         home_button.click(on_home_click, outputs=_json_nav_box)
         remove_button.click(on_remove_click, outputs=_json_nav_box)
-        download_button.click(on_download_click, outputs=_json_nav_box)
-        download_group_button.click(on_download_group_click, outputs=_json_nav_box)
 
     return main_block

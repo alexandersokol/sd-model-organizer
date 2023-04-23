@@ -18,12 +18,14 @@ def details_ui_block():
 
         with gr.Row():
             refresh_button = gr.Button("Refresh")
+            download_button = gr.Button("Download")     # TODO hide if file exists?
             edit_button = gr.Button('Edit')
 
         content_widget = gr.HTML()
 
         refresh_button.click(on_id_changed, inputs=details_id_box, outputs=content_widget)
         details_id_box.change(on_id_changed, inputs=details_id_box, outputs=content_widget)
+        download_button.click(fn=None, inputs=details_id_box, _js='navigateDownloadRecord')
         edit_button.click(fn=None, inputs=details_id_box, _js='navigateEdit')
 
     return details_id_box

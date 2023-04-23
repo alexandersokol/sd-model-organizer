@@ -196,6 +196,28 @@ function navigateEdit(id) {
     return []
 }
 
+function navigateDownloadRecord(id){
+     log('Navigate download screen for id: ' + id)
+    const navObj = {
+        screen: "download",
+        record_id: id,
+        uuid: generateUUID()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
+function navigateDownloadGroup(groupName){
+     log('Navigate download screen for group: ' + groupName)
+    const navObj = {
+        screen: "download",
+        group: groupName,
+        uuid: generateUUID()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
 function deliverNavObject(navObj) {
     const navJson = JSON.stringify(navObj);
     const textArea = findElem('mo_json_nav_box').querySelector('textarea')
@@ -203,15 +225,6 @@ function deliverNavObject(navObj) {
     textArea.value = navJson
     findElem('mo_json_nav_box').querySelector('textarea').dispatchEvent(event);
     console.log('JSON Nav dispatched: ' + navJson)
-}
-
-function moJsonDelivery(json) {
-    console.log('json delivery: ' + json)
-    const textArea = findElem('mo_json_box').querySelector('textarea')
-    const event = new Event('input', {'bubbles': true, "composed": true});
-    textArea.value = json
-    findElem('mo_json_box').querySelector('textarea').dispatchEvent(event);
-    console.log('json event dispatched')
 }
 
 /*

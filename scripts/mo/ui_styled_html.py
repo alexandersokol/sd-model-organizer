@@ -115,12 +115,14 @@ def records_table(records: List[Record]) -> str:
 
         # Add actions column
         table_html += '<div class="mo-col mo-col-actions ">'
-        table_html += '<button class="mo-btn mo-btn-primary">Download</button>'
+        table_html += '<button class="mo-btn mo-btn-primary" ' \
+                      f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button>'
         table_html += '<br>'
         table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
                       f'onclick="navigateEdit(\'{record.id_}\')">Edit</button>'
         table_html += '<br>'
-        table_html += '<button type="button" class="mo-btn mo-btn-danger">Remove</button>'
+        table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                      f'onclick="navigateRemove(\'{record.id_}\')">Remove</button>'  # TODO
         table_html += '</div>'
         # Close row
         table_html += '</div>'
@@ -324,7 +326,7 @@ def records_cards(records: List[Record]) -> str:
                    f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                   f'onclick="handleDownloadClick(\'{record.id_}\')">Download</button><br>'  # TODO
+                   f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-warning" ' \
                    f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
