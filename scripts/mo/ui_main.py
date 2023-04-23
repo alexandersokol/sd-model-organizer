@@ -46,10 +46,6 @@ def _edit_state() -> str:
     return nav.navigate_edit(9)
 
 
-def _add_state() -> str:
-    return nav.navigate_add()
-
-
 def on_json_box_change(json_state):
     state = nav.get_nav_state(json_state)
     return [
@@ -67,14 +63,6 @@ def on_json_box_change(json_state):
 
 def on_home_click():
     return _content_list_state()
-
-
-def on_add_click():
-    return _add_state()
-
-
-def on_edit_click(previous_state):
-    return nav.navigate_edit(20)
 
 
 def on_remove_click():
@@ -103,8 +91,6 @@ def main_ui_block():
 
         with gr.Row():
             home_button = gr.Button('Content List')
-            add_button = gr.Button('Add')
-            edit_button = gr.Button('Edit (20)')
             remove_button = gr.Button('Remove (19)')
             download_button = gr.Button('Download (20)')
             download_group_button = gr.Button('Download ("First")')
@@ -138,8 +124,6 @@ def main_ui_block():
                                       download_id_box])
 
         home_button.click(on_home_click, outputs=_json_nav_box)
-        add_button.click(on_add_click, outputs=_json_nav_box)
-        edit_button.click(on_edit_click, inputs=_json_nav_box, outputs=_json_nav_box)
         remove_button.click(on_remove_click, outputs=_json_nav_box)
         download_button.click(on_download_click, outputs=_json_nav_box)
         download_group_button.click(on_download_group_click, outputs=_json_nav_box)

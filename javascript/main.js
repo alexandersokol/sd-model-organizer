@@ -155,12 +155,45 @@ function handleRecordUpdates(data) {
     }
 }
 
+function generateUUID() {
+    let d = new Date().getTime();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
 function navigateDetails(id) {
+    log('Navigate details screen for id: ' + id)
     const navObj = {
         screen: "details",
-        record_id: id
+        record_id: id,
+        uuid: generateUUID()
     };
     deliverNavObject(navObj)
+    return []
+}
+
+function navigateAdd() {
+    log('Navigate add screen')
+    const navObj = {
+        screen: "edit",
+        uuid: generateUUID()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
+function navigateEdit(id) {
+    log('Navigate edit screen for id: ' + id)
+    const navObj = {
+        screen: "edit",
+        record_id: id,
+        uuid: generateUUID()
+    };
+    deliverNavObject(navObj)
+    return []
 }
 
 function deliverNavObject(navObj) {

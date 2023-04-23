@@ -1,5 +1,3 @@
-import html
-import json
 from typing import List
 
 from scripts.mo.models import Record, ModelType
@@ -119,7 +117,8 @@ def records_table(records: List[Record]) -> str:
         table_html += '<div class="mo-col mo-col-actions ">'
         table_html += '<button class="mo-btn mo-btn-primary">Download</button>'
         table_html += '<br>'
-        table_html += '<button type="button" class="mo-btn mo-btn-warning">Edit</button>'
+        table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
+                      f'onclick="navigateEdit(\'{record.id_}\')">Edit</button>'
         table_html += '<br>'
         table_html += '<button type="button" class="mo-btn mo-btn-danger">Remove</button>'
         table_html += '</div>'
@@ -322,14 +321,16 @@ def records_cards(records: List[Record]) -> str:
         content += '<button type="button" class="mo-btn mo-btn-success" '
 
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                   f'onclick="navigateDetails(\'{record.id_}\')"">Details</button><br>'
+                   f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                   f'onclick="handleDownloadClick(\'{record.id_}\')"">Download</button><br>'
+                   f'onclick="handleDownloadClick(\'{record.id_}\')">Download</button><br>'  # TODO
+
         content += '<button type="button" class="mo-btn mo-btn-warning" ' \
-                   f'onclick="handleEditClick(\'{record.id_}\')"">Edit</button><br>'
+                   f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
+
         content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                   f'onclick="handleRemoveClick(\'{record.id_}\')">Remove</button><br>'
+                   f'onclick="handleRemoveClick(\'{record.id_}\')">Remove</button><br>'  # TODO
 
         content += '</div>'
         content += '</div>'
