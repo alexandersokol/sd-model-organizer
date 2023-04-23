@@ -1,4 +1,6 @@
 import json
+import random
+import string
 
 _HOME = 'home'
 _DETAILS = 'details'
@@ -121,3 +123,8 @@ def get_download_group(data):
         return None
     else:
         return download_dict[_NODE_GROUP]
+
+
+def generate_back_token() -> str:
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(6))

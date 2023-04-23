@@ -261,6 +261,13 @@ def _on_start_click(records):
 
 def _on_id_change(data):
     logger.info(f'download id data changed = {data}')
+
+    if not data:
+        return [
+            gr.HTML.update(value=styled.alert_warning('Nothing passed to download.')),
+            []
+        ]
+
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
@@ -284,8 +291,9 @@ def _on_cancel_click():
 def download_ui_block():
     with gr.Blocks():
         download_state = gr.State(value=[])
-        download_id_box = gr.Textbox(label='download_id_box', elem_classes='mo-alert-warning')  # TODO Hide
-        download_progress_box = gr.Textbox(label='download_progress_box', elem_classes='mo-alert-warning')  # TODO Hide
+        download_id_box = gr.Textbox(label='download_id_box', elem_classes='mo-alert-warning', visible=False)
+        download_progress_box = gr.Textbox(label='download_progress_box', elem_classes='mo-alert-warning',
+                                           visible=False)
         gr.Markdown('## Downloads')
         status_message_widget = gr.HTML(visible=False)
         with gr.Row():
@@ -304,6 +312,6 @@ def download_ui_block():
                        outputs=[status_message_widget, start_button, cancel_button, back_button, download_progress_box])
 
     cancel_button.click(_on_cancel_click)  # TODO on cancel clicked
-    back_button.click(fn=None, _js='navigateHome')
+    back_button.click(fn=None, _js='navigateBack')
 
     return download_id_box

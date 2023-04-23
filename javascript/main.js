@@ -164,10 +164,57 @@ function generateUUID() {
     });
 }
 
+function populateBackstack() {
+    const textArea = findElem('mo_json_nav_box').querySelector('textarea')
+    const currentNavigationJson = textArea.value
+    const backstack = []
+    if (Boolean(currentNavigationJson)) {
+
+        const currentNavigation = JSON.parse(currentNavigationJson);
+        log('Current Navigation: ' + currentNavigation)
+
+        if (currentNavigation.hasOwnProperty('backstack')) {
+            currentNavigation.backstack.forEach(function (item, index) {
+                backstack.push(item);
+            });
+            delete currentNavigation.backstack;
+        }
+
+        if (currentNavigation.hasOwnProperty('token')) {
+            delete currentNavigation.token;
+        }
+        log('previous backstack: ' + backstack)
+
+        backstack.unshift(currentNavigation);
+        log('new backstack: ' + backstack)
+    }
+    return backstack
+}
+
 function navigateHome() {
     log('Navigate home screen')
     const navObj = {};
     deliverNavObject(navObj)
+    return []
+}
+
+function navigateBack() {
+    const textArea = findElem('mo_json_nav_box').querySelector('textarea')
+    const currentNavigationJson = textArea.value
+    let backNav = {}
+    if (Boolean(currentNavigationJson)) {
+        const currentNavigation = JSON.parse(currentNavigationJson);
+        log('Current Navigation: ' + currentNavigation)
+
+        if (currentNavigation.hasOwnProperty('backstack') && currentNavigation.backstack.length !== 0) {
+            backNav = currentNavigation.backstack.shift()
+
+            if(currentNavigation.backstack.length !== 0) {
+                backNav.backstack = currentNavigation.backstack
+            }
+        }
+    }
+    deliverNavObject(backNav)
     return []
 }
 
@@ -176,7 +223,8 @@ function navigateDetails(id) {
     const navObj = {
         screen: "details",
         record_id: id,
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []
@@ -186,7 +234,8 @@ function navigateAdd() {
     log('Navigate add screen')
     const navObj = {
         screen: "edit",
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []
@@ -197,7 +246,8 @@ function navigateEdit(id) {
     const navObj = {
         screen: "edit",
         record_id: id,
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []
@@ -208,7 +258,8 @@ function navigateDownloadRecord(id) {
     const navObj = {
         screen: "download",
         record_id: id,
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []
@@ -219,7 +270,8 @@ function navigateDownloadGroup(groupName) {
     const navObj = {
         screen: "download",
         group: groupName,
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []
@@ -230,7 +282,8 @@ function navigateRemove(id) {
     const navObj = {
         screen: "remove",
         record_id: id,
-        uuid: generateUUID()
+        token: generateUUID(),
+        backstack: populateBackstack()
     };
     deliverNavObject(navObj)
     return []

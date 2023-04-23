@@ -36,31 +36,26 @@ def _load_mo_css() -> str:
     """
 
 
-def _content_list_state() -> str:
-    return nav.navigate_home()
-
-
-def _edit_state() -> str:
-    return nav.navigate_edit(9)
-
-
-def on_json_box_change(json_state):
+def on_json_box_change(json_state, home_refresh_token):
     state = nav.get_nav_state(json_state)
+
+    is_home_visible = state['is_home_visible']
+    if is_home_visible:
+        home_refresh_token = nav.generate_back_token()
+
     return [
-        gr.Column.update(visible=state['is_home_visible']),
+        gr.Column.update(visible=is_home_visible),
         gr.Column.update(visible=state['is_details_visible']),
         gr.Column.update(visible=state['is_edit_visible']),
         gr.Column.update(visible=state['is_remove_visible']),
         gr.Column.update(visible=state['is_download_visible']),
+
+        gr.Textbox.update(value=home_refresh_token),
         gr.Textbox.update(value=state['details_record_id']),
         gr.Textbox.update(value=state['edit_record_id']),
         gr.Textbox.update(value=state['remove_record_id']),
         gr.Textbox.update(value=state['download_info'])
     ]
-
-
-def on_home_click():
-    return _content_list_state()
 
 
 def main_ui_block():
@@ -74,13 +69,11 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        _json_nav_box = gr.Textbox(label='mo_json_nav_box', elem_id='mo_json_nav_box', elem_classes='mo-alert-warning')
-
-        with gr.Row():
-            home_button = gr.Button('Content List')
+        _json_nav_box = gr.Textbox(value=nav.navigate_home(), label='mo_json_nav_box', elem_id='mo_json_nav_box',
+                                   elem_classes='mo-alert-warning', visible=False)
 
         with gr.Column(visible=True) as home_block:
-            home_ui_block()
+            home_refresh_box = home_ui_block()
 
         with gr.Column(visible=False) as record_details_block:
             details_id_box = details_ui_block()
@@ -95,18 +88,17 @@ def main_ui_block():
             download_id_box = download_ui_block()
 
         _json_nav_box.change(on_json_box_change,
-                             inputs=_json_nav_box,
+                             inputs=[_json_nav_box, home_refresh_box],
                              outputs=[home_block,
                                       record_details_block,
                                       edit_record_block,
                                       remove_record_block,
                                       download_block,
 
+                                      home_refresh_box,
                                       details_id_box,
                                       edit_id_box,
                                       remove_id_box,
                                       download_id_box])
-
-        home_button.click(on_home_click, outputs=_json_nav_box)
 
     return main_block

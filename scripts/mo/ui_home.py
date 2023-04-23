@@ -15,11 +15,12 @@ def prepare_data() -> str:
 
 def home_ui_block():
     with gr.Blocks():
-        with gr.Row():
-            refresh_button = gr.Button('Refresh')
-            add_button = gr.Button('Add')
+        refresh_box = gr.Textbox(label='refresh_box', elem_classes='mo-alert-warning', visible=False)
 
+        add_button = gr.Button('Add')
         content_widget = gr.HTML(prepare_data())
 
-        refresh_button.click(prepare_data, outputs=[content_widget])
         add_button.click(fn=None, _js='navigateAdd')
+        refresh_box.change(prepare_data, outputs=[content_widget])
+
+    return refresh_box
