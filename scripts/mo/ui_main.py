@@ -42,10 +42,6 @@ def _content_list_state() -> str:
     return nav.navigate_home()
 
 
-def _details_state(record_id) -> str:
-    return nav.navigate_details(record_id)
-
-
 def _edit_state() -> str:
     return nav.navigate_edit(9)
 
@@ -71,10 +67,6 @@ def on_json_box_change(json_state):
 
 def on_home_click():
     return _content_list_state()
-
-
-def on_details_click():
-    return _details_state(9)
 
 
 def on_add_click():
@@ -107,11 +99,10 @@ def main_ui_block():
             gr.HTML(styled.alert_danger('Storage not initialized'))
             return main_block
 
-        json_box = gr.Textbox(_content_list_state(), elem_id='mo_json_box')
+        _json_nav_box = gr.Textbox(label='mo_json_nav_box', elem_id='mo_json_nav_box')
 
         with gr.Row():
             home_button = gr.Button('Content List')
-            details_button = gr.Button('Details')
             add_button = gr.Button('Add')
             edit_button = gr.Button('Edit (20)')
             remove_button = gr.Button('Remove (19)')
@@ -133,25 +124,24 @@ def main_ui_block():
         with gr.Column(visible=False) as download_block:
             download_id_box = download_ui_block()
 
-        json_box.change(on_json_box_change,
-                        inputs=json_box,
-                        outputs=[home_block,
-                                 record_details_block,
-                                 edit_record_block,
-                                 remove_record_block,
-                                 download_block,
+        _json_nav_box.change(on_json_box_change,
+                             inputs=_json_nav_box,
+                             outputs=[home_block,
+                                      record_details_block,
+                                      edit_record_block,
+                                      remove_record_block,
+                                      download_block,
 
-                                 details_id_box,
-                                 edit_id_box,
-                                 remove_id_box,
-                                 download_id_box])
+                                      details_id_box,
+                                      edit_id_box,
+                                      remove_id_box,
+                                      download_id_box])
 
-        home_button.click(on_home_click, outputs=json_box)
-        details_button.click(on_details_click, outputs=json_box)
-        add_button.click(on_add_click, outputs=json_box)
-        edit_button.click(on_edit_click, inputs=json_box, outputs=json_box)
-        remove_button.click(on_remove_click, outputs=json_box)
-        download_button.click(on_download_click, outputs=json_box)
-        download_group_button.click(on_download_group_click, outputs=json_box)
+        home_button.click(on_home_click, outputs=_json_nav_box)
+        add_button.click(on_add_click, outputs=_json_nav_box)
+        edit_button.click(on_edit_click, inputs=_json_nav_box, outputs=_json_nav_box)
+        remove_button.click(on_remove_click, outputs=_json_nav_box)
+        download_button.click(on_download_click, outputs=_json_nav_box)
+        download_group_button.click(on_download_group_click, outputs=_json_nav_box)
 
     return main_block

@@ -3,15 +3,6 @@ function findElem(elementId) {
     // return gradioApp().getElementById(elementId)
 }
 
-function moJsonDelivery(json) {
-    console.log('json delivery: ' + json)
-    const textArea = findElem('mo_json_box').querySelector('textarea')
-    const event = new Event('input', {'bubbles': true, "composed": true});
-    textArea.value = json
-    findElem('mo_json_box').querySelector('textarea').dispatchEvent(event);
-    console.log('json event dispatched')
-}
-
 function log(text) {
     console.log(text)
 }
@@ -162,6 +153,32 @@ function handleRecordUpdates(data) {
     if (data.hasOwnProperty('progress_preview')) {
         updateProgressBar(id, 'progress-bar', true, data.progress_preview)
     }
+}
+
+function navigateDetails(id) {
+    const navObj = {
+        screen: "details",
+        record_id: id
+    };
+    deliverNavObject(navObj)
+}
+
+function deliverNavObject(navObj) {
+    const navJson = JSON.stringify(navObj);
+    const textArea = findElem('mo_json_nav_box').querySelector('textarea')
+    const event = new Event('input', {'bubbles': true, "composed": true});
+    textArea.value = navJson
+    findElem('mo_json_nav_box').querySelector('textarea').dispatchEvent(event);
+    console.log('JSON Nav dispatched: ' + navJson)
+}
+
+function moJsonDelivery(json) {
+    console.log('json delivery: ' + json)
+    const textArea = findElem('mo_json_box').querySelector('textarea')
+    const event = new Event('input', {'bubbles': true, "composed": true});
+    textArea.value = json
+    findElem('mo_json_box').querySelector('textarea').dispatchEvent(event);
+    console.log('json event dispatched')
 }
 
 /*

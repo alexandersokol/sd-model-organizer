@@ -107,7 +107,7 @@ def records_table(records: List[Record]) -> str:
 
         # Add name column
         table_html += f'<div class="mo-col mo-col-name">'
-        table_html += f'<button class="mo-button-name" onclick="handleModelClick(\'{name}\')">{name}</button>'
+        table_html += f'<button class="mo-button-name" onclick="navigateDetails(\'{record.id_}\')">{name}</button>'
         table_html += '</div>'
 
         # Add description column
@@ -321,14 +321,8 @@ def records_cards(records: List[Record]) -> str:
 
         content += '<button type="button" class="mo-btn mo-btn-success" '
 
-        details = {
-            'screen': 'record_details',
-            'record_id': record.id_
-        }
-        details_json = html.escape(json.dumps(details))
-
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                   f'onclick="moJsonDelivery(\'{details_json}\')"">Details</button><br>'
+                   f'onclick="navigateDetails(\'{record.id_}\')"">Details</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-primary" ' \
                    f'onclick="handleDownloadClick(\'{record.id_}\')"">Download</button><br>'
