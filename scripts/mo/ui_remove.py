@@ -5,7 +5,16 @@ from scripts.mo.environment import env, logger
 
 
 def _on_id_change(record_id):
+    logger.info(f'Remove: on id change: {record_id}', )
+
     record = env.storage.get_record_by_id(record_id)
+    if record is None:
+        return [
+            gr.HTML.update(value='Record was not found in database.'),
+            gr.Button.update(visible=True),
+            gr.Button.update(visible=False)
+        ]
+
     return [
         gr.HTML.update(value=styled.alert_danger(f'Are you sure you what to remove "{record.name}"?')),
         gr.Button.update(visible=True),

@@ -196,8 +196,8 @@ function navigateEdit(id) {
     return []
 }
 
-function navigateDownloadRecord(id){
-     log('Navigate download screen for id: ' + id)
+function navigateDownloadRecord(id) {
+    log('Navigate download screen for id: ' + id)
     const navObj = {
         screen: "download",
         record_id: id,
@@ -207,11 +207,22 @@ function navigateDownloadRecord(id){
     return []
 }
 
-function navigateDownloadGroup(groupName){
-     log('Navigate download screen for group: ' + groupName)
+function navigateDownloadGroup(groupName) {
+    log('Navigate download screen for group: ' + groupName)
     const navObj = {
         screen: "download",
         group: groupName,
+        uuid: generateUUID()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
+function navigateRemove(id) {
+    log('Navigate removal screen for id: ' + id)
+    const navObj = {
+        screen: "remove",
+        record_id: id,
         uuid: generateUUID()
     };
     deliverNavObject(navObj)

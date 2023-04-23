@@ -65,10 +65,6 @@ def on_home_click():
     return _content_list_state()
 
 
-def on_remove_click():
-    return nav.navigate_remove(19)
-
-
 def main_ui_block():
     with gr.Blocks() as main_block:
         gr.HTML(_load_mo_css())
@@ -83,7 +79,6 @@ def main_ui_block():
 
         with gr.Row():
             home_button = gr.Button('Content List')
-            remove_button = gr.Button('Remove (19)')
 
         with gr.Column(visible=True) as home_block:
             home_ui_block()
@@ -114,6 +109,5 @@ def main_ui_block():
                                       download_id_box])
 
         home_button.click(on_home_click, outputs=_json_nav_box)
-        remove_button.click(on_remove_click, outputs=_json_nav_box)
 
     return main_block
