@@ -2,7 +2,7 @@ import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, logger
-from scripts.mo.ui_navigation import generate_back_token
+from scripts.mo.ui_navigation import generate_ui_token
 
 
 def _on_id_change(record_id):
@@ -26,7 +26,7 @@ def _on_id_change(record_id):
 def _on_remove_click(record_id, back_token):
     env.storage.remove_record(record_id)
     logger.info(f'record removed {record_id}')
-    return generate_back_token()
+    return generate_ui_token()
 
 
 def remove_ui_block():

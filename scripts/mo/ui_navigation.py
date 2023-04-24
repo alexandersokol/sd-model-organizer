@@ -73,7 +73,7 @@ def get_nav_state(json_nav) -> dict:
         'is_remove_visible': False,
         'is_download_visible': False,
         'details_record_id': '',
-        'edit_record_id': '',
+        'edit_data': {},
         'remove_record_id': '',
         'download_info': ''
     }
@@ -87,8 +87,10 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _EDIT:
             state['is_edit_visible'] = True
+            edit_data = {'token': generate_ui_token()}
             if nav_dict.get('record_id') is not None:
-                state['edit_record_id'] = nav_dict[_NODE_RECORD_ID]
+                edit_data['record_id'] = nav_dict[_NODE_RECORD_ID]
+            state['edit_data'] = json.dumps(edit_data)
 
         elif nav_dict[_NODE_SCREEN] == _REMOVE:
             state['is_remove_visible'] = True
@@ -125,6 +127,6 @@ def get_download_group(data):
         return download_dict[_NODE_GROUP]
 
 
-def generate_back_token() -> str:
+def generate_ui_token() -> str:
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(6))

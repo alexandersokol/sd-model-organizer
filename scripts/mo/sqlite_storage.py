@@ -28,7 +28,7 @@ def map_row_to_record(row) -> Record:
         sha256_hash=row[11],
         md5_hash=row[12],
         created_at=row[13],
-        groups=row[14].split(","),
+        groups=row[14].split(',') if row[14] else [],
         subdir=row[15]
     )
 
@@ -235,7 +235,8 @@ class SQLiteStorage(Storage):
         rows = cursor.fetchall()
         result = []
         for row in rows:
-            result.extend(row[0].split(","))
+            if row[0]:
+                result.extend(row[0].split(","))
 
         result = list(set(result))
         return list(filter(None, result))

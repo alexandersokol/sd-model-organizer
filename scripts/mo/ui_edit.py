@@ -1,3 +1,4 @@
+import json
 import re
 
 import gradio as gr
@@ -5,7 +6,7 @@ import gradio as gr
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
-from scripts.mo.ui_navigation import generate_back_token
+from scripts.mo.ui_navigation import generate_ui_token
 
 
 def is_unix_directory_path(path):
@@ -27,9 +28,9 @@ def is_blank(s):
     return len(s.strip()) == 0
 
 
-def on_save_click(record_id, name: str, model_type: str, download_url: str, url: str, download_path: str,
-                  download_filename: str, preview_url: str, description: str, positive_prompts: str,
-                  negative_prompts: str, groups: list[str], back_token: str):
+def on_save_click(record_data, name: str, model_type: str, download_url: str, url: str, download_path: str,
+                  download_filename: str, download_subdir: str, preview_url: str, description: str,
+                  positive_prompts: str, negative_prompts: str, groups: list[str], back_token: str):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -63,6 +64,9 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
             back_token
         ]
     else:
+        record_data = json.loads(record_data)
+        record_id = '' if record_data.get('record_id') is None else record_data['record_id']
+
         record = Record(
             id_=record_id,
             name=name.strip(),
@@ -71,6 +75,7 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
             url=url.strip(),
             download_path=download_path.strip(),
             download_filename=download_filename.strip(),
+            subdir=download_subdir.strip(),
             preview_url=preview_url.strip(),
             description=description.strip(),
             positive_prompts=positive_prompts.strip(),
@@ -87,13 +92,14 @@ def on_save_click(record_id, name: str, model_type: str, download_url: str, url:
 
         return [
             gr.HTML.update(visible=False),
-            generate_back_token()
+            generate_ui_token()
         ]
 
 
-def _on_id_changed(record_id):
-    if record_id is not None and record_id:
-        record = env.storage.get_record_by_id(record_id)
+def _on_id_changed(record_data):
+    record_data = json.loads(record_data)
+    if record_data.get('record_id') is not None and record_data['record_id']:
+        record = env.storage.get_record_by_id(record_data['record_id'])
     else:
         record = None
 
@@ -105,20 +111,27 @@ def _on_id_changed(record_id):
     url = '' if record is None else record.url
     download_path = '' if record is None else record.download_path
     download_filename = '' if record is None else record.download_filename
+    download_subdir = '' if record is None else record.subdir
     description = '' if record is None else record.description
     positive_prompts = '' if record is None else record.positive_prompts
     negative_prompts = '' if record is None else record.negative_prompts
-    record_groups = '' if record is None else record.groups
+    record_groups = [] if record is None else record.groups
 
     available_groups = env.storage.get_available_groups()
+    logger.info('Groups loaded: %s', available_groups)
+    logger.info('Record groups: %s', record_groups)
     available_groups.sort()
     groups = gr.Dropdown.update(choices=available_groups, value=record_groups)
 
-    return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, description,
-            positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False)]
+    return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
+            description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False)]
 
 
 def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
+    logger.info('new_groups_str: %s', new_groups_str)
+    logger.info('selected_groups: %s', selected_groups)
+    logger.info('available_groups: %s', available_groups)
+
     if available_groups is None:
         available_groups = []
 
@@ -138,7 +151,7 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
 
 
 def edit_ui_block():
-    edit_id_box = gr.Textbox(label='edit_id_box', elem_classes='mo-alert-warning', visible=False)
+    edit_id_box = gr.Textbox(label='edit_id_box', elem_classes='mo-alert-warning', visible=True)
     edit_back_box = gr.Textbox(label='edit_back_box', elem_classes='mo-alert-warning', visible=False)
 
     title_widget = gr.Markdown()
@@ -180,6 +193,10 @@ def edit_ui_block():
                                                   value='',
                                                   max_lines=1,
                                                   info='Downloaded file name. Default if empty (Optional)')
+            download_subdir_widget = gr.Textbox(label='Subdir',
+                                                value='',
+                                                max_lines=1,
+                                                info='Download file into sub directory (Optional)')
 
         with gr.Column():
             save_widget = gr.Button('Save', elem_classes='mo-alert-primary')
@@ -215,15 +232,15 @@ def edit_ui_block():
                            inputs=edit_id_box,
                            outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
                                     preview_url_widget, url_widget, download_path_widget, download_filename_widget,
-                                    description_widget, positive_prompts_widget, negative_prompts_widget, groups_widget,
-                                    available_groups_state, error_widget]
+                                    download_subdir_widget, description_widget, positive_prompts_widget,
+                                    negative_prompts_widget, groups_widget, available_groups_state, error_widget]
                            )
 
         save_widget.click(on_save_click,
                           inputs=[edit_id_box, name_widget, model_type_widget, download_url_widget, url_widget,
-                                  download_path_widget, download_filename_widget, preview_url_widget,
-                                  description_widget, positive_prompts_widget, negative_prompts_widget,
-                                  groups_widget, edit_back_box],
+                                  download_path_widget, download_filename_widget, download_subdir_widget,
+                                  preview_url_widget, description_widget, positive_prompts_widget,
+                                  negative_prompts_widget, groups_widget, edit_back_box],
                           outputs=[error_widget, edit_back_box])
 
         add_groups_button.click(_on_add_groups_button_click,

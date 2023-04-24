@@ -41,7 +41,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
     is_home_visible = state['is_home_visible']
     if is_home_visible:
-        home_refresh_token = nav.generate_back_token()
+        home_refresh_token = nav.generate_ui_token()
 
     return [
         gr.Column.update(visible=is_home_visible),
@@ -52,7 +52,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
         gr.Textbox.update(value=home_refresh_token),
         gr.Textbox.update(value=state['details_record_id']),
-        gr.Textbox.update(value=state['edit_record_id']),
+        gr.Textbox.update(value=state['edit_data']),
         gr.Textbox.update(value=state['remove_record_id']),
         gr.Textbox.update(value=state['download_info'])
     ]
