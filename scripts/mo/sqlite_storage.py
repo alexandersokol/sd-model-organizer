@@ -5,7 +5,7 @@ import time
 
 from scripts.mo.models import Record, ModelType
 from scripts.mo.storage import Storage
-from scripts.mo.environment import env
+from scripts.mo.environment import env, find_local_files
 
 _DB_FILE = 'database.sqlite'
 _DB_VERSION = 4
@@ -13,7 +13,7 @@ _DB_TIMEOUT = 30
 
 
 def map_row_to_record(row) -> Record:
-    return Record(
+    record = Record(
         id_=row[0],
         name=row[1],
         model_type=ModelType.by_value(row[2]),
@@ -31,6 +31,13 @@ def map_row_to_record(row) -> Record:
         groups=row[14].split(',') if row[14] else [],
         subdir=row[15]
     )
+
+    model_location, preview_location = find_local_files(record)
+    if model_location is not None:
+        record.location = model_location
+        record.file_size = os.path.getsize(model_location)
+
+    return record
 
 
 class SQLiteStorage(Storage):

@@ -34,7 +34,8 @@ class Record:
                  location: str = '',
                  created_at: float = 0,
                  groups=None,
-                 subdir: str = ''):
+                 subdir: str = '',
+                 file_size: int = None):
         if groups is None:
             groups = []
 
@@ -55,6 +56,7 @@ class Record:
         self.created_at = created_at
         self.groups = groups
         self.subdir = subdir
+        self.file_size = file_size
 
     def __str__(self):
         return f'id="{self.id_}", ' \
@@ -73,4 +75,5 @@ class Record:
                f'location="{self.location}", ' \
                f'created_at="{self.created_at}", ' \
                f'groups="{self.groups}", ' \
-               f'subdir="{self.subdir}".'
+               f'subdir="{self.subdir}", ' \
+               f'file_size="{self.file_size}".'

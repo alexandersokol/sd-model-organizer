@@ -1,6 +1,7 @@
 from typing import List
 
 from scripts.mo.models import Record, ModelType
+import scripts.mo.ui_format as ui_format
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -160,14 +161,17 @@ def _create_top_fields_dict(record: Record) -> dict:
         'Type': _create_content_model_type(record.model_type)
     }
 
-    if record.location:
-        result['Location'] = _create_content_text(record.location)
+    if record.file_size is not None:
+        result['Size'] = _create_content_hash(ui_format.format_bytes(record.file_size))
 
     if record.md5_hash:
-        result['MD5 Hash'] = _create_content_hash(record.md5_hash)
+        result['MD5'] = _create_content_hash(record.md5_hash)
 
     if record.sha256_hash:
-        result['SHA256 Hash'] = _create_content_hash(record.sha256_hash)
+        result['SHA256'] = _create_content_hash(record.sha256_hash)
+
+    if record.location:
+        result['Location'] = _create_content_hash(record.location)
 
     if record.url:
         result['Model page'] = _create_content_link(record.url)
@@ -325,8 +329,9 @@ def records_cards(records: List[Record]) -> str:
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
                    f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
-        content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                   f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+        if not record.location:
+            content += '<button type="button" class="mo-btn mo-btn-primary" ' \
+                       f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-warning" ' \
                    f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'

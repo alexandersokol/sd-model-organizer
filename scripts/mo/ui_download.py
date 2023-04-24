@@ -5,6 +5,8 @@ import gradio as gr
 
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
+import scripts.mo.ui_format as ui_format
+
 from scripts.mo.dl.download_manager import DownloadManager, RECORD_STATUS_ERROR, RECORD_STATUS_EXISTS, \
     RECORD_STATUS_COMPLETED, GENERAL_STATUS_COMPLETED, GENERAL_STATUS_ERROR, GENERAL_STATUS_CANCELLED, \
     GENERAL_STATUS_IN_PROGRESS
@@ -15,46 +17,6 @@ _STATE_IN_PROGRESS = 'In Progress'
 _STATE_COMPLETED = 'Completed'
 _STATE_EXISTS = 'Exists'
 _STATE_ERROR = 'Error'
-
-
-def _format_percentage(part, total):
-    return int((part / total) * 100)
-
-
-def _format_bytes(bytes_to_format):
-    units = ['B', 'KB', 'MB', 'GB', 'TB']
-    i = 0
-    while bytes_to_format >= 1000 and i < len(units) - 1:
-        bytes_to_format /= 1000
-        i += 1
-    return f"{bytes_to_format:.2f} {units[i]}"
-
-
-def _format_time(seconds):
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    if h > 0:
-        return f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
-    else:
-        return f"{int(m):02d}:{int(s):02d}"
-
-
-def _format_download_speed(speed):
-    if speed is None:
-        return 'Undefined'
-
-    units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
-    unit_index = 0
-
-    while speed >= 1000 and unit_index < len(units) - 1:
-        speed /= 1000.0
-        unit_index += 1
-
-    return '{:.2f}{}'.format(speed, units[unit_index])
-
-
-def _format_exception(ex):
-    return f"{type(ex).__name__}: {str(ex)}".replace('"', '\\"').replace("'", "\\'")
 
 
 def _build_progress_update(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
@@ -114,23 +76,23 @@ def _build_update(progress_update=None, status_message=None, is_start_button_vis
 
 def _generate_info_center(bytes_ready, bytes_total):
     if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
-        return f"{_format_bytes(bytes_ready)} / {_format_bytes(bytes_total)}"
+        return f"{ui_format.format_bytes(bytes_ready)} / {ui_format.format_bytes(bytes_total)}"
     else:
         if isinstance(bytes_ready, int):
-            return _format_bytes(bytes_ready)
+            return ui_format.format_bytes(bytes_ready)
     return ''
 
 
 def _generate_progress(bytes_ready, bytes_total):
     if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
-        return _format_percentage(bytes_ready, bytes_total)
+        return ui_format.format_percentage(bytes_ready, bytes_total)
     else:
         return 0
 
 
 def _generate_info_right(speed_rate, elapsed):
-    speed = _format_download_speed(speed_rate) if isinstance(speed_rate, float) and speed_rate > 0 else ''
-    elapsed = '' if not isinstance(elapsed, float) or elapsed == 0 else _format_time(elapsed)
+    speed = ui_format.format_download_speed(speed_rate) if isinstance(speed_rate, float) and speed_rate > 0 else ''
+    elapsed = '' if not isinstance(elapsed, float) or elapsed == 0 else ui_format.format_time(elapsed)
     right_info = ''
     if speed:
         right_info += speed
@@ -172,7 +134,7 @@ def _generate_js_record_update(record_id, update):
         elif status == RECORD_STATUS_ERROR:
             result['result_title'] = 'Download failed'
             if update.get('exception') is not None:
-                result['result_text'] = _format_exception(update['exception'])
+                result['result_text'] = ui_format.format_exception(update['exception'])
 
     if update.get('filename') is not None:
         result['progress_info_left'] = update['filename']
@@ -204,7 +166,7 @@ def _generate_js_general_update(update):
         elif update['general_status'] == GENERAL_STATUS_ERROR:
             stat = ['Download failed.']
             if update.get('exception') is not None:
-                stat.append(_format_exception(update['exception']))
+                stat.append(ui_format.format_exception(update['exception']))
             status_message = styled.alert_danger(stat)
 
     js_result = {}

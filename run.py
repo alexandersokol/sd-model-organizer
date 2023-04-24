@@ -102,10 +102,4 @@ urls = [
     'ftp://mega.nz/file/9x1ERB4R#6t-yFBqqNsNB2H91naOi4H1xsqP7yT7dYt7INq1-12I'
 ]
 
-logger.debug('debug message')
-logger.info('info message')
-logger.warning('warn message')
-logger.error('error message')
-logger.critical('critical message')
-
 logger.info(f'Done. ')

@@ -193,6 +193,7 @@
     flex-basis: 0;
     -webkit-box-flex: 1;
     -ms-flex-positive: 1;
+    overflow-wrap: anywhere;
     flex-grow: 1;
     text-align: left;
     vertical-align: middle;

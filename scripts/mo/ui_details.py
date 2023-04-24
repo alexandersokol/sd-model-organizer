@@ -4,12 +4,27 @@ import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env
 
 
-def on_id_changed(record_id) -> str:
+def on_id_changed(record_id):
     if record_id is not None and record_id:
         data = env.storage.get_record_by_id(record_id)
-        return styled.record_details(data)
-    else:
-        return 'No record id.'
+        if data is None:
+            return [
+                gr.HTML.update(value=f'Record with id {record_id} was not found.'),
+                gr.Button.update(visible=False),
+                gr.Button.update(visible=False)
+            ]
+        else:
+            return [
+                gr.HTML.update(value=styled.record_details(data)),
+                gr.Button.update(visible=True),
+                gr.Button.update(visible=not data.location)
+            ]
+
+    return [
+        gr.HTML.update(value=f'No record id passed.'),
+        gr.Button.update(visible=False),
+        gr.Button.update(visible=False)
+    ]
 
 
 def details_ui_block():
@@ -24,7 +39,8 @@ def details_ui_block():
 
         content_widget = gr.HTML()
 
-        details_id_box.change(on_id_changed, inputs=details_id_box, outputs=content_widget)
+        details_id_box.change(on_id_changed, inputs=details_id_box,
+                              outputs=[content_widget, edit_button, download_button])
 
         back_button.click(fn=None, _js='navigateBack')
         download_button.click(fn=None, inputs=details_id_box, _js='navigateDownloadRecord')

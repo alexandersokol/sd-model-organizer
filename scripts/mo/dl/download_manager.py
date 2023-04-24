@@ -10,7 +10,7 @@ from scripts.mo.dl.downloader import Downloader
 from scripts.mo.dl.gdrive_downloader import GDriveDownloader
 from scripts.mo.dl.http_downloader import HttpDownloader
 from scripts.mo.dl.mega_downloader import MegaDownloader
-from scripts.mo.environment import env, logger
+from scripts.mo.environment import env, logger, calculate_md5, calculate_sha256
 from scripts.mo.models import Record
 
 GENERAL_STATUS_IN_PROGRESS = 'In Progress'
@@ -88,25 +88,6 @@ def _change_file_extension(filename, new_extension):
 def _get_preview_filename(url, filename):
     extension = _get_preview_extension(url)
     return _change_file_extension(filename, extension)
-
-
-def _calculate_md5(file_path):
-    with open(file_path, 'rb') as f:
-        md5 = hashlib.md5()
-        while True:
-            data = f.read(1024)
-            if not data:
-                break
-            md5.update(data)
-    return md5.hexdigest()
-
-
-def _calculate_sha256(file_path):
-    with open(file_path, 'rb') as file:
-        sha256_hash = hashlib.sha256()
-        while chunk := file.read(4096):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
 
 
 class DownloadManager:
@@ -251,8 +232,8 @@ class DownloadManager:
                 os.chmod(destination_file_path, 0o644)
                 logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
-            record.md5_hash = _calculate_md5(destination_file_path)
-            record.sha256_hash = _calculate_sha256(destination_file_path)
+            record.md5_hash = calculate_md5(destination_file_path)
+            record.sha256_hash = calculate_sha256(destination_file_path)
 
             env.storage.update_record(record)
 
