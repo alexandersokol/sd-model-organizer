@@ -32,10 +32,11 @@ def _get_destination_file_path(filename: str, record: Record) -> str:
         if path is None:
             raise Exception(f'Destination path is undefined.')
 
+    path = os.path.join(path, record.subdir)
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    return os.path.join(path, record.subdir, filename)
+    return os.path.join(path, filename)
 
 
 def _get_filename_from_url(url):
@@ -232,6 +233,7 @@ class DownloadManager:
                 os.chmod(destination_file_path, 0o644)
                 logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
+            record.location = destination_file_path
             record.md5_hash = calculate_md5(destination_file_path)
             record.sha256_hash = calculate_sha256(destination_file_path)
 

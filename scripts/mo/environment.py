@@ -108,8 +108,10 @@ def calculate_sha256(file_path):
     return sha256_hash.hexdigest()
 
 
-def find_local_files(record: Record):
-    if record.md5_hash:
+def find_preview_file(record: Record):
+    preview_file_path = None
+
+    if record.location:
         if record.download_path:
             model_path = record.download_path
         else:
@@ -117,28 +119,12 @@ def find_local_files(record: Record):
 
         lookup_dir = os.path.join(model_path, record.subdir)
 
-        model_file_path = None
+        filename = os.path.basename(record.location)
+        filename = os.path.splitext(filename)[0]
+        extensions = ('.jpeg', '.jpg', '.png', '.webp', '.gif', '.bmp')
+        for file in os.listdir(lookup_dir):
+            if file.startswith(filename) and file.endswith(extensions):
+                preview_file_path = os.path.join(lookup_dir, file)
+                break
 
-        if os.path.isdir(lookup_dir):
-            files = [f for f in os.listdir(lookup_dir) if os.path.isfile(os.path.join(lookup_dir, f))]
-            for file in files:
-                file_path = os.path.join(lookup_dir, file)
-                file_hash = calculate_md5(file_path)
-                if file_hash == record.md5_hash:
-                    model_file_path = file_path
-                    break
-
-        preview_file_path = None
-
-        if model_file_path is not None:
-            filename = os.path.basename(model_file_path)
-            filename = os.path.splitext(filename)[0]
-            extensions = ('.jpeg', '.jpg', '.png', '.webp', '.gif', '.bmp')
-            for file in os.listdir(lookup_dir):
-                if file.startswith(filename) and file.endswith(extensions):
-                    preview_file_path = os.path.join(lookup_dir, file)
-                    break
-
-        return [model_file_path, preview_file_path]
-
-    return [None, None]
+    return preview_file_path

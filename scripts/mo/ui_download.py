@@ -213,7 +213,8 @@ def _on_start_click(records):
     logger.debug('Latest state: %s', latest_state)
     logger.info('-L-> %s', _generate_js_general_update(latest_state))
     yield _build_update(
-        progress_update=_generate_js_general_update(general_state)
+        progress_update=_generate_js_general_update(general_state),
+        is_back_button_visible=True
     )
 
     logger.debug('Completed.')
@@ -273,7 +274,7 @@ def download_ui_block():
     start_button.click(_on_start_click, inputs=download_state,
                        outputs=[status_message_widget, start_button, cancel_button, back_button, download_progress_box])
 
-    cancel_button.click(_on_cancel_click)  # TODO on cancel clicked
+    cancel_button.click(_on_cancel_click, queue=False)  # TODO on cancel clicked
     back_button.click(fn=None, _js='navigateBack')
 
     return download_id_box

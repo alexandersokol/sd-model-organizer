@@ -3,7 +3,7 @@ import os
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env, logger, find_local_files
+from scripts.mo.environment import env, logger, find_preview_file
 from scripts.mo.ui_navigation import generate_ui_token
 
 
@@ -36,10 +36,11 @@ def _on_remove_click(record_id, remove_record, remove_files):
         env.storage.remove_record(record_id)
 
     if record.location and remove_files:
-        model_path, preview_path = find_local_files(record)
-        if model_path is not None:
-            os.remove(model_path)
-        if preview_path is not None:
+        if record.location and os.path.exists(record.location):
+            os.remove(record.location)
+
+        preview_path = find_preview_file(record)
+        if preview_path and os.path.exists(record.location):
             os.remove(preview_path)
 
     logger.info(f'record removed {record_id}')

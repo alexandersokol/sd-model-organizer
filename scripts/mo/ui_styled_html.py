@@ -1,7 +1,8 @@
+import os
 from typing import List
 
-from scripts.mo.models import Record, ModelType
 import scripts.mo.ui_format as ui_format
+from scripts.mo.models import Record, ModelType
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -161,8 +162,9 @@ def _create_top_fields_dict(record: Record) -> dict:
         'Type': _create_content_model_type(record.model_type)
     }
 
-    if record.file_size is not None:
-        result['Size'] = _create_content_hash(ui_format.format_bytes(record.file_size))
+    if record.location and os.path.exists(record.location):
+        size = os.path.getsize(record.location)
+        result['Size'] = _create_content_hash(ui_format.format_bytes(size))
 
     if record.md5_hash:
         result['MD5'] = _create_content_hash(record.md5_hash)
@@ -170,7 +172,7 @@ def _create_top_fields_dict(record: Record) -> dict:
     if record.sha256_hash:
         result['SHA256'] = _create_content_hash(record.sha256_hash)
 
-    if record.location:
+    if record.location and os.path.exists(record.location):
         result['Location'] = _create_content_hash(record.location)
 
     if record.url:
@@ -187,6 +189,9 @@ def _create_top_fields_dict(record: Record) -> dict:
 
     if record.download_filename:
         result['Download filename'] = _create_content_text(record.download_filename)
+
+    if record.subdir:
+        result['Subdir'] = _create_content_text(record.subdir)
 
     return result
 
@@ -329,7 +334,7 @@ def records_cards(records: List[Record]) -> str:
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
                    f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
-        if not record.location:
+        if not record.location or not os.path.exists(record.location):
             content += '<button type="button" class="mo-btn mo-btn-primary" ' \
                        f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 
