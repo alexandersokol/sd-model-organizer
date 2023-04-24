@@ -151,7 +151,7 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
 
 
 def edit_ui_block():
-    edit_id_box = gr.Textbox(label='edit_id_box', elem_classes='mo-alert-warning', visible=True)
+    edit_id_box = gr.Textbox(label='edit_id_box', elem_classes='mo-alert-warning', visible=False)
     edit_back_box = gr.Textbox(label='edit_back_box', elem_classes='mo-alert-warning', visible=False)
 
     title_widget = gr.Markdown()

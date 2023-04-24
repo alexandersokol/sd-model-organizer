@@ -358,7 +358,7 @@ def _downloads_header(record_id, title) -> str:
 
 def _download_url(record_id, url: str, is_preview: bool) -> str:
     preview = '-preview' if is_preview else ''
-    content = f'<p style="margin-top: 2rem; display: block" id="url{preview}-{record_id}">' \
+    content = f'<p style="margin-top: 2rem; display: block; overflow-wrap: anywhere;" id="url{preview}-{record_id}">' \
               f'{url}</p>'
     return content
 

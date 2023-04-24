@@ -77,9 +77,9 @@ class Environment:
             path = self.mo_vae_path()
         elif model_type == ModelType.LORA:
             path = self.mo_lora_path()
-        elif model_type.HYPER_NETWORK:
+        elif model_type == model_type.HYPER_NETWORK:
             path = self.mo_hypernetworks_path()
-        elif model_type.EMBEDDING:
+        elif model_type == model_type.EMBEDDING:
             path = self.mo_embeddings_path()
         else:
             return None
@@ -132,10 +132,12 @@ def find_local_files(record: Record):
 
         if model_file_path is not None:
             filename = os.path.basename(model_file_path)
+            filename = os.path.splitext(filename)[0]
             extensions = ('.jpeg', '.jpg', '.png', '.webp', '.gif', '.bmp')
             for file in os.listdir(lookup_dir):
                 if file.startswith(filename) and file.endswith(extensions):
-                    print(os.path.join(lookup_dir, file))
+                    preview_file_path = os.path.join(lookup_dir, file)
+                    break
 
         return [model_file_path, preview_file_path]
 

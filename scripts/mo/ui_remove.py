@@ -1,7 +1,9 @@
+import os
+
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env, logger
+from scripts.mo.environment import env, logger, find_local_files
 from scripts.mo.ui_navigation import generate_ui_token
 
 
@@ -13,18 +15,33 @@ def _on_id_change(record_id):
         return [
             gr.HTML.update(value='Record was not found in database.'),
             gr.Button.update(visible=True),
-            gr.Button.update(visible=False)
+            gr.Button.update(visible=False),
+            gr.Checkbox.update(visible=False),
+            gr.Checkbox.update(visible=False)
         ]
 
     return [
         gr.HTML.update(value=styled.alert_danger(f'Are you sure you what to remove "{record.name}"?')),
         gr.Button.update(visible=True),
-        gr.Button.update(visible=True)
+        gr.Button.update(visible=True),
+        gr.Checkbox.update(visible=bool(record.location), value=True),
+        gr.Checkbox.update(visible=bool(record.location), value=True)
     ]
 
 
-def _on_remove_click(record_id, back_token):
-    env.storage.remove_record(record_id)
+def _on_remove_click(record_id, remove_record, remove_files):
+    record = env.storage.get_record_by_id(record_id)
+
+    if remove_record:
+        env.storage.remove_record(record_id)
+
+    if record.location and remove_files:
+        model_path, preview_path = find_local_files(record)
+        if model_path is not None:
+            os.remove(model_path)
+        if preview_path is not None:
+            os.remove(preview_path)
+
     logger.info(f'record removed {record_id}')
     return generate_ui_token()
 
@@ -37,14 +54,25 @@ def remove_ui_block():
         gr.Markdown('## Record removal')
         html_widget = gr.HTML()
 
+        with gr.Column():
+            gr.Markdown()
+            remove_record_checkbox = gr.Checkbox(value=True, label='Remove record', interactive=True)
+            remove_files_checkbox = gr.Checkbox(value=True, label='Remove files', interactive=True)
+            gr.Markdown()
+
         with gr.Row():
+            gr.Markdown()
             cancel_button = gr.Button('Cancel', visible=False)
             remove_button = gr.Button('Remove', visible=False, elem_id='mo_button_remove')
+            gr.Markdown()
 
         cancel_button.click(fn=None, _js='navigateBack')
-        remove_button.click(_on_remove_click, inputs=[remove_id_box, remove_back_box], outputs=remove_back_box)
+        remove_button.click(_on_remove_click, inputs=[remove_id_box, remove_record_checkbox, remove_files_checkbox],
+                            outputs=remove_back_box)
 
-        remove_id_box.change(_on_id_change, inputs=remove_id_box, outputs=[html_widget, cancel_button, remove_button])
+        remove_id_box.change(_on_id_change, inputs=remove_id_box,
+                             outputs=[html_widget, cancel_button, remove_button, remove_record_checkbox,
+                                      remove_files_checkbox])
 
         remove_back_box.change(fn=None, _js='navigateHome')
     return remove_id_box
