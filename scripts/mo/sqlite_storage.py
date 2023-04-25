@@ -3,9 +3,9 @@ import sqlite3
 import threading
 import time
 
+from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.storage import Storage
-from scripts.mo.environment import env
 
 _DB_FILE = 'database.sqlite'
 _DB_VERSION = 5
@@ -138,6 +138,69 @@ class SQLiteStorage(Storage):
         result = []
         for row in rows:
             result.append(map_row_to_record(row))
+        return result
+
+    def query_records(self, name_query: str = None, groups=None, model_types=None, show_downloaded=True,
+                      show_not_downloaded=True) -> list[Record]:
+
+        query = 'SELECT * FROM Record'
+
+        is_where_appended = False
+        append_and = False
+
+        if name_query is not None and name_query:
+            if not is_where_appended:
+                query += ' WHERE'
+                is_where_appended = True
+
+            query += f" LOWER(_name) LIKE '%{name_query}%'"
+            append_and = True
+
+        if model_types is not None and len(model_types) > 0:
+            if not is_where_appended:
+                query += ' WHERE'
+                is_where_appended = True
+
+            if append_and:
+                query += ' AND'
+
+            query += ' ('
+            append_or = False
+            for model_type in model_types:
+                if append_or:
+                    query += ' OR'
+                query += f" model_type='{model_type}'"
+                append_or = True
+
+            query += ')'
+
+            append_and = True
+            pass
+
+        if groups is not None and len(groups) > 0:
+            if not is_where_appended:
+                query += ' WHERE'
+
+            for group in groups:
+                if append_and:
+                    query += ' AND'
+                query += f" LOWER(groups) LIKE '%{group}%'"
+                append_and = True
+
+        logger.debug(f'query: {query}')
+        cursor = self._connection().cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            record = map_row_to_record(row)
+            is_downloaded = bool(record.location) and os.path.exists(record.location)
+
+            if show_downloaded and is_downloaded:
+                result.append(record)
+            elif show_not_downloaded and not is_downloaded:
+                result.append(record)
+
         return result
 
     def get_record_by_id(self, id_) -> Record:

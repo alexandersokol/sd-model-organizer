@@ -10,6 +10,11 @@ class Storage(ABC):
         pass
 
     @abstractmethod
+    def query_records(self, name_query=None, groups=None, model_types=None, show_downloaded=None,
+                      show_not_downloaded=None) -> list[Record]:
+        pass
+
+    @abstractmethod
     def get_record_by_id(self, _id) -> Record:
         pass
 
