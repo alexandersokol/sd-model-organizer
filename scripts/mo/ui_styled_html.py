@@ -401,12 +401,12 @@ def download_cards(records: list[Record]) -> str:
 
         content += _downloads_header(id_, record.name)
 
-        content += _download_url(id_, record.download_url, False)
+        # content += _download_url(id_, record.download_url, False)
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
         if record.preview_url:
-            content += _download_url(id_, record.preview_url, True)
+            # content += _download_url(id_, record.preview_url, True)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)
 

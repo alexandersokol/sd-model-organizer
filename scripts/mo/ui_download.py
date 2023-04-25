@@ -261,7 +261,7 @@ def download_ui_block():
         download_state = gr.State(value=[])
         download_id_box = gr.Textbox(label='download_id_box',
                                      elem_classes='mo-alert-warning',
-                                     visible=True,
+                                     visible=False,
                                      interactive=False)
         download_progress_box = gr.Textbox(label='download_progress_box',
                                            elem_classes='mo-alert-warning',
