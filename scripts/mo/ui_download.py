@@ -234,12 +234,17 @@ def _on_id_change(data):
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
+    record_ids = nav.get_download_record_ids(data)
 
     if record_id is not None:
         records.append(env.storage.get_record_by_id(record_id))
 
     if group is not None:
         records.extend(env.storage.get_records_by_group(group))
+
+    if record_ids is not None:
+        for record_id in record_ids:
+            records.append(env.storage.get_record_by_id(record_id))
 
     return [
         gr.HTML.update(value=styled.download_cards(records)),
@@ -254,8 +259,12 @@ def _on_cancel_click():
 def download_ui_block():
     with gr.Blocks():
         download_state = gr.State(value=[])
-        download_id_box = gr.Textbox(label='download_id_box', elem_classes='mo-alert-warning', visible=False)
-        download_progress_box = gr.Textbox(label='download_progress_box', elem_classes='mo-alert-warning',
+        download_id_box = gr.Textbox(label='download_id_box',
+                                     elem_classes='mo-alert-warning',
+                                     visible=True,
+                                     interactive=False)
+        download_progress_box = gr.Textbox(label='download_progress_box',
+                                           elem_classes='mo-alert-warning',
                                            visible=False)
         gr.Markdown('## Downloads')
         status_message_widget = gr.HTML(visible=False)

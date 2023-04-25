@@ -209,7 +209,7 @@ function navigateBack() {
         if (currentNavigation.hasOwnProperty('backstack') && currentNavigation.backstack.length !== 0) {
             backNav = currentNavigation.backstack.shift()
 
-            if(currentNavigation.backstack.length !== 0) {
+            if (currentNavigation.backstack.length !== 0) {
                 backNav.backstack = currentNavigation.backstack
             }
         }
@@ -258,6 +258,19 @@ function navigateDownloadRecord(id) {
     const navObj = {
         screen: "download",
         record_id: id,
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
+function navigateDownloadRecordList(ids_json) {
+    const ids = JSON.parse(JSON.parse(ids_json))
+    log('Navigate download screen for records: ' + ids)
+    const navObj = {
+        screen: "download",
+        record_ids: ids,
         token: generateUUID(),
         backstack: populateBackstack()
     };

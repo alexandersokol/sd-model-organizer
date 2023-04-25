@@ -3,11 +3,11 @@ import json
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env, LAYOUT_CARDS
+from scripts.mo.environment import env, LAYOUT_CARDS, logger
 from scripts.mo.models import ModelType
 
 
-def _prepare_data(state_json: str) -> str:
+def _prepare_data(state_json: str):
     state = json.loads(state_json)
 
     data = env.storage.query_records(
@@ -23,7 +23,12 @@ def _prepare_data(state_json: str) -> str:
     else:
         html = styled.records_table(data)
 
-    return html
+    record_ids = list(map(lambda r: r.id_, data))
+    return [
+        html,
+        json.dumps(json.dumps(record_ids)),
+        gr.Button.update(visible=len(record_ids) > 0)
+    ]
 
 
 def _get_available_groups():
@@ -86,6 +91,7 @@ def home_ui_block():
             gr.Markdown('## Records list')
             gr.Markdown('')
             reload_button = gr.Button('Reload')
+            download_all_button = gr.Button('Download All')
             add_button = gr.Button('Add')
 
         with gr.Accordion(label='Search options', open=False):
@@ -103,13 +109,23 @@ def home_ui_block():
                                                    value=initial_state['show_downloaded'])
             show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                        value=initial_state['show_not_downloaded'])
+        initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
+        html_content_widget = gr.HTML(initial_html)
+        record_ids_box = gr.Textbox(value=initial_record_ids,
+                                    label='record_ids_box',
+                                    elem_classes='mo-alert-warning',
+                                    visible=False,
+                                    interactive=False)
+        download_all_button.visible = len(initial_record_ids) > 0
 
-        html_content_widget = gr.HTML(_prepare_data(initial_state_json))
+        reload_button.click(_prepare_data, inputs=state_box,
+                            outputs=[html_content_widget, record_ids_box, download_all_button])
+        refresh_box.change(_prepare_data, inputs=state_box,
+                           outputs=[html_content_widget, record_ids_box, download_all_button])
+        state_box.change(_prepare_data, inputs=state_box,
+                         outputs=[html_content_widget, record_ids_box, download_all_button])
 
-        reload_button.click(_prepare_data, inputs=state_box, outputs=[html_content_widget])
-        refresh_box.change(_prepare_data, inputs=state_box, outputs=[html_content_widget])
-        state_box.change(_prepare_data, inputs=state_box, outputs=[html_content_widget])
-
+        download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         add_button.click(fn=None, _js='navigateAdd')
 
         search_box.change(_on_search_query_changed, inputs=[search_box, state_box], outputs=state_box)
