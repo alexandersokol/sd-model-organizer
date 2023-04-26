@@ -12,6 +12,8 @@ STORAGE_NOTION = 'Notion'
 LAYOUT_CARDS = 'Cards'
 LAYOUT_TABLE = 'Table'
 
+_SETTINGS_FILE = 'settings.txt'
+
 
 class CustomFormatter(logging.Formatter):
     light_green = '\033[92m'
@@ -84,6 +86,26 @@ class Environment:
         else:
             return None
         return path.strip()
+
+    @staticmethod
+    def read_settings():
+        with open(os.path.join(env.mo_script_dir, _SETTINGS_FILE)) as f:
+            lines = f.readlines()
+
+        result = {}
+        for line in lines:
+            key, value = line.strip().split(': ')
+            result[key] = value
+            logger.info(f'{key}: {value}')
+        logger.info('Settings loaded.')
+        return result
+
+    @staticmethod
+    def save_settings(settings: dict):
+        with open(os.path.join(env.mo_script_dir, _SETTINGS_FILE), 'w') as f:
+            for key, value in settings.items():
+                f.write(f'{key}: {value}\n')
+            logger.info('Settings saved')
 
 
 env = Environment()

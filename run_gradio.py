@@ -9,7 +9,7 @@ from scripts.mo.environment import *
 from scripts.mo.init_storage import initialize_storage
 from scripts.mo.ui_main import main_ui_block
 
-SETTINGS_FILE = 'settings.txt'
+SETTINGS_FILE = 'settings_dev.txt'
 
 mimetypes.init()
 mimetypes.add_type("application/javascript", ".js")
