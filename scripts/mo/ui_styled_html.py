@@ -363,8 +363,9 @@ def _downloads_header(record_id, title) -> str:
 
 def _download_url(record_id, url: str, is_preview: bool) -> str:
     preview = '-preview' if is_preview else ''
+    hint = 'Preview URL' if is_preview else 'Model URL'
     content = f'<p style="margin-top: 2rem; display: block; overflow-wrap: anywhere;" id="url{preview}-{record_id}">' \
-              f'{url}</p>'
+              f'[{hint}]: {url}</p>'
     return content
 
 
@@ -401,12 +402,12 @@ def download_cards(records: list[Record]) -> str:
 
         content += _downloads_header(id_, record.name)
 
-        # content += _download_url(id_, record.download_url, False)
+        content += _download_url(id_, record.download_url, False)
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
         if record.preview_url:
-            # content += _download_url(id_, record.preview_url, True)
+            content += _download_url(id_, record.preview_url, True)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)
 

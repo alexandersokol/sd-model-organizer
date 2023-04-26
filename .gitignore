@@ -2,5 +2,6 @@
 .idea/
 __pycache__/
 settings.txt
+dev_settings.txt
 database.sqlite
 tmp/

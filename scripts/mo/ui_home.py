@@ -94,21 +94,31 @@ def home_ui_block():
             download_all_button = gr.Button('Download All')
             add_button = gr.Button('Add')
 
-        with gr.Accordion(label='Search options', open=False):
-            search_box = gr.Textbox(label='Search by name',
-                                    value=initial_state['query'])
-            model_types_dropdown = gr.Dropdown([model_type.value for model_type in ModelType],
-                                               value=initial_state['model_types'],
-                                               label='Model types',
-                                               multiselect=True)
-            groups_dropdown = gr.Dropdown(_get_available_groups(),
-                                          multiselect=True,
-                                          label='Groups',
-                                          value=initial_state['groups'])
-            show_downloaded_checkbox = gr.Checkbox(label='Show downloaded',
-                                                   value=initial_state['show_downloaded'])
-            show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
-                                                       value=initial_state['show_not_downloaded'])
+        with gr.Accordion(label='Display options', open=False):
+            with gr.Group():
+                sort_box = gr.Dropdown(['Time Added ASC', 'Time Added DECS', 'Name ASC', 'Name DECS'],
+                                       value='Time Added ASC',
+                                       label='Sort By',
+                                       multiselect=False,
+                                       interactive=True)
+
+                downloaded_first_checkbox = gr.Checkbox(value=False, label='Downloaded first')
+
+            with gr.Group():
+                search_box = gr.Textbox(label='Search by name',
+                                        value=initial_state['query'])
+                model_types_dropdown = gr.Dropdown([model_type.value for model_type in ModelType],
+                                                   value=initial_state['model_types'],
+                                                   label='Model types',
+                                                   multiselect=True)
+                groups_dropdown = gr.Dropdown(_get_available_groups(),
+                                              multiselect=True,
+                                              label='Groups',
+                                              value=initial_state['groups'])
+                show_downloaded_checkbox = gr.Checkbox(label='Show downloaded',
+                                                       value=initial_state['show_downloaded'])
+                show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
+                                                           value=initial_state['show_not_downloaded'])
         initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
         html_content_widget = gr.HTML(initial_html)
         record_ids_box = gr.Textbox(value=initial_record_ids,
