@@ -153,7 +153,7 @@ def home_ui_block():
         state_box = gr.Textbox(value=initial_state_json,
                                label='state_box',
                                elem_classes='mo-alert-warning',
-                               visible=True,
+                               visible=False,
                                interactive=False)
 
         with gr.Row():
