@@ -44,6 +44,8 @@ function updateDownloadCardState(id, state) {
     } else if (state === 'Error') {
         cardClass = 'mo-alert-danger'
         isResultBoxVisible = true
+    } else if (state === 'Cancelled'){
+        cardClass = 'mo-alert-warning'
     } else {
         return
     }
