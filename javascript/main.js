@@ -1,3 +1,8 @@
+// add tinymce
+const script = document.createElement('script');
+script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+document.head.appendChild(script);
+
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
@@ -5,6 +10,80 @@ function findElem(elementId) {
 
 function log(text) {
     console.log(text)
+}
+
+function handleEditorClick() {
+    tinymce.init({
+        selector: '#mytextarea',
+        promotion: false,
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+    });
+
+    // tinymce.init({
+    //     selector: '#mytextarea',
+    //     toolbar: false,
+    //     menubar: false,
+    //     statusbar: false,
+    //     promotion: false
+    // });
+
+    return []
+}
+
+function handleEditorEnable() {
+    tinyMCE.get('mytextarea').getBody().setAttribute('contenteditable', true);
+    var myContent = tinymce.get("mytextarea").getContent();
+    log(myContent)
+    return []
+}
+
+function handleEditorDisable() {
+    tinyMCE.get('mytextarea').getBody().setAttribute('contenteditable', false);
+    return []
+}
+
+
+function handleDescriptionEditorContentChange(content) {
+    log('handleDescriptionEditorContentChange: ' + content)
+
+    if (tinymce.get('mo-description-editor') == null) {
+        tinymce.init({
+            selector: '#mo-description-editor',
+            promotion: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        });
+    }
+
+    if (typeof content === 'string' && /^<\[\[token=.*]]>$/i.test(content)) {
+        tinymce.get('mo-description-editor').setContent('')
+    } else {
+        tinymce.get('mo-description-editor').setContent(content)
+    }
+
+    return []
+}
+
+function handleRecordSave() {
+    log('Handling record save')
+
+    // This random token required to trigger change event in gradio in the textbox widget :/
+    const token = '<[[token="' + generateUUID() + '"]]>'
+
+    let output;
+    if (tinymce.get('mo-description-editor') == null) {
+        output = token
+    } else {
+        output = token + tinymce.get('mo-description-editor').getContent()
+    }
+
+    const textArea = findElem('mo-description-output-widget').querySelector('textarea')
+    const event = new Event('input', {'bubbles': true, "composed": true});
+    textArea.value = output
+    findElem('mo-description-output-widget').querySelector('textarea').dispatchEvent(event);
+    console.log('Description content dispatched: ' + output)
+    return []
 }
 
 function updateDownloadBlockVisibility(id, tag, isVisible, visibleUnit) {
@@ -44,7 +123,7 @@ function updateDownloadCardState(id, state) {
     } else if (state === 'Error') {
         cardClass = 'mo-alert-danger'
         isResultBoxVisible = true
-    } else if (state === 'Cancelled'){
+    } else if (state === 'Cancelled') {
         cardClass = 'mo-alert-warning'
     } else {
         return
@@ -313,6 +392,10 @@ function deliverNavObject(navObj) {
     console.log('JSON Nav dispatched: ' + navJson)
 }
 
+onUiLoaded(function () {
+    log("UI loaded")
+
+})
 /*
 onUiLoaded(() => {
     const inputElement = document.querySelector("#mo-groups-widget input");
