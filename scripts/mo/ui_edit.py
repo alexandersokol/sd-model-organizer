@@ -131,7 +131,9 @@ def _on_id_changed(record_data):
     groups = gr.Dropdown.update(choices=available_groups, value=record_groups)
 
     if not description:
-        description = f'<[[token="{generate_ui_token()}]]>'
+        description = f'<[[token="{generate_ui_token()}"]]>'
+    else:
+        description = f'<[[token="{generate_ui_token()}"]]>{description}'
 
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False)]

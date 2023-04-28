@@ -42,12 +42,7 @@ function handleDescriptionPreviewContentChange(content) {
 function handleDescriptionEditorContentChange(content) {
     log('handleDescriptionEditorContentChange')
 
-    let content_data;
-    if (typeof content === 'string' && /^<\[\[token=.*]]>$/i.test(content)) {
-        content_data = ''
-    } else {
-        content_data = content
-    }
+    let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
 
     if (tinymce.get('mo-description-editor') == null) {
         tinymce.init({
@@ -56,14 +51,14 @@ function handleDescriptionEditorContentChange(content) {
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
             init_instance_callback: function (inst) {
-                inst.setContent(content_data)
+                inst.setContent(contentData)
             }
         });
     }
 
     const inst = tinymce.get('mo-description-editor')
     if (inst.initialized) {
-        inst.setContent(content_data)
+        inst.setContent(contentData)
     }
 
     return []
