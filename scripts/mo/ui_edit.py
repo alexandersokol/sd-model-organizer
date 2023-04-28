@@ -250,12 +250,12 @@ def edit_ui_block():
     description_input_widget = gr.Textbox(label='description_input_widget',
                                           elem_classes='mo-alert-warning',
                                           interactive=False,
-                                          visible=True)
+                                          visible=False)
     description_output_widget = gr.Textbox(label="description_output_widget",
                                            elem_classes='mo-alert-warning',
                                            elem_id='mo-description-output-widget',
                                            interactive=False,
-                                           visible=True)
+                                           visible=False)
 
     description_input_widget.change(fn=None, inputs=description_input_widget,
                                     _js='handleDescriptionEditorContentChange')
@@ -275,13 +275,6 @@ def edit_ui_block():
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget]
                        )
-
-    # save_widget.click(on_save_click,
-    #                   inputs=[edit_id_box, name_widget, model_type_widget, download_url_widget, url_widget,
-    #                           download_path_widget, download_filename_widget, download_subdir_widget,
-    #                           preview_url_widget, description_input_widget, positive_prompts_widget,
-    #                           negative_prompts_widget, groups_widget, edit_back_box],
-    #                   outputs=[error_widget, edit_back_box])
 
     save_widget.click(fn=None, _js='handleRecordSave')
 

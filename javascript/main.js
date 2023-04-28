@@ -12,40 +12,42 @@ function log(text) {
     console.log(text)
 }
 
-function handleEditorClick() {
-    tinymce.init({
-        selector: '#mytextarea',
-        promotion: false,
-        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    });
+function handleDescriptionPreviewContentChange(content) {
+    log('handleDescriptionPreviewContentChange')
 
-    // tinymce.init({
-    //     selector: '#mytextarea',
-    //     toolbar: false,
-    //     menubar: false,
-    //     statusbar: false,
-    //     promotion: false
-    // });
+    if (tinymce.get('mo-description-preview') == null) {
+        tinymce.init({
+            selector: '#mo-description-preview',
+            toolbar: false,
+            menubar: false,
+            statusbar: false,
+            promotion: false,
+            plugins: 'autoresize',
+            init_instance_callback: function (inst) {
+                inst.mode.set("readonly")
+                inst.setContent(content)
+            }
+        });
+    }
 
-    return []
-}
+    const inst = tinymce.get('mo-description-preview')
+    if (inst.initialized) {
+        inst.setContent(content)
+    }
 
-function handleEditorEnable() {
-    tinyMCE.get('mytextarea').getBody().setAttribute('contenteditable', true);
-    var myContent = tinymce.get("mytextarea").getContent();
-    log(myContent)
-    return []
-}
-
-function handleEditorDisable() {
-    tinyMCE.get('mytextarea').getBody().setAttribute('contenteditable', false);
     return []
 }
 
 
 function handleDescriptionEditorContentChange(content) {
-    log('handleDescriptionEditorContentChange: ' + content)
+    log('handleDescriptionEditorContentChange')
+
+    let content_data;
+    if (typeof content === 'string' && /^<\[\[token=.*]]>$/i.test(content)) {
+        content_data = ''
+    } else {
+        content_data = content
+    }
 
     if (tinymce.get('mo-description-editor') == null) {
         tinymce.init({
@@ -53,13 +55,15 @@ function handleDescriptionEditorContentChange(content) {
             promotion: false,
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            init_instance_callback: function (inst) {
+                inst.setContent(content_data)
+            }
         });
     }
 
-    if (typeof content === 'string' && /^<\[\[token=.*]]>$/i.test(content)) {
-        tinymce.get('mo-description-editor').setContent('')
-    } else {
-        tinymce.get('mo-description-editor').setContent(content)
+    const inst = tinymce.get('mo-description-editor')
+    if (inst.initialized) {
+        inst.setContent(content_data)
     }
 
     return []
@@ -396,6 +400,7 @@ onUiLoaded(function () {
     log("UI loaded")
 
 })
+
 /*
 onUiLoaded(() => {
     const inputElement = document.querySelector("#mo-groups-widget input");

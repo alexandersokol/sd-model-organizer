@@ -238,21 +238,6 @@ def _details_top(record: Record) -> str:
     content += '</div>'
     content += '</div>'
 
-    # Description
-    if record.description:
-        highlight = 'mo-details-row-even' if counter % 2 == 0 else 'mo-details-row-odd'
-        content += f'<div class="mo-details-row mo-details-row-padding {highlight}">'
-        content += '<div class="mo-details-col mo-details-col-full">'
-        content += '<span class="mo-text-header">Description:</span>'
-        content += '</div>'
-        content += '</div>'
-
-        content += f'<div class="mo-details-row mo-details-row-padding {highlight}">'
-        content += '<div class="mo-details-col mo-details-col-full">'
-        content += f'<span class="mo-text-content">{record.description}</span>'
-        content += '</div>'
-        content += ' </div>'
-
     if record.positive_prompts or record.negative_prompts:
         content += '<div class="mo-details-row mo-details-row-padding">'
         content += '<div class="mo-details-col">'
