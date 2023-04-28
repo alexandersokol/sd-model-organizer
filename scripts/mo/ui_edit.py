@@ -28,9 +28,10 @@ def is_blank(s):
     return len(s.strip()) == 0
 
 
-def on_save_click(record_data, name: str, model_type: str, download_url: str, url: str, download_path: str,
-                  download_filename: str, download_subdir: str, preview_url: str, description: str,
-                  positive_prompts: str, negative_prompts: str, groups: list[str], back_token: str):
+def _on_description_output_changed(record_data, name: str, model_type: str, download_url: str, url: str,
+                                   download_path: str, download_filename: str, download_subdir: str, preview_url: str,
+                                   description_output: str, positive_prompts: str, negative_prompts: str,
+                                   groups: list[str], back_token: str):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -66,6 +67,12 @@ def on_save_click(record_data, name: str, model_type: str, download_url: str, ur
     else:
         record_data = json.loads(record_data)
         record_id = '' if record_data.get('record_id') is None else record_data['record_id']
+
+        if description_output.startswith('<[[token="'):
+            end_index = description_output.index(']]>') + 3
+            description = description_output[end_index:]
+        else:
+            description = description_output
 
         record = Record(
             id_=record_id,
@@ -123,6 +130,11 @@ def _on_id_changed(record_data):
     available_groups.sort()
     groups = gr.Dropdown.update(choices=available_groups, value=record_groups)
 
+    if not description:
+        description = f'<[[token="{generate_ui_token()}"]]>'
+    else:
+        description = f'<[[token="{generate_ui_token()}"]]>{description}'
+
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False)]
 
@@ -151,8 +163,14 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
 
 
 def edit_ui_block():
-    edit_id_box = gr.Textbox(label='edit_id_box', elem_classes='mo-alert-warning', visible=False)
-    edit_back_box = gr.Textbox(label='edit_back_box', elem_classes='mo-alert-warning', visible=False)
+    edit_id_box = gr.Textbox(label='edit_id_box',
+                             elem_classes='mo-alert-warning',
+                             interactive=False,
+                             visible=False)
+    edit_back_box = gr.Textbox(label='edit_back_box',
+                               elem_classes='mo-alert-warning',
+                               interactive=False,
+                               visible=False)
 
     title_widget = gr.Markdown()
     available_groups_state = gr.State()
@@ -184,22 +202,9 @@ def edit_ui_block():
                                     max_lines=1,
                                     info='Link to the model page (Optional)')
 
-            download_path_widget = gr.Textbox(label='Download Path:',
-                                              value='',
-                                              max_lines=1,
-                                              info='UNIX path to the download dir, default if empty. Must start '
-                                                   'with "\\" (Required for "Other\" model type)', )
-            download_filename_widget = gr.Textbox(label='Download File Name:',
-                                                  value='',
-                                                  max_lines=1,
-                                                  info='Downloaded file name. Default if empty (Optional)')
-            download_subdir_widget = gr.Textbox(label='Subdir',
-                                                value='',
-                                                max_lines=1,
-                                                info='Download file into sub directory (Optional)')
-
         with gr.Column():
             save_widget = gr.Button('Save', elem_classes='mo-alert-primary')
+
             error_widget = gr.HTML(visible=False)
             groups_widget = gr.Dropdown(label='Groups',
                                         multiselect=True,
@@ -215,39 +220,71 @@ def edit_ui_block():
                                                 elem_id='mo-add-groups-box')
                     add_groups_button = gr.Button('Add Group')
 
-            description_widget = gr.Textbox(label='Description:',
-                                            value='',
-                                            max_lines=20,
-                                            info='Model description (Optional)')
-            positive_prompts_widget = gr.Textbox(label='Positive prompts:',
-                                                 value='',
-                                                 max_lines=20,
-                                                 info='Model positive prompts (Optional)')
-            negative_prompts_widget = gr.Textbox(label='Negative prompts:',
-                                                 value='',
-                                                 max_lines=20,
-                                                 info='Model negative prompts (Optional)')
+            with gr.Accordion(label='Download options', open=False):
+                download_path_widget = gr.Textbox(label='Download Path:',
+                                                  value='',
+                                                  max_lines=1,
+                                                  info='UNIX path to the download dir, default if empty. Must start '
+                                                       'with "\\" (Required for "Other\" model type)', )
+                download_filename_widget = gr.Textbox(label='Download File Name:',
+                                                      value='',
+                                                      max_lines=1,
+                                                      info='Downloaded file name. Default if empty (Optional)')
+                download_subdir_widget = gr.Textbox(label='Subdir',
+                                                    value='',
+                                                    max_lines=1,
+                                                    info='Download file into sub directory (Optional)')
 
-        edit_id_box.change(_on_id_changed,
-                           inputs=edit_id_box,
-                           outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
-                                    preview_url_widget, url_widget, download_path_widget, download_filename_widget,
-                                    download_subdir_widget, description_widget, positive_prompts_widget,
-                                    negative_prompts_widget, groups_widget, available_groups_state, error_widget]
-                           )
+            with gr.Accordion(label='Prompts', open=False):
+                positive_prompts_widget = gr.Textbox(label='Positive prompts:',
+                                                     value='',
+                                                     max_lines=20,
+                                                     info='Model positive prompts (Optional)')
+                negative_prompts_widget = gr.Textbox(label='Negative prompts:',
+                                                     value='',
+                                                     max_lines=20,
+                                                     info='Model negative prompts (Optional)')
 
-        save_widget.click(on_save_click,
-                          inputs=[edit_id_box, name_widget, model_type_widget, download_url_widget, url_widget,
-                                  download_path_widget, download_filename_widget, download_subdir_widget,
-                                  preview_url_widget, description_widget, positive_prompts_widget,
-                                  negative_prompts_widget, groups_widget, edit_back_box],
-                          outputs=[error_widget, edit_back_box])
+    description_html = '<div><p style="margin-left: 0.2rem;">Description:</p>' \
+                       '<textarea id="mo-description-editor"></textarea></div>'
+    gr.HTML(label='Description:', value=description_html)
 
-        add_groups_button.click(_on_add_groups_button_click,
-                                inputs=[add_groups_box, groups_widget, available_groups_state],
-                                outputs=[add_groups_box, groups_widget])
+    description_input_widget = gr.Textbox(label='description_input_widget',
+                                          elem_classes='mo-alert-warning',
+                                          interactive=False,
+                                          visible=False)
+    description_output_widget = gr.Textbox(label="description_output_widget",
+                                           elem_classes='mo-alert-warning',
+                                           elem_id='mo-description-output-widget',
+                                           interactive=False,
+                                           visible=False)
 
-        cancel_button.click(fn=None, _js='navigateBack')
-        edit_back_box.change(fn=None, _js='navigateBack')
+    description_input_widget.change(fn=None, inputs=description_input_widget,
+                                    _js='handleDescriptionEditorContentChange')
 
-        return edit_id_box
+    description_output_widget.change(_on_description_output_changed,
+                                     inputs=[edit_id_box, name_widget, model_type_widget,
+                                             download_url_widget, url_widget,
+                                             download_path_widget, download_filename_widget, download_subdir_widget,
+                                             preview_url_widget, description_output_widget, positive_prompts_widget,
+                                             negative_prompts_widget, groups_widget, edit_back_box],
+                                     outputs=[error_widget, edit_back_box])
+
+    edit_id_box.change(_on_id_changed,
+                       inputs=edit_id_box,
+                       outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
+                                preview_url_widget, url_widget, download_path_widget, download_filename_widget,
+                                download_subdir_widget, description_input_widget, positive_prompts_widget,
+                                negative_prompts_widget, groups_widget, available_groups_state, error_widget]
+                       )
+
+    save_widget.click(fn=None, _js='handleRecordSave')
+
+    add_groups_button.click(_on_add_groups_button_click,
+                            inputs=[add_groups_box, groups_widget, available_groups_state],
+                            outputs=[add_groups_box, groups_widget])
+
+    cancel_button.click(fn=None, _js='navigateBack')
+    edit_back_box.change(fn=None, _js='navigateBack')
+
+    return edit_id_box

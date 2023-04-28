@@ -1,3 +1,8 @@
+// add tinymce
+const script = document.createElement('script');
+script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+document.head.appendChild(script);
+
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
@@ -5,6 +10,79 @@ function findElem(elementId) {
 
 function log(text) {
     console.log(text)
+}
+
+function handleDescriptionPreviewContentChange(content) {
+    log('handleDescriptionPreviewContentChange')
+
+    if (tinymce.get('mo-description-preview') == null) {
+        tinymce.init({
+            selector: '#mo-description-preview',
+            toolbar: false,
+            menubar: false,
+            statusbar: false,
+            promotion: false,
+            plugins: 'autoresize',
+            init_instance_callback: function (inst) {
+                inst.mode.set("readonly")
+                inst.setContent(content)
+            }
+        });
+    }
+
+    const inst = tinymce.get('mo-description-preview')
+    if (inst.initialized) {
+        inst.setContent(content)
+    }
+
+    return []
+}
+
+
+function handleDescriptionEditorContentChange(content) {
+    log('handleDescriptionEditorContentChange')
+
+    let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
+
+    if (tinymce.get('mo-description-editor') == null) {
+        tinymce.init({
+            selector: '#mo-description-editor',
+            promotion: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            init_instance_callback: function (inst) {
+                inst.setContent(contentData)
+            }
+        });
+    }
+
+    const inst = tinymce.get('mo-description-editor')
+    if (inst.initialized) {
+        inst.setContent(contentData)
+    }
+
+    return []
+}
+
+function handleRecordSave() {
+    log('Handling record save')
+
+    // This random token required to trigger change event in gradio in the textbox widget :/
+    const token = '<[[token="' + generateUUID() + '"]]>'
+
+    let output;
+    if (tinymce.get('mo-description-editor') == null) {
+        output = token
+    } else {
+        output = token + tinymce.get('mo-description-editor').getContent()
+    }
+
+    const textArea = findElem('mo-description-output-widget').querySelector('textarea')
+    const event = new Event('input', {'bubbles': true, "composed": true});
+    textArea.value = output
+    findElem('mo-description-output-widget').querySelector('textarea').dispatchEvent(event);
+    console.log('Description content dispatched: ' + output)
+    return []
 }
 
 function updateDownloadBlockVisibility(id, tag, isVisible, visibleUnit) {
@@ -44,7 +122,7 @@ function updateDownloadCardState(id, state) {
     } else if (state === 'Error') {
         cardClass = 'mo-alert-danger'
         isResultBoxVisible = true
-    } else if (state === 'Cancelled'){
+    } else if (state === 'Cancelled') {
         cardClass = 'mo-alert-warning'
     } else {
         return
@@ -312,6 +390,11 @@ function deliverNavObject(navObj) {
     findElem('mo_json_nav_box').querySelector('textarea').dispatchEvent(event);
     console.log('JSON Nav dispatched: ' + navJson)
 }
+
+onUiLoaded(function () {
+    log("UI loaded")
+
+})
 
 /*
 onUiLoaded(() => {
