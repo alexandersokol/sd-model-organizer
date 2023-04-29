@@ -5,10 +5,10 @@ import re
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
+from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256, calculate_md5
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
-from scripts.mo.dl.download_manager import DownloadManager
 
 
 def is_unix_directory_path(path):
@@ -22,7 +22,7 @@ def is_valid_url(url: str) -> bool:
 
 
 def is_valid_filename(filename: str) -> bool:
-    pattern = re.compile(r'^\w+\.\w+$')
+    pattern = re.compile(r'^[^\x00-\x1f\\/?*:|"<>]+$')
     return bool(pattern.match(filename))
 
 
@@ -30,15 +30,15 @@ def is_blank(s):
     return len(s.strip()) == 0
 
 
-def _on_description_output_changed(record_data, name: str, model_type: str, download_url: str, url: str,
+def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
                                    download_path: str, download_filename: str, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
-                                   groups: list[str], back_token: str):
+                                   groups: list[str], back_token: str, bind_existing: str):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
 
-    if is_blank(model_type):
+    if is_blank(model_type_value):
         errors.append('Model type not selected.')
 
     if is_blank(download_url):
@@ -54,7 +54,7 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
     if not is_blank(download_path) and not is_unix_directory_path(download_path):
         errors.append('Download path is incorrect.')
 
-    if model_type == ModelType.OTHER.value and is_blank(download_path):
+    if model_type_value == ModelType.OTHER.value and is_blank(download_path):
         errors.append('Download path for type "Other" must be defined.')
 
     if not is_blank(download_filename) and not is_valid_filename(download_filename):
@@ -82,18 +82,23 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
         sha256_hash = ''
         md5_hash = ''
         location = ''
+        model_type = ModelType.by_value(model_type_value)
 
-        if record_id:
+        if record_id and not bind_existing:
             old_record = env.storage.get_record_by_id(record_id)
             if old_record.download_url == download_url:
                 sha256_hash = old_record.sha256_hash
                 md5_hash = old_record.md5_hash
                 location = old_record.location
+        elif bind_existing:
+            location = os.path.join(env.get_model_path(model_type), download_subdir,download_filename)
+            sha256_hash = calculate_sha256(location)
+            md5_hash = calculate_md5(location)
 
         record = Record(
             id_=record_id,
             name=name.strip(),
-            model_type=ModelType.by_value(model_type),
+            model_type=model_type,
             download_url=download_url,
             url=url.strip(),
             download_path=download_path.strip(),
@@ -126,12 +131,14 @@ def _get_files_for_dir(lookup_dir: str) -> list[str]:
     root_dir = os.path.join(lookup_dir, '')
     extensions = ('.bin', '.ckpt', '.safetensors')
     result = []
-    for subdir, dirs, files in os.walk(root_dir):
-        for file in files:
-            ext = os.path.splitext(file)[-1].lower()
-            if ext in extensions:
-                filepath = os.path.join(subdir, file)
-                result.append(filepath.replace(root_dir, ''))
+
+    if os.path.isdir(root_dir):
+        for subdir, dirs, files in os.walk(root_dir):
+            for file in files:
+                ext = os.path.splitext(file)[-1].lower()
+                if ext in extensions:
+                    filepath = os.path.join(subdir, file)
+                    result.append(filepath)
     return result
 
 
@@ -179,28 +186,83 @@ def _on_id_changed(record_data):
     else:
         description = f'<[[token="{generate_ui_token()}"]]>{description}'
 
-    if record is not None and (not record.location or not os.path.exists(record.location)):
-        if record.download_path:
-            lookup_dir = record.download_path
-        else:
-            lookup_dir = env.get_model_path(record.model_type)
-
-        files_found = _get_files_for_dir(lookup_dir)
-
-        # TODO exclude already bounded files
-
-        bind_with_existing = gr.Dropdown.update(
-            visible=len(files_found) > 0,
-            choices=files_found
-        )
-    else:
-        bind_with_existing = gr.Dropdown.update(
-            visible=False
-        )
+    location_state = None if record is None else record.location
+    bind_with_existing = _get_bind_existing_update(
+        model_type_value=model_type,
+        location_state=location_state
+    )
 
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False),
-            bind_with_existing]
+            bind_with_existing, location_state]
+
+
+def _get_bind_existing_update(model_type_value, location_state):
+    if not model_type_value:
+        return gr.Dropdown.update(
+            visible=False,
+            value='',
+            choices=['']
+        )
+
+    model_type = ModelType.by_value(model_type_value)
+
+    if model_type == ModelType.OTHER:
+        return gr.Dropdown.update(
+            visible=False,
+            value='',
+            choices=['']
+        )
+
+    if location_state is not None and (not location_state or not os.path.exists(location_state)):
+        lookup_dir = os.path.join(env.get_model_path(model_type), '')
+
+        files_found = _get_files_for_dir(lookup_dir)
+        files_exclude = env.storage.get_all_records_locations()
+        files_unbounded = [x for x in files_found if x not in files_exclude]
+
+        choices = ['']
+        choices.extend(list(map(lambda l: l.replace(lookup_dir, ''), files_unbounded)))
+
+        bind_with_existing = gr.Dropdown.update(
+            visible=len(files_unbounded) > 0,
+            choices=choices,
+            value='',
+            label=f'Bind with existing model (in {lookup_dir})'
+        )
+    else:
+        bind_with_existing = gr.Dropdown.update(
+            visible=False,
+            value='',
+            choices=['']
+        )
+    return bind_with_existing
+
+
+def _on_model_type_changed(model_type_value, location_state):
+    return _get_bind_existing_update(model_type_value, location_state)
+
+
+def _on_bind_with_existing_change(selected_file, model_type_value, download_path, download_filename,
+                                  download_subdir):
+    if not model_type_value:
+        return [download_path, download_filename, download_subdir]
+
+    model_type = ModelType.by_value(model_type_value)
+    if model_type == ModelType.OTHER:
+        return [download_path, download_filename, download_subdir]
+
+    if selected_file:
+
+        dir_name, file_name = os.path.split(selected_file)
+        if dir_name:
+            dir_name = dir_name.strip(os.path.sep)
+        else:
+            dir_name = ''
+
+        return ['', file_name, dir_name]
+    else:
+        return [download_path, download_filename, download_subdir]
 
 
 def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
@@ -238,6 +300,7 @@ def edit_ui_block():
 
     title_widget = gr.Markdown()
     available_groups_state = gr.State()
+    location_state = gr.State({})
 
     with gr.Row():
         with gr.Column():
@@ -288,15 +351,14 @@ def edit_ui_block():
                                                     multiselect=False,
                                                     interactive=True,
                                                     choices=[''],
-                                                    value=''
-                                                    )
+                                                    value='')
 
             with gr.Accordion(label='Download options', open=False):
                 download_path_widget = gr.Textbox(label='Download Path:',
                                                   value='',
                                                   max_lines=1,
                                                   info='UNIX path to the download dir, default if empty. Must start '
-                                                       'with "\\" (Required for "Other\" model type)', )
+                                                       'with "/" (Required for "Other\" model type)', )
                 download_filename_widget = gr.Textbox(label='Download File Name:',
                                                       value='',
                                                       max_lines=1,
@@ -338,7 +400,8 @@ def edit_ui_block():
                                              download_url_widget, url_widget,
                                              download_path_widget, download_filename_widget, download_subdir_widget,
                                              preview_url_widget, description_output_widget, positive_prompts_widget,
-                                             negative_prompts_widget, groups_widget, edit_back_box],
+                                             negative_prompts_widget, groups_widget, edit_back_box,
+                                             bind_with_existing_widget],
                                      outputs=[error_widget, edit_back_box])
 
     edit_id_box.change(_on_id_changed,
@@ -347,7 +410,7 @@ def edit_ui_block():
                                 preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget,
-                                bind_with_existing_widget]
+                                bind_with_existing_widget, location_state]
                        )
 
     save_widget.click(fn=None, _js='handleRecordSave')
@@ -358,5 +421,14 @@ def edit_ui_block():
 
     cancel_button.click(fn=None, _js='navigateBack')
     edit_back_box.change(fn=None, _js='navigateBack')
+
+    bind_with_existing_widget.change(_on_bind_with_existing_change,
+                                     inputs=[bind_with_existing_widget, model_type_widget,
+                                             download_path_widget, download_filename_widget, download_subdir_widget],
+                                     outputs=[download_path_widget, download_filename_widget, download_subdir_widget])
+
+    model_type_widget.change(_on_model_type_changed,
+                             inputs=[model_type_widget, location_state],
+                             outputs=bind_with_existing_widget)
 
     return edit_id_box

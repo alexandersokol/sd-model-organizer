@@ -37,3 +37,7 @@ class Storage(ABC):
     @abstractmethod
     def get_records_by_group(self, group: str) -> list[Record]:
         pass
+
+    @abstractmethod
+    def get_all_records_locations(self) -> list[str]:
+        pass

@@ -71,8 +71,6 @@ class SQLiteStorage(Storage):
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
                                 (version INTEGER DEFAULT {_DB_VERSION})''')
-        # cursor.execute("INSERT INTO Version VALUES (1)")  # insert initial version value
-        # TODO version check
         self._connection().commit()
         self._check_database_version()
 
@@ -318,3 +316,14 @@ class SQLiteStorage(Storage):
 
         result = list(set(result))
         return list(filter(None, result))
+
+    def get_all_records_locations(self) -> list[str]:
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT location FROM Record')
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            if row[0]:
+                result.append(row[0])
+
+        return result
