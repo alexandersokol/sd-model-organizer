@@ -233,7 +233,8 @@ def download_ui_block():
                                      interactive=False)
         download_progress_box = gr.Textbox(label='download_progress_box',
                                            elem_classes='mo-alert-warning',
-                                           visible=True)
+                                           visible=False,
+                                           interactive=False)
         gr.Markdown('## Downloads')
         status_message_widget = gr.HTML(visible=False)
         with gr.Row():

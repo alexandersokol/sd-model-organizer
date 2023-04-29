@@ -56,6 +56,7 @@ class Environment:
     mo_storage_type: Callable[[], str]
     mo_notion_api_token: Callable[[], str]
     mo_notion_db_id: Callable[[], str]
+    mo_download_preview: Callable[[], bool]
     mo_model_path: Callable[[], str]
     mo_vae_path: Callable[[], str]
     mo_lora_path: Callable[[], str]

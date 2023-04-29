@@ -3,6 +3,7 @@ from typing import List
 
 import scripts.mo.ui_format as ui_format
 from scripts.mo.models import Record, ModelType
+from scripts.mo.environment import env
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -391,7 +392,7 @@ def download_cards(records: list[Record]) -> str:
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
-        if record.preview_url:
+        if record.preview_url and env.mo_download_preview():
             content += _download_url(id_, record.preview_url, True)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)
