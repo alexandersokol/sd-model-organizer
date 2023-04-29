@@ -1,4 +1,5 @@
 import json
+import os.path
 import re
 
 import gradio as gr
@@ -121,6 +122,19 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
         ]
 
 
+def _get_files_for_dir(lookup_dir: str) -> list[str]:
+    root_dir = os.path.join(lookup_dir, '')
+    extensions = ('.bin', '.ckpt', '.safetensors')
+    result = []
+    for subdir, dirs, files in os.walk(root_dir):
+        for file in files:
+            ext = os.path.splitext(file)[-1].lower()
+            if ext in extensions:
+                filepath = os.path.join(subdir, file)
+                result.append(filepath.replace(root_dir, ''))
+    return result
+
+
 def _on_id_changed(record_data):
     record_data = json.loads(record_data)
     if record_data.get('record_id') is not None and record_data['record_id']:
@@ -165,8 +179,28 @@ def _on_id_changed(record_data):
     else:
         description = f'<[[token="{generate_ui_token()}"]]>{description}'
 
+    if record is not None and (not record.location or not os.path.exists(record.location)):
+        if record.download_path:
+            lookup_dir = record.download_path
+        else:
+            lookup_dir = env.get_model_path(record.model_type)
+
+        files_found = _get_files_for_dir(lookup_dir)
+
+        # TODO exclude already bounded files
+
+        bind_with_existing = gr.Dropdown.update(
+            visible=len(files_found) > 0,
+            choices=files_found
+        )
+    else:
+        bind_with_existing = gr.Dropdown.update(
+            visible=False
+        )
+
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
-            description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False)]
+            description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False),
+            bind_with_existing]
 
 
 def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
@@ -250,6 +284,13 @@ def edit_ui_block():
                                                 elem_id='mo-add-groups-box')
                     add_groups_button = gr.Button('Add Group')
 
+            bind_with_existing_widget = gr.Dropdown(label='Bind with existing model',
+                                                    multiselect=False,
+                                                    interactive=True,
+                                                    choices=[''],
+                                                    value=''
+                                                    )
+
             with gr.Accordion(label='Download options', open=False):
                 download_path_widget = gr.Textbox(label='Download Path:',
                                                   value='',
@@ -305,7 +346,8 @@ def edit_ui_block():
                        outputs=[title_widget, name_widget, model_type_widget, download_url_widget,
                                 preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
-                                negative_prompts_widget, groups_widget, available_groups_state, error_widget]
+                                negative_prompts_widget, groups_widget, available_groups_state, error_widget,
+                                bind_with_existing_widget]
                        )
 
     save_widget.click(fn=None, _js='handleRecordSave')
