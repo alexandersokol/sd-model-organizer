@@ -74,11 +74,23 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
         else:
             description = description_output
 
+        download_url = download_url.strip()
+        sha256_hash = ''
+        md5_hash = ''
+        location = ''
+
+        if record_id:
+            old_record = env.storage.get_record_by_id(record_id)
+            if old_record.download_url == download_url:
+                sha256_hash = old_record.sha256_hash
+                md5_hash = old_record.md5_hash
+                location = old_record.location
+
         record = Record(
             id_=record_id,
             name=name.strip(),
             model_type=ModelType.by_value(model_type),
-            download_url=download_url.strip(),
+            download_url=download_url,
             url=url.strip(),
             download_path=download_path.strip(),
             download_filename=download_filename.strip(),
@@ -87,7 +99,10 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
             description=description.strip(),
             positive_prompts=positive_prompts.strip(),
             negative_prompts=negative_prompts.strip(),
-            groups=groups
+            groups=groups,
+            sha256_hash=sha256_hash,
+            md5_hash=md5_hash,
+            location=location
         )
 
         logger.info(f'record to save: {record}')
@@ -113,7 +128,19 @@ def _on_id_changed(record_data):
     title = '## Add model' if record is None else '## Edit model'
     name = '' if record is None else record.name
     model_type = '' if record is None else record.model_type.value
-    download_url = '' if record is None else record.download_url
+
+    if record is None:
+        download_url = gr.Textbox.update(
+            value='',
+            label='Download URL:'
+        )
+    else:
+        download_url = gr.Textbox.update(
+            value=record.download_url,
+            label="""Download URL: (If URL will be changed - SHA256, MD5 and file location will be erased. 
+                  Remove file manually or via remove-files only option)"""
+        )
+
     preview_url = '' if record is None else record.preview_url
     url = '' if record is None else record.url
     download_path = '' if record is None else record.download_path
