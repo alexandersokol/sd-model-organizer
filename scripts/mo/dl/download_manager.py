@@ -304,3 +304,9 @@ class DownloadManager:
             if downloader.accepts_url(url):
                 return downloader
         raise ValueError(f'There is no downloader to handle {self}')
+
+    def check_url_can_be_handled(self, url: str) -> bool:
+        for downloader in self._downloaders:
+            if downloader.accepts_url(url):
+                return True
+        return False

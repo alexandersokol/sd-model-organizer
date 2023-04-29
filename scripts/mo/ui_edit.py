@@ -7,6 +7,7 @@ import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
+from scripts.mo.dl.download_manager import DownloadManager
 
 
 def is_unix_directory_path(path):
@@ -43,6 +44,8 @@ def _on_description_output_changed(record_data, name: str, model_type: str, down
         errors.append('Download field is empty.')
     elif not is_valid_url(download_url):
         errors.append('Download URL is incorrect')
+    elif not DownloadManager.instance().check_url_can_be_handled(download_url):
+        errors.append(f"Model can't be downloaded from URL: {download_url}")
 
     if not is_blank(url) and not is_valid_url(url):
         errors.append('Model URL is incorrect.')

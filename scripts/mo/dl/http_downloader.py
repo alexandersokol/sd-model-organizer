@@ -10,7 +10,8 @@ from scripts.mo.dl.downloader import Downloader
 class HttpDownloader(Downloader):
 
     def accepts_url(self, url: str) -> bool:
-        return urlparse(url).scheme in ['http', 'https']
+        parsed_url = urlparse(url)
+        return parsed_url.scheme in ['http', 'https'] and parsed_url.hostname not in ['drive.google.com', 'mega.nz']
 
     def fetch_filename(self, url):
         response = requests.get(url, headers={'Range': 'bytes=0-1'})

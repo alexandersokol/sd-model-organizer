@@ -9,17 +9,7 @@ class MegaDownloader(Downloader):
 
     def accepts_url(self, url: str) -> bool:
         hostname = urlparse(url).hostname
-        if hostname == 'mega.nz':
-            if 'mega.nz/folder/' in url:
-                raise Exception('Mega folder download not supported')
-
-            try:
-                import mega
-                return True
-            except ImportError:
-                logger.warning("mega.py package is required for %s", url)
-
-        return False
+        return hostname == 'mega.nz' and 'mega.nz/file/' in url
 
     def fetch_filename(self, url: str):
         raise NotImplementedError('MEGA not implemented yet')
