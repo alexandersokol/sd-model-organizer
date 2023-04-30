@@ -98,6 +98,7 @@ env.mo_script_dir = ''
 env.mo_layout = lambda: settings['mo_layout']
 env.mo_card_width = lambda: settings['mo_card_width']
 env.mo_card_height = lambda: settings['mo_card_height']
+env.theme = lambda: settings['mo_theme']
 initialize_storage()
 
 
@@ -161,6 +162,11 @@ def card_height_change(value):
     logger.info(f'mo_card_height updated: {value}')
 
 
+def theme_change(value):
+    settings['mo_theme'] = value
+    logger.info(f'mo_theme updated: {value}')
+
+
 def save_click():
     with open(SETTINGS_FILE, 'w') as f:
         for key, value in settings.items():
@@ -187,6 +193,7 @@ def settings_block():
         lora_path = gr.Textbox(env.mo_lora_path(), label='LORA path:')
         hypernetworks_path = gr.Textbox(env.mo_hypernetworks_path(), label='Hypernetworks path:')
         embeddings_path = gr.Textbox(env.mo_embeddings_path(), label="Embeddings path:")
+        theme_widget = gr.Textbox(env.theme(), label='Theme:')
         button = gr.Button("Save")
 
     storage_type.change(storage_type_change, inputs=storage_type)
@@ -201,6 +208,7 @@ def settings_block():
     layout_type.change(layout_type_change, inputs=layout_type)
     card_width.change(card_width_change, inputs=card_height)
     card_height.change(card_height_change, inputs=card_height)
+    theme_widget.change(theme_change, inputs=theme_widget)
 
     button.click(save_click)
 

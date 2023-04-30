@@ -74,8 +74,10 @@ def _model_type_css_class(model_type: ModelType) -> str:
 
 
 def _no_preview_image_url() -> str:
-    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
-
+    if env.theme() == 'dark':
+        return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-gradient-dark.png'
+    else:
+        return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
 
 def records_table(records: List[Record]) -> str:
     table_html = '<div class="mo-container">'

@@ -1,0 +1,85 @@
+:root {
+    --mo-alert-primary-text-color: #004085;
+    --mo-alert-primary-background-color: #cce5ff;
+    --mo-alert-primary-border-color: #b8daff;
+
+    --mo-alert-secondary-text-color: #383d41;
+    --mo-alert-secondary-background-color: #efefef;
+    --mo-alert-secondary-border-color: #d6d8db;
+
+    --mo-alert-success-text-color: #155724;
+    --mo-alert-success-background-color: #d4edda;
+    --mo-alert-success-border-color: #c3e6cb;
+
+    --mo-alert-info-text-color: #0c5460;
+    --mo-alert-info-background-color: #d1ecf1;
+    --mo-alert-info-border-color: #bee5eb;
+
+    --mo-alert-warning-text-color: #856404;;
+    --mo-alert-warning-background-color: #fff3cd;
+    --mo-alert-warning-border-color: #ffeeba;
+
+    --mo-alert-danger-text-color: #721c24;
+    --mo-alert-danger-background-color: #f8d7da;
+    --mo-alert-danger-border-color: #f5c6cb;
+
+    --mo-table-header-background-color: #f2f2f2;
+    --mo-table-border-color: #ddd;
+
+    --mo-block-highlight-odd: rgb(243, 243, 243);
+    --mo-block-highlight-even: rgba(203, 207, 211, 0);
+    --mo-block-highlight-positive: rgb(250, 255, 250);
+    --mo-block-highlight-negative: rgb(255, 250, 250);
+
+    --mo-badge-checkpoint-text-color: #fff;
+    --mo-badge-checkpoint-background-color: #007bff;
+
+    --mo-badge-vae-text-color: #fff;
+    --mo-badge-vae-background-color: #dc3545;
+
+    --mo-badge-lora-text-color: #fff;
+    --mo-badge-lora-background-color: #28a745;
+
+    --mo-badge-hyper-network-text-color: #fff;
+    --mo-badge-hyper-network-background-color: #17a2b8;
+
+    --mo-badge-embedding-text-color: #212529;
+    --mo-badge-embedding-background-color: #ffc107;
+
+    --mo-badge-other-text-color: #fff;
+    --mo-badge-other-background-color: #6c757d;
+
+    --mo-badge-group-text-color: #212529;
+    --mo-badge-group-background-color: #dadada;
+
+    --mo-text-color: #212529;
+    --mo-text-secondary-color: #2d3234;
+    --mo-text-content-positive: #26641e;
+    --mo-text-content-negative: #7c2d2d;
+    --mo-text-content-positive-header: #1d3817;
+    --mo-text-content-negative-header: #4d2121;
+
+    --mo-btn-primary-text-color: #fff;
+    --mo-btn-primary-background-color: #007bff;
+    --mo-btn-primary-border-color: #007bff;
+
+    --mo-btn-success-text-color: #fff;
+    --mo-btn-success-background-color: #28a745;
+    --mo-btn-success-border-color: #28a745;
+
+    --mo-btn-warning-text-color: #212529;
+    --mo-btn-warning-background-color: #ffc107;
+    --mo-btn-warning-border-color: #ffc107;
+
+    --mo-btn-danger-text-color: #fff;
+    --mo-btn-danger-background-color: #dc3545;
+    --mo-btn-danger-border-color: #dc3545;
+
+    --mo-link-text-color: #007bff;
+
+    --mo-card-border-color: #ccc;
+    --mo-card-box-shadow-color: rgba(0, 0, 0, 0.3);
+    --mo-card-blur-overlay-background: rgba(0, 0, 0, 0.5);
+    --mo-card-blur-overlay-text-color: white;
+    --mo-card-hover-background-color: rgba(0, 0, 0, 0.5);
+}

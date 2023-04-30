@@ -23,6 +23,10 @@ function handleDescriptionPreviewContentChange(content) {
             statusbar: false,
             promotion: false,
             plugins: 'autoresize',
+            skin: "oxide-dark",
+            content_css: "dark",
+            // skin: "oxide",
+            // content_css: "default",
             init_instance_callback: function (inst) {
                 inst.mode.set("readonly")
                 inst.setContent(content)
@@ -395,26 +399,3 @@ onUiLoaded(function () {
     log("UI loaded")
 
 })
-
-/*
-onUiLoaded(() => {
-    const inputElement = document.querySelector("#mo-groups-widget input");
-
-    inputElement.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            const inputValue = inputElement.value;
-            console.log(inputValue);
-
-            const textArea = document.getElementById('mo-add-groups-box').querySelector('textarea')
-            const event = new Event('input', {'bubbles': true, "composed": true});
-            textArea.value = inputValue
-            document.getElementById('mo-add-groups-box').querySelector('textarea').dispatchEvent(event);
-
-            inputElement.value = ''
-            const event2 = new Event('input', {'bubbles': true, "composed": true});
-            document.getElementById('mo-groups-widget').querySelector('input').dispatchEvent(event2);
-        }
-    });
-})
-*/
-

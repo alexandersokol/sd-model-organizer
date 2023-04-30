@@ -23,6 +23,7 @@ env.mo_lora_path = lambda: shared.opts.mo_lora_path
 env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path
 env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path
 env.mo_script_dir = scripts.basedir()
+env.theme = lambda: shared.cmd_opts.theme
 
 
 def on_ui_settings():
