@@ -4,10 +4,9 @@ import os.path
 from typing import Callable
 
 from scripts.mo.models import ModelType, Record
-from scripts.mo.storage import Storage
+from scripts.mo.data.storage import Storage
 
 STORAGE_SQLITE = 'SQLite'
-STORAGE_NOTION = 'Notion'
 
 LAYOUT_CARDS = 'Cards'
 LAYOUT_TABLE = 'Table'
@@ -54,8 +53,6 @@ class Environment:
     storage_error: str
 
     mo_storage_type: Callable[[], str]
-    mo_notion_api_token: Callable[[], str]
-    mo_notion_db_id: Callable[[], str]
     mo_download_preview: Callable[[], bool]
     mo_model_path: Callable[[], str]
     mo_vae_path: Callable[[], str]

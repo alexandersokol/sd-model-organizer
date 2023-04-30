@@ -5,7 +5,7 @@ import time
 
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
-from scripts.mo.storage import Storage
+from scripts.mo.data.storage import Storage
 
 _DB_FILE = 'database.sqlite'
 _DB_VERSION = 5

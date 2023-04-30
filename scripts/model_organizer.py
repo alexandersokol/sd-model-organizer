@@ -8,7 +8,7 @@ from modules.shared import OptionInfo
 
 from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
-from scripts.mo.init_storage import initialize_storage
+from scripts.mo.data.init_storage import initialize_storage
 
 env.mo_layout = lambda: shared.opts.mo_layout
 env.mo_card_width = lambda: shared.opts.mo_card_width

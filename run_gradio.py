@@ -7,7 +7,7 @@ import gradio as gr
 import gradio.routes
 
 from scripts.mo.environment import *
-from scripts.mo.init_storage import initialize_storage
+from scripts.mo.data.init_storage import initialize_storage
 from scripts.mo.ui_main import main_ui_block
 
 SETTINGS_FILE = 'settings_dev.txt'
@@ -86,8 +86,6 @@ def read_settings():
 settings = read_settings()
 
 env.mo_storage_type = lambda: settings['mo_storage_type']
-env.mo_notion_api_token = lambda: settings['mo_notion_api_token']
-env.mo_notion_db_id = lambda: settings['mo_notion_db_id']
 env.mo_download_preview = lambda: ast.literal_eval(settings['mo_download_preview'])
 env.mo_model_path = lambda: settings['mo_model_path']
 env.mo_vae_path = lambda: settings['mo_vae_path']
@@ -105,16 +103,6 @@ initialize_storage()
 def storage_type_change(value):
     settings['mo_storage_type'] = value
     logger.info(f'mo_storage_type updated: {value}')
-
-
-def notion_api_token_change(value):
-    settings['mo_notion_api_token'] = value
-    logger.info(f'mo_notion_api_token updated: {value}')
-
-
-def notion_db_id_change(value):
-    settings['mo_notion_db_id'] = value
-    logger.info(f'mo_notion_db_id updated: {value}')
 
 
 def download_preview_change(value):
@@ -181,10 +169,8 @@ def settings_block():
         card_width = gr.Textbox(env.mo_card_width, label='Cards width:')
         card_height = gr.Textbox(env.mo_card_height, label='Cards height:')
 
-        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_NOTION], value=[env.mo_storage_type()],
+        storage_type = gr.Dropdown([STORAGE_SQLITE], value=[env.mo_storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
-        notion_api_token = gr.Textbox(env.mo_notion_api_token(), label="Notion Api Token:")
-        notion_db_id = gr.Textbox(env.mo_notion_db_id(), label="Notion Database Id")
 
         mo_download_preview = gr.Checkbox(value=env.mo_download_preview(), label='Download Preview')
 
@@ -197,8 +183,6 @@ def settings_block():
         button = gr.Button("Save")
 
     storage_type.change(storage_type_change, inputs=storage_type)
-    notion_api_token.change(notion_api_token_change, inputs=notion_api_token)
-    notion_db_id.change(notion_db_id_change, inputs=notion_db_id)
     model_path.change(model_path_change, inputs=model_path)
     mo_download_preview.change(download_preview_change, inputs=mo_download_preview)
     vae_path.change(vae_path_change, inputs=vae_path)
