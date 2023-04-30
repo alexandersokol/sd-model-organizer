@@ -378,8 +378,8 @@ def _download_progress_bar(record_id, is_preview: bool) -> str:
     return content
 
 
-def download_cards(records: list[Record]) -> str:
-    content = '<div class="mo-downloads-container">'
+def download_cards(records: list[Record], token) -> str:
+    content = f'<div class="mo-downloads-container" token="{token}">'
     counter = 0
     for record in records:
         id_ = record.id_

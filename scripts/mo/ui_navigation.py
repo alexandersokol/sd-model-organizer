@@ -99,7 +99,7 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _DOWNLOAD:
             state['is_download_visible'] = True
-            download_dict = {}
+            download_dict = {'token': generate_ui_token()}
 
             if nav_dict.get(_NODE_RECORD_ID) is not None:
                 download_dict[_NODE_RECORD_ID] = nav_dict[_NODE_RECORD_ID]

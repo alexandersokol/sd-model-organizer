@@ -195,8 +195,13 @@ def _on_id_change(data):
 
     if not data:
         return [
-            gr.HTML.update(value=styled.alert_warning('Nothing passed to download.')),
-            []
+            gr.HTML.update(),
+            [],
+            gr.Button.update(visible=False),  # start_button
+            gr.Button.update(visible=False),  # cancel_button
+            gr.Button.update(visible=True),  # back_button
+            gr.HTML.update(value=styled.alert_warning('Nothing passed to download.'),
+                           visible=True)  # status_message_widget
         ]
 
     records = []
@@ -215,8 +220,12 @@ def _on_id_change(data):
             records.append(env.storage.get_record_by_id(record_id))
 
     return [
-        gr.HTML.update(value=styled.download_cards(records)),
-        records
+        gr.HTML.update(value=styled.download_cards(records, nav.generate_ui_token())),
+        records,
+        gr.Button.update(visible=True),  # start_button
+        gr.Button.update(visible=False),  # cancel_button
+        gr.Button.update(visible=True),  # back_button
+        gr.HTML.update(visible=False)  # status_message_widget
     ]
 
 
@@ -246,7 +255,9 @@ def download_ui_block():
         gr.HTML('</hr>')
         html_widget = gr.HTML()
 
-    download_id_box.change(_on_id_change, inputs=download_id_box, outputs=[html_widget, download_state])
+    download_id_box.change(_on_id_change, inputs=download_id_box,
+                           outputs=[html_widget, download_state, start_button, cancel_button, back_button,
+                                    status_message_widget])
     download_progress_box.change(fn=None, inputs=download_progress_box, _js='handleProgressUpdates')
 
     start_button.click(_on_start_click, inputs=download_state,
