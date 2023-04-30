@@ -75,7 +75,7 @@ def _model_type_css_class(model_type: ModelType) -> str:
 
 def _no_preview_image_url() -> str:
     if env.theme() == 'dark':
-        return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-gradient-dark.png'
+        return f'https://github.com/alexandersokol/sd-model-organizer/raw/develop/pic/no-preview-dark-blue.png'
     else:
         return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
 

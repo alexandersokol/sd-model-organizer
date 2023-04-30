@@ -82,4 +82,8 @@
     --mo-card-blur-overlay-background: rgba(0, 0, 0, 0.5);
     --mo-card-blur-overlay-text-color: white;
     --mo-card-hover-background-color: rgba(0, 0, 0, 0.5);
+
+    --mo-progress-background-color: #e9ecef;
+    --mo-progress-foreground-color: #007bff;
+    --mo-progress-text-color: #fff
 }

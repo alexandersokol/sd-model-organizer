@@ -1,5 +1,5 @@
 /* needed only for IDE. Gradio ignores it*/
-@import "colors-light.css";
+@import "colors-dark.css";
 
 :root {
     --mo-card-width: 250px;
@@ -552,7 +552,7 @@
     height: 1rem;
     overflow: hidden;
     font-size: .75rem;
-    background-color: #e9ecef;
+    background-color: var(--mo-progress-background-color) !important;
     border-radius: 0.25rem;
 }
 
@@ -567,9 +567,9 @@
     -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
-    color: #fff !important;
+    color: var(--mo-progress-text-color) !important;
     text-align: center;
-    background-color: #007bff !important;
+    background-color: var(--mo-progress-foreground-color) !important;
     transition: width 0.5s ease;
     animation: progress-bar-stripes 1s linear infinite;
 }

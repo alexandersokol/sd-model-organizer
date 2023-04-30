@@ -36,12 +36,13 @@ def on_id_changed(record_id):
 def details_ui_block():
     with gr.Blocks():
         details_id_box = gr.Textbox(label='details_id_box', elem_classes='mo-alert-warning', visible=False)
+        theme_box = gr.Textbox(label='theme_box', elem_classes='mo-alert-warning', visible=False, value=env.theme())
 
         with gr.Row():
             back_button = gr.Button("Back")
             remove_button = gr.Button("Remove")
             edit_button = gr.Button('Edit')
-            download_button = gr.Button("Download")  # TODO hide if file exists?
+            download_button = gr.Button("Download")
 
         content_widget = gr.HTML()
         description_html = '<div><p style="margin-left: 0.2rem;">Description:</p>' \
@@ -56,7 +57,7 @@ def details_ui_block():
                               outputs=[content_widget, description_html_widget, description_input_widget, edit_button,
                                        download_button])
 
-        description_input_widget.change(fn=None, inputs=description_input_widget,
+        description_input_widget.change(fn=None, inputs=[description_input_widget, theme_box],
                                         _js='handleDescriptionPreviewContentChange')
 
         back_button.click(fn=None, _js='navigateBack')

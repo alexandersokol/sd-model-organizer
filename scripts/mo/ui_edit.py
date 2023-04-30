@@ -91,7 +91,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
                 md5_hash = old_record.md5_hash
                 location = old_record.location
         elif bind_existing:
-            location = os.path.join(env.get_model_path(model_type), download_subdir,download_filename)
+            location = os.path.join(env.get_model_path(model_type), download_subdir, download_filename)
             sha256_hash = calculate_sha256(location)
             md5_hash = calculate_md5(location)
 
@@ -297,6 +297,10 @@ def edit_ui_block():
                                elem_classes='mo-alert-warning',
                                interactive=False,
                                visible=False)
+    theme_box = gr.Textbox(label='theme_box',
+                           elem_classes='mo-alert-warning',
+                           visible=False,
+                           value=env.theme())
 
     title_widget = gr.Markdown()
     available_groups_state = gr.State()
@@ -392,7 +396,7 @@ def edit_ui_block():
                                            interactive=False,
                                            visible=False)
 
-    description_input_widget.change(fn=None, inputs=description_input_widget,
+    description_input_widget.change(fn=None, inputs=[description_input_widget, theme_box],
                                     _js='handleDescriptionEditorContentChange')
 
     description_output_widget.change(_on_description_output_changed,

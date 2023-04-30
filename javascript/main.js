@@ -12,7 +12,7 @@ function log(text) {
     console.log(text)
 }
 
-function handleDescriptionPreviewContentChange(content) {
+function handleDescriptionPreviewContentChange(content, theme) {
     log('handleDescriptionPreviewContentChange')
 
     if (tinymce.get('mo-description-preview') == null) {
@@ -23,10 +23,8 @@ function handleDescriptionPreviewContentChange(content) {
             statusbar: false,
             promotion: false,
             plugins: 'autoresize',
-            skin: "oxide-dark",
-            content_css: "dark",
-            // skin: "oxide",
-            // content_css: "default",
+            skin: theme === 'dark' ? 'oxide-dark' : 'oxide',
+            content_css: theme === 'dark' ? 'dark' : 'default',
             init_instance_callback: function (inst) {
                 inst.mode.set("readonly")
                 inst.setContent(content)
@@ -43,7 +41,7 @@ function handleDescriptionPreviewContentChange(content) {
 }
 
 
-function handleDescriptionEditorContentChange(content) {
+function handleDescriptionEditorContentChange(content, theme) {
     log('handleDescriptionEditorContentChange')
 
     let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
@@ -54,6 +52,8 @@ function handleDescriptionEditorContentChange(content) {
             promotion: false,
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            skin: theme === 'dark' ? 'oxide-dark' : 'oxide',
+            content_css: theme === 'dark' ? 'dark' : 'default',
             init_instance_callback: function (inst) {
                 inst.setContent(contentData)
             }
