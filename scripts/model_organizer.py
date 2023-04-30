@@ -39,7 +39,7 @@ def on_ui_settings():
         'mo_card_width': OptionInfo(0, 'Card width (default if 0):'),
         'mo_card_height': OptionInfo(0, 'Card height (default if 0):'),
         'mo_storage_type': OptionInfo(STORAGE_SQLITE, "Storage Type:", gr.Radio,
-                                      {"choices": [STORAGE_SQLITE, STORAGE_NOTION]}),
+                                      {"choices": [STORAGE_SQLITE]}),
         'mo_notion_api_token': OptionInfo('', 'Notion API Token:'),
         'mo_notion_db_id': OptionInfo('', 'Notion Database Id:'),
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
