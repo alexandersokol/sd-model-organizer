@@ -186,8 +186,7 @@ class DownloadManager:
                     self._state_update(record_id=record.id_, record_state=upd)
 
                     if self._stop_event.is_set():
-                        self._state_update(general_status=GENERAL_STATUS_CANCELLED)
-                        return
+                        break
 
             exception = None
             for key, value in self._state['records'].items():
@@ -197,6 +196,8 @@ class DownloadManager:
 
             if exception is not None:
                 self._state_update(general_status=GENERAL_STATUS_ERROR)
+            elif self._stop_event.is_set():
+                self._state_update(general_status=GENERAL_STATUS_CANCELLED)
             else:
                 self._state_update(general_status=GENERAL_STATUS_COMPLETED)
 
