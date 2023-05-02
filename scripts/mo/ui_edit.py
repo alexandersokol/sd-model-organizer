@@ -1,6 +1,7 @@
 import json
 import os.path
 import re
+import time
 
 import gradio as gr
 
@@ -84,12 +85,19 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         location = ''
         model_type = ModelType.by_value(model_type_value)
 
-        if record_id and not bind_existing:
+        old_record = None
+        if record_id:
             old_record = env.storage.get_record_by_id(record_id)
+            created_at = old_record.created_at
+        else:
+            created_at = time.time()
+
+        if old_record is not None and not bind_existing:
             if old_record.download_url == download_url:
                 sha256_hash = old_record.sha256_hash
                 md5_hash = old_record.md5_hash
                 location = old_record.location
+
         elif bind_existing:
             location = os.path.join(env.get_model_path(model_type), download_subdir, download_filename)
             sha256_hash = calculate_sha256(location)
@@ -111,7 +119,8 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
             groups=groups,
             sha256_hash=sha256_hash,
             md5_hash=md5_hash,
-            location=location
+            location=location,
+            created_at=created_at
         )
 
         logger.info(f'record to save: {record}')

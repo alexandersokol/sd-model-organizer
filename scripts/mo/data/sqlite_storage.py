@@ -231,7 +231,7 @@ class SQLiteStorage(Storage):
             record.negative_prompts,
             record.sha256_hash,
             record.md5_hash,
-            time.time(),
+            record.created_at,
             ",".join(record.groups),
             record.subdir,
             record.location

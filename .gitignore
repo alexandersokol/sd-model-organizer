@@ -6,3 +6,4 @@ settings_dev.txt
 database.sqlite
 dev/
 tmp/
+service-account-file.json
