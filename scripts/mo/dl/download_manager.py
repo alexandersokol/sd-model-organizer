@@ -1,16 +1,14 @@
-import hashlib
 import os
 import shutil
 import tempfile
 import threading
-from urllib.parse import urlparse
 from copy import deepcopy
+from urllib.parse import urlparse
 
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.dl.gdrive_downloader import GDriveDownloader
 from scripts.mo.dl.http_downloader import HttpDownloader
-from scripts.mo.dl.mega_downloader import MegaDownloader
-from scripts.mo.environment import env, logger
+from scripts.mo.environment import env, logger, calculate_md5, calculate_sha256
 from scripts.mo.models import Record
 
 GENERAL_STATUS_IN_PROGRESS = 'In Progress'
@@ -23,6 +21,7 @@ RECORD_STATUS_IN_PROGRESS = 'In Progress'
 RECORD_STATUS_COMPLETED = 'Completed'
 RECORD_STATUS_EXISTS = 'Exists'
 RECORD_STATUS_ERROR = 'Error'
+RECORD_STATUS_CANCELLED = 'Cancelled'
 
 
 def _get_destination_file_path(filename: str, record: Record) -> str:
@@ -32,10 +31,11 @@ def _get_destination_file_path(filename: str, record: Record) -> str:
         if path is None:
             raise Exception(f'Destination path is undefined.')
 
+    path = os.path.join(path, record.subdir)
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    return os.path.join(path, record.subdir, filename)
+    return os.path.join(path, filename)
 
 
 def _get_filename_from_url(url):
@@ -90,25 +90,6 @@ def _get_preview_filename(url, filename):
     return _change_file_extension(filename, extension)
 
 
-def _calculate_md5(file_path):
-    with open(file_path, 'rb') as f:
-        md5 = hashlib.md5()
-        while True:
-            data = f.read(1024)
-            if not data:
-                break
-            md5.update(data)
-    return md5.hexdigest()
-
-
-def _calculate_sha256(file_path):
-    with open(file_path, 'rb') as file:
-        sha256_hash = hashlib.sha256()
-        while chunk := file.read(4096):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
-
-
 class DownloadManager:
     __instance = None
     __lock = threading.Lock()
@@ -123,7 +104,6 @@ class DownloadManager:
 
         self._downloaders: list[Downloader] = [
             GDriveDownloader(),
-            MegaDownloader(),
             HttpDownloader()  # Should always be the last one to give a chance for other http schemas
         ]
 
@@ -188,6 +168,12 @@ class DownloadManager:
 
             latest_state['records'] = {record_id: record_state}
 
+        if general_status == GENERAL_STATUS_CANCELLED and new_general_state.get('records') is not None:
+            for key, value in new_general_state['records'].items():
+                if value.get('status') and \
+                        (value['status'] == RECORD_STATUS_PENDING or value['status'] == RECORD_STATUS_IN_PROGRESS):
+                    value['status'] = RECORD_STATUS_CANCELLED
+
         self._state = new_general_state
         self._latest_state = latest_state
 
@@ -198,20 +184,20 @@ class DownloadManager:
                     self._state_update(record_id=record.id_, record_state=upd)
 
                     if self._stop_event.is_set():
-                        self._state_update(general_status=GENERAL_STATUS_CANCELLED)
-                        return
+                        break
 
-            has_errors = False
+            exception = None
             for key, value in self._state['records'].items():
                 if value.get('exception') is not None:
-                    has_errors = True
+                    exception = value['exception']
                     break
 
-            if has_errors:
+            if exception is not None:
                 self._state_update(general_status=GENERAL_STATUS_ERROR)
+            elif self._stop_event.is_set():
+                self._state_update(general_status=GENERAL_STATUS_CANCELLED)
             else:
                 self._state_update(general_status=GENERAL_STATUS_COMPLETED)
-                # TODO add error into main state
 
         except Exception as ex:
             self._state_update(general_status=GENERAL_STATUS_ERROR, exception=str(ex))
@@ -227,10 +213,16 @@ class DownloadManager:
             downloader = self._get_downloader(record.download_url)
             logger.debug('Start download record with id: %s', record.id_)
 
+            if self._stop_event.is_set():
+                return
+
             filename = _get_filename(downloader, record)
             logger.debug('filename: %s', filename)
 
             yield {'filename': filename}
+
+            if self._stop_event.is_set():
+                return
 
             destination_file_path = _get_destination_file_path(filename, record)
             logger.debug('destination_file_path: %s', destination_file_path)
@@ -242,17 +234,23 @@ class DownloadManager:
                 yield {'status': RECORD_STATUS_EXISTS}
                 return
 
+            if self._stop_event.is_set():
+                return
+
             with tempfile.NamedTemporaryFile(delete=False) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
+                if self._stop_event.is_set():
+                    return
                 shutil.move(temp.name, destination_file_path)
                 os.chmod(destination_file_path, 0o644)
                 logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
-            record.md5_hash = _calculate_md5(destination_file_path)
-            record.sha256_hash = _calculate_sha256(destination_file_path)
+            record.location = destination_file_path
+            record.md5_hash = calculate_md5(destination_file_path)
+            record.sha256_hash = calculate_sha256(destination_file_path)
 
             env.storage.update_record(record)
 
@@ -261,15 +259,24 @@ class DownloadManager:
             logger.exception(ex)
             return
 
-        if record.preview_url:
+        if self._stop_event.is_set():
+            return
+
+        if record.preview_url and env.mo_download_preview():
             try:
                 preview_filename = _get_preview_filename(record.preview_url, filename)
                 logger.debug('Preview image name: %s', preview_filename)
                 yield {'preview_filename': preview_filename}
 
+                if self._stop_event.is_set():
+                    return
+
                 preview_destination_file_path = _get_destination_file_path(preview_filename, record)
                 logger.debug('preview_destination_file_path: %s', preview_destination_file_path)
                 yield {'preview_destination': preview_destination_file_path}
+
+                if self._stop_event.is_set():
+                    return
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
@@ -278,6 +285,9 @@ class DownloadManager:
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):
                         yield {'preview_dl': upd}
+
+                    if self._stop_event.is_set():
+                        return
 
                     shutil.move(temp.name, preview_destination_file_path)
                     os.chmod(destination_file_path, 0o644)
@@ -293,3 +303,9 @@ class DownloadManager:
             if downloader.accepts_url(url):
                 return downloader
         raise ValueError(f'There is no downloader to handle {self}')
+
+    def check_url_can_be_handled(self, url: str) -> bool:
+        for downloader in self._downloaders:
+            if downloader.accepts_url(url):
+                return True
+        return False

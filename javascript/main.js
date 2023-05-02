@@ -1,3 +1,8 @@
+// add tinymce
+const script = document.createElement('script');
+script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+document.head.appendChild(script);
+
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
@@ -5,6 +10,83 @@ function findElem(elementId) {
 
 function log(text) {
     console.log(text)
+}
+
+function handleDescriptionPreviewContentChange(content, theme) {
+    log('handleDescriptionPreviewContentChange')
+
+    if (tinymce.get('mo-description-preview') == null) {
+        tinymce.init({
+            selector: '#mo-description-preview',
+            toolbar: false,
+            menubar: false,
+            statusbar: false,
+            promotion: false,
+            plugins: 'autoresize',
+            skin: theme === 'dark' ? 'oxide-dark' : 'oxide',
+            content_css: theme === 'dark' ? 'dark' : 'default',
+            init_instance_callback: function (inst) {
+                inst.mode.set("readonly")
+                inst.setContent(content)
+            }
+        });
+    }
+
+    const inst = tinymce.get('mo-description-preview')
+    if (inst.initialized) {
+        inst.setContent(content)
+    }
+
+    return []
+}
+
+
+function handleDescriptionEditorContentChange(content, theme) {
+    log('handleDescriptionEditorContentChange')
+
+    let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
+
+    if (tinymce.get('mo-description-editor') == null) {
+        tinymce.init({
+            selector: '#mo-description-editor',
+            promotion: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            skin: theme === 'dark' ? 'oxide-dark' : 'oxide',
+            content_css: theme === 'dark' ? 'dark' : 'default',
+            init_instance_callback: function (inst) {
+                inst.setContent(contentData)
+            }
+        });
+    }
+
+    const inst = tinymce.get('mo-description-editor')
+    if (inst.initialized) {
+        inst.setContent(contentData)
+    }
+
+    return []
+}
+
+function handleRecordSave() {
+    log('Handling record save')
+
+    // This random token required to trigger change event in gradio in the textbox widget :/
+    const token = '<[[token="' + generateUUID() + '"]]>'
+
+    let output;
+    if (tinymce.get('mo-description-editor') == null) {
+        output = token
+    } else {
+        output = token + tinymce.get('mo-description-editor').getContent()
+    }
+
+    const textArea = findElem('mo-description-output-widget').querySelector('textarea')
+    const event = new Event('input', {'bubbles': true, "composed": true});
+    textArea.value = output
+    findElem('mo-description-output-widget').querySelector('textarea').dispatchEvent(event);
+    console.log('Description content dispatched: ' + output)
+    return []
 }
 
 function updateDownloadBlockVisibility(id, tag, isVisible, visibleUnit) {
@@ -44,6 +126,8 @@ function updateDownloadCardState(id, state) {
     } else if (state === 'Error') {
         cardClass = 'mo-alert-danger'
         isResultBoxVisible = true
+    } else if (state === 'Cancelled') {
+        cardClass = 'mo-alert-warning'
     } else {
         return
     }
@@ -209,7 +293,7 @@ function navigateBack() {
         if (currentNavigation.hasOwnProperty('backstack') && currentNavigation.backstack.length !== 0) {
             backNav = currentNavigation.backstack.shift()
 
-            if(currentNavigation.backstack.length !== 0) {
+            if (currentNavigation.backstack.length !== 0) {
                 backNav.backstack = currentNavigation.backstack
             }
         }
@@ -265,6 +349,19 @@ function navigateDownloadRecord(id) {
     return []
 }
 
+function navigateDownloadRecordList(ids_json) {
+    const ids = JSON.parse(JSON.parse(ids_json))
+    log('Navigate download screen for records: ' + ids)
+    const navObj = {
+        screen: "download",
+        record_ids: ids,
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
 function navigateDownloadGroup(groupName) {
     log('Navigate download screen for group: ' + groupName)
     const navObj = {
@@ -298,25 +395,7 @@ function deliverNavObject(navObj) {
     console.log('JSON Nav dispatched: ' + navJson)
 }
 
-/*
-onUiLoaded(() => {
-    const inputElement = document.querySelector("#mo-groups-widget input");
+onUiLoaded(function () {
+    log("UI loaded")
 
-    inputElement.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            const inputValue = inputElement.value;
-            console.log(inputValue);
-
-            const textArea = document.getElementById('mo-add-groups-box').querySelector('textarea')
-            const event = new Event('input', {'bubbles': true, "composed": true});
-            textArea.value = inputValue
-            document.getElementById('mo-add-groups-box').querySelector('textarea').dispatchEvent(event);
-
-            inputElement.value = ''
-            const event2 = new Event('input', {'bubbles': true, "composed": true});
-            document.getElementById('mo-groups-widget').querySelector('input').dispatchEvent(event2);
-        }
-    });
 })
-*/
-

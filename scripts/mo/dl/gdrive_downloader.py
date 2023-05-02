@@ -27,7 +27,6 @@ import os
 import os.path as osp
 import re
 import shutil
-import sys
 import tempfile
 import textwrap
 import six

@@ -11,6 +11,7 @@ _DOWNLOAD = 'download'
 _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
 _NODE_GROUP = 'group'
+_NODE_RECORD_IDS = 'record_ids'
 
 
 def navigate_home() -> str:
@@ -73,7 +74,7 @@ def get_nav_state(json_nav) -> dict:
         'is_remove_visible': False,
         'is_download_visible': False,
         'details_record_id': '',
-        'edit_record_id': '',
+        'edit_data': {},
         'remove_record_id': '',
         'download_info': ''
     }
@@ -87,8 +88,10 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _EDIT:
             state['is_edit_visible'] = True
+            edit_data = {'token': generate_ui_token()}
             if nav_dict.get('record_id') is not None:
-                state['edit_record_id'] = nav_dict[_NODE_RECORD_ID]
+                edit_data['record_id'] = nav_dict[_NODE_RECORD_ID]
+            state['edit_data'] = json.dumps(edit_data)
 
         elif nav_dict[_NODE_SCREEN] == _REMOVE:
             state['is_remove_visible'] = True
@@ -96,13 +99,16 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _DOWNLOAD:
             state['is_download_visible'] = True
-            download_dict = {}
+            download_dict = {'token': generate_ui_token()}
 
             if nav_dict.get(_NODE_RECORD_ID) is not None:
                 download_dict[_NODE_RECORD_ID] = nav_dict[_NODE_RECORD_ID]
 
             if nav_dict.get(_NODE_GROUP) is not None:
                 download_dict[_NODE_GROUP] = nav_dict[_NODE_GROUP]
+
+            if nav_dict.get(_NODE_RECORD_IDS) is not None:
+                download_dict[_NODE_RECORD_IDS] = nav_dict[_NODE_RECORD_IDS]
 
             state['download_info'] = json.dumps(download_dict)
 
@@ -125,6 +131,14 @@ def get_download_group(data):
         return download_dict[_NODE_GROUP]
 
 
-def generate_back_token() -> str:
+def get_download_record_ids(data):
+    download_dict = json.loads(data)
+    if download_dict.get(_NODE_RECORD_IDS) is None:
+        return None
+    else:
+        return download_dict[_NODE_RECORD_IDS]
+
+
+def generate_ui_token() -> str:
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(6))

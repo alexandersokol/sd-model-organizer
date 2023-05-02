@@ -1,32 +1,32 @@
 :root {
-    --mo-alert-primary-text-color: #004085;
-    --mo-alert-primary-background-color: #cce5ff;
-    --mo-alert-primary-border-color: #b8daff;
+    --mo-alert-primary-text-color: #b8daff;
+    --mo-alert-primary-background-color: #033772;
+    --mo-alert-primary-border-color: #002752;
 
-    --mo-alert-secondary-text-color: #383d41;
-    --mo-alert-secondary-background-color: #efefef;
-    --mo-alert-secondary-border-color: #d6d8db;
+    --mo-alert-secondary-text-color: #d6d8db;
+    --mo-alert-secondary-background-color: #383d41;
+    --mo-alert-secondary-border-color: #1a1c1e;
 
-    --mo-alert-success-text-color: #155724;
-    --mo-alert-success-background-color: #d4edda;
-    --mo-alert-success-border-color: #c3e6cb;
+    --mo-alert-success-text-color: #c3e6cb;
+    --mo-alert-success-background-color: #115420;
+    --mo-alert-success-border-color: #0f3d18;
 
-    --mo-alert-info-text-color: #0c5460;
-    --mo-alert-info-background-color: #d1ecf1;
-    --mo-alert-info-border-color: #bee5eb;
+    --mo-alert-info-text-color: #bee5eb;
+    --mo-alert-info-background-color: #0c5460;
+    --mo-alert-info-border-color: #072f36;
 
-    --mo-alert-warning-text-color: #856404;;
-    --mo-alert-warning-background-color: #fff3cd;
-    --mo-alert-warning-border-color: #ffeeba;
+    --mo-alert-warning-text-color: #ffeeba;
+    --mo-alert-warning-background-color: #836409;
+    --mo-alert-warning-border-color: #503c03;
 
-    --mo-alert-danger-text-color: #721c24;
-    --mo-alert-danger-background-color: #f8d7da;
-    --mo-alert-danger-border-color: #f5c6cb;
+    --mo-alert-danger-text-color: #f8d7da;
+    --mo-alert-danger-background-color: #721c24;
+    --mo-alert-danger-border-color: #491217;
 
     --mo-table-header-background-color: #f2f2f2;
     --mo-table-border-color: #ddd;
 
-    --mo-block-highlight-odd: rgb(243, 243, 243);
+    --mo-block-highlight-odd: rgb(19, 26, 44);
     --mo-block-highlight-even: rgba(203, 207, 211, 0);
     --mo-block-highlight-positive: rgb(250, 255, 250);
     --mo-block-highlight-negative: rgb(255, 250, 250);
@@ -77,13 +77,13 @@
 
     --mo-link-text-color: #007bff;
 
-    --mo-card-border-color: #ccc;
+    --mo-card-border-color: #374151;
     --mo-card-box-shadow-color: rgba(0, 0, 0, 0.3);
     --mo-card-blur-overlay-background: rgba(0, 0, 0, 0.5);
     --mo-card-blur-overlay-text-color: white;
     --mo-card-hover-background-color: rgba(0, 0, 0, 0.5);
 
-    --mo-progress-background-color: #e9ecef;
+    --mo-progress-background-color: #0A0F19;
     --mo-progress-foreground-color: #007bff;
     --mo-progress-text-color: #fff
 }

@@ -17,6 +17,20 @@ class ModelType(Enum):
         raise ValueError(f'There is no model type defined with name "{value}"')
 
 
+class ModelSort(Enum):
+    TIME_ADDED_ASC = 'Time Added'
+    TIME_ADDED_DESC = 'Time Added Reversed'
+    NAME_ASC = 'Name'
+    NAME_DESC = 'Name Reversed'
+
+    @staticmethod
+    def by_value(value: str):
+        for model_sort in ModelSort:
+            if model_sort.value == value.strip():
+                return model_sort
+        raise ValueError(f'There is no model sort defined with name "{value}"')
+
+
 class Record:
     def __init__(self, id_,
                  name: str,

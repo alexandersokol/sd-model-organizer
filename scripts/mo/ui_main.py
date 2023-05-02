@@ -15,7 +15,11 @@ from scripts.mo.ui_remove import remove_ui_block
 
 def _load_mo_css() -> str:
     # TODO add and check dark theme colors
-    colors_css_path = os.path.join(env.mo_script_dir, 'colors-light.css')
+    if env.theme() == 'dark':
+        colors_css_path = os.path.join(env.mo_script_dir, 'colors-dark.css')
+    else:
+        colors_css_path = os.path.join(env.mo_script_dir, 'colors-light.css')
+
     with open(colors_css_path, 'r') as colors_file:
         colors_css = colors_file.read()
 
@@ -41,7 +45,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
     is_home_visible = state['is_home_visible']
     if is_home_visible:
-        home_refresh_token = nav.generate_back_token()
+        home_refresh_token = nav.generate_ui_token()
 
     return [
         gr.Column.update(visible=is_home_visible),
@@ -52,7 +56,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
         gr.Textbox.update(value=home_refresh_token),
         gr.Textbox.update(value=state['details_record_id']),
-        gr.Textbox.update(value=state['edit_record_id']),
+        gr.Textbox.update(value=state['edit_data']),
         gr.Textbox.update(value=state['remove_record_id']),
         gr.Textbox.update(value=state['download_info'])
     ]

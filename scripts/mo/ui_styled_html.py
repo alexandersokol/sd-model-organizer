@@ -1,6 +1,9 @@
+import os
 from typing import List
 
+import scripts.mo.ui_format as ui_format
 from scripts.mo.models import Record, ModelType
+from scripts.mo.environment import env
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -71,8 +74,10 @@ def _model_type_css_class(model_type: ModelType) -> str:
 
 
 def _no_preview_image_url() -> str:
-    return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
-
+    if env.theme() == 'dark':
+        return f'https://github.com/alexandersokol/sd-model-organizer/raw/develop/pic/no-preview-dark-blue.png'
+    else:
+        return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
 
 def records_table(records: List[Record]) -> str:
     table_html = '<div class="mo-container">'
@@ -160,14 +165,18 @@ def _create_top_fields_dict(record: Record) -> dict:
         'Type': _create_content_model_type(record.model_type)
     }
 
-    if record.location:
-        result['Location'] = _create_content_text(record.location)
+    if record.location and os.path.exists(record.location):
+        size = os.path.getsize(record.location)
+        result['Size'] = _create_content_hash(ui_format.format_bytes(size))
 
     if record.md5_hash:
-        result['MD5 Hash'] = _create_content_hash(record.md5_hash)
+        result['MD5'] = _create_content_hash(record.md5_hash)
 
     if record.sha256_hash:
-        result['SHA256 Hash'] = _create_content_hash(record.sha256_hash)
+        result['SHA256'] = _create_content_hash(record.sha256_hash)
+
+    if record.location and os.path.exists(record.location):
+        result['Location'] = _create_content_hash(record.location)
 
     if record.url:
         result['Model page'] = _create_content_link(record.url)
@@ -183,6 +192,9 @@ def _create_top_fields_dict(record: Record) -> dict:
 
     if record.download_filename:
         result['Download filename'] = _create_content_text(record.download_filename)
+
+    if record.subdir:
+        result['Subdir'] = _create_content_text(record.subdir)
 
     return result
 
@@ -228,21 +240,6 @@ def _details_top(record: Record) -> str:
     content += '</div>'
     content += '</div>'
     content += '</div>'
-
-    # Description
-    if record.description:
-        highlight = 'mo-details-row-even' if counter % 2 == 0 else 'mo-details-row-odd'
-        content += f'<div class="mo-details-row mo-details-row-padding {highlight}">'
-        content += '<div class="mo-details-col mo-details-col-full">'
-        content += '<span class="mo-text-header">Description:</span>'
-        content += '</div>'
-        content += '</div>'
-
-        content += f'<div class="mo-details-row mo-details-row-padding {highlight}">'
-        content += '<div class="mo-details-col mo-details-col-full">'
-        content += f'<span class="mo-text-content">{record.description}</span>'
-        content += '</div>'
-        content += ' </div>'
 
     if record.positive_prompts or record.negative_prompts:
         content += '<div class="mo-details-row mo-details-row-padding">'
@@ -325,8 +322,9 @@ def records_cards(records: List[Record]) -> str:
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
                    f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
-        content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                   f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+        if not record.location or not os.path.exists(record.location):
+            content += '<button type="button" class="mo-btn mo-btn-primary" ' \
+                       f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 
         content += '<button type="button" class="mo-btn mo-btn-warning" ' \
                    f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
@@ -353,8 +351,9 @@ def _downloads_header(record_id, title) -> str:
 
 def _download_url(record_id, url: str, is_preview: bool) -> str:
     preview = '-preview' if is_preview else ''
-    content = f'<p style="margin-top: 2rem; display: block" id="url{preview}-{record_id}">' \
-              f'{url}</p>'
+    hint = 'Preview URL' if is_preview else 'Model URL'
+    content = f'<p style="margin-top: 2rem; display: block; overflow-wrap: anywhere;" id="url{preview}-{record_id}">' \
+              f'[{hint}]: {url}</p>'
     return content
 
 
@@ -379,8 +378,8 @@ def _download_progress_bar(record_id, is_preview: bool) -> str:
     return content
 
 
-def download_cards(records: list[Record]) -> str:
-    content = '<div class="mo-downloads-container">'
+def download_cards(records: list[Record], token) -> str:
+    content = f'<div class="mo-downloads-container" token="{token}">'
     counter = 0
     for record in records:
         id_ = record.id_
@@ -395,7 +394,7 @@ def download_cards(records: list[Record]) -> str:
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
-        if record.preview_url:
+        if record.preview_url and env.mo_download_preview():
             content += _download_url(id_, record.preview_url, True)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)

@@ -3,11 +3,10 @@ import time
 
 import gradio as gr
 
+import scripts.mo.ui_format as ui_format
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.dl.download_manager import DownloadManager, RECORD_STATUS_ERROR, RECORD_STATUS_EXISTS, \
-    RECORD_STATUS_COMPLETED, GENERAL_STATUS_COMPLETED, GENERAL_STATUS_ERROR, GENERAL_STATUS_CANCELLED, \
-    GENERAL_STATUS_IN_PROGRESS
+from scripts.mo.dl.download_manager import *
 from scripts.mo.environment import env, logger
 
 _STATE_PENDING = 'Pending'
@@ -17,91 +16,9 @@ _STATE_EXISTS = 'Exists'
 _STATE_ERROR = 'Error'
 
 
-def _format_percentage(part, total):
-    return int((part / total) * 100)
-
-
-def _format_bytes(bytes_to_format):
-    units = ['B', 'KB', 'MB', 'GB', 'TB']
-    i = 0
-    while bytes_to_format >= 1000 and i < len(units) - 1:
-        bytes_to_format /= 1000
-        i += 1
-    return f"{bytes_to_format:.2f} {units[i]}"
-
-
-def _format_time(seconds):
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    if h > 0:
-        return f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
-    else:
-        return f"{int(m):02d}:{int(s):02d}"
-
-
-def _format_download_speed(speed):
-    if speed is None:
-        return 'Undefined'
-
-    units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
-    unit_index = 0
-
-    while speed >= 1000 and unit_index < len(units) - 1:
-        speed /= 1000.0
-        unit_index += 1
-
-    return '{:.2f}{}'.format(speed, units[unit_index])
-
-
-def _format_exception(ex):
-    return f"{type(ex).__name__}: {str(ex)}".replace('"', '\\"').replace("'", "\\'")
-
-
-def _build_progress_update(record_id, state=None, result_text=None, result_title=None, progress_info_left=None,
-                           progress_info_center=None, progress_info_right=None, progress_preview_info_left=None,
-                           progress_preview_info_center=None, progress_preview_info_right=None, progress=None,
-                           progress_preview=None) -> str:
-    update = {'id': record_id}
-
-    if state is not None:
-        update['state'] = state
-
-    if result_text is not None:
-        update['result_text'] = result_text
-
-    if result_title is not None:
-        update['result_title'] = result_title
-
-    if progress_info_left is not None:
-        update['progress_info_left'] = progress_info_left
-
-    if progress_info_center is not None:
-        update['progress_info_center'] = progress_info_center
-
-    if progress_info_right is not None:
-        update['progress_info_right'] = progress_info_right
-
-    if progress_preview_info_left is not None:
-        update['progress_preview_info_left'] = progress_preview_info_left
-
-    if progress_preview_info_center is not None:
-        update['progress_preview_info_center'] = progress_preview_info_center
-
-    if progress_preview_info_right is not None:
-        update['progress_preview_info_right'] = progress_preview_info_right
-
-    if progress is not None:
-        update['progress'] = progress
-
-    if progress_preview is not None:
-        update['progress_preview'] = progress_preview
-
-    return json.dumps(update)
-
-
-def _build_update(progress_update=None, status_message=None, is_start_button_visible=None,
-                  is_cancel_button_visible=None,
-                  is_back_button_visible=None):
+def _build_widget_update(progress_update=None, status_message=None, is_start_button_visible=None,
+                         is_cancel_button_visible=None,
+                         is_back_button_visible=None):
     upd = [
         gr.HTML.update() if status_message is None else gr.HTML.update(value=status_message, visible=True),
         gr.Button.update() if is_start_button_visible is None else gr.Button.update(visible=is_start_button_visible),
@@ -114,23 +31,23 @@ def _build_update(progress_update=None, status_message=None, is_start_button_vis
 
 def _generate_info_center(bytes_ready, bytes_total):
     if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
-        return f"{_format_bytes(bytes_ready)} / {_format_bytes(bytes_total)}"
+        return f"{ui_format.format_bytes(bytes_ready)} / {ui_format.format_bytes(bytes_total)}"
     else:
         if isinstance(bytes_ready, int):
-            return _format_bytes(bytes_ready)
+            return ui_format.format_bytes(bytes_ready)
     return ''
 
 
 def _generate_progress(bytes_ready, bytes_total):
     if isinstance(bytes_ready, int) and isinstance(bytes_total, int) and bytes_total > 0:
-        return _format_percentage(bytes_ready, bytes_total)
+        return ui_format.format_percentage(bytes_ready, bytes_total)
     else:
         return 0
 
 
 def _generate_info_right(speed_rate, elapsed):
-    speed = _format_download_speed(speed_rate) if isinstance(speed_rate, float) and speed_rate > 0 else ''
-    elapsed = '' if not isinstance(elapsed, float) or elapsed == 0 else _format_time(elapsed)
+    speed = ui_format.format_download_speed(speed_rate) if isinstance(speed_rate, float) and speed_rate > 0 else ''
+    elapsed = '' if not isinstance(elapsed, float) or elapsed == 0 else ui_format.format_time(elapsed)
     right_info = ''
     if speed:
         right_info += speed
@@ -172,7 +89,10 @@ def _generate_js_record_update(record_id, update):
         elif status == RECORD_STATUS_ERROR:
             result['result_title'] = 'Download failed'
             if update.get('exception') is not None:
-                result['result_text'] = _format_exception(update['exception'])
+                result['result_text'] = ui_format.format_exception(update['exception'])
+
+        elif status == RECORD_STATUS_CANCELLED:
+            result['result_title'] = 'Download cancelled'
 
     if update.get('filename') is not None:
         result['progress_info_left'] = update['filename']
@@ -192,20 +112,42 @@ def _generate_js_record_update(record_id, update):
     return result
 
 
-def _generate_js_general_update(update):
-    status_message = ''
+def _generate_general_update(update):
+    logger.info(f'upd: {update}')
+    status_message = None
+
+    is_start_button_visible = None
+    is_cancel_button_visible = None
+    is_back_button_visible = None
+
     if update.get('general_status') is not None:
         if update['general_status'] == GENERAL_STATUS_IN_PROGRESS:
             status_message = styled.alert_primary('Download in progress.')
+            is_start_button_visible = False
+            is_cancel_button_visible = True
+            is_back_button_visible = False
+
         elif update['general_status'] == GENERAL_STATUS_COMPLETED:
             status_message = styled.alert_success('Download completed.')
+            is_start_button_visible = False
+            is_cancel_button_visible = False
+            is_back_button_visible = True
+
         elif update['general_status'] == GENERAL_STATUS_CANCELLED:
             status_message = styled.alert_warning('Download cancelled')
+            is_start_button_visible = True
+            is_cancel_button_visible = False
+            is_back_button_visible = True
+
         elif update['general_status'] == GENERAL_STATUS_ERROR:
             stat = ['Download failed.']
             if update.get('exception') is not None:
-                stat.append(_format_exception(update['exception']))
+                stat.append(ui_format.format_exception(update['exception']))
             status_message = styled.alert_danger(stat)
+
+            is_start_button_visible = True
+            is_cancel_button_visible = False
+            is_back_button_visible = True
 
     js_result = {}
     if update.get('records') is not None:
@@ -214,12 +156,17 @@ def _generate_js_general_update(update):
             upd_list.append(_generate_js_record_update(record_id, upd))
         js_result['records'] = upd_list
 
-    #   TODO make other updates
-    return json.dumps(js_result)
+    return _build_widget_update(
+        progress_update=json.dumps(js_result) if bool(js_result) else None,
+        status_message=status_message,
+        is_start_button_visible=is_start_button_visible,
+        is_cancel_button_visible=is_cancel_button_visible,
+        is_back_button_visible=is_back_button_visible,
+    )
 
 
 def _on_start_click(records):
-    yield _build_update(
+    yield _build_widget_update(
         status_message=styled.alert_primary('Download in progress.'),
         is_start_button_visible=False,
         is_cancel_button_visible=True,
@@ -228,35 +175,19 @@ def _on_start_click(records):
 
     DownloadManager.instance().start_download(records)
 
+    counter = 0
     while DownloadManager.instance().is_running():
-        general_state = DownloadManager.instance().get_state()
-        logger.debug('Total state: %s', general_state)
-        logger.info('-T-> %s', _generate_js_general_update(general_state))
-
-        latest_state = DownloadManager.instance().get_latest_state()
-        logger.debug('Latest state: %s', latest_state)
-        logger.info('-L-> %s', _generate_js_general_update(latest_state))
-        yield _build_update(
-            progress_update=_generate_js_general_update(general_state)
-        )
+        if counter % 20 == 0:
+            download_state = DownloadManager.instance().get_state()
+        else:
+            download_state = DownloadManager.instance().get_latest_state()
+        yield _generate_general_update(download_state)
         time.sleep(0.2)
 
-    logger.debug('Final state:')
-
     general_state = DownloadManager.instance().get_state()
-    logger.debug('Total state: %s', general_state)
-    logger.info('-T-> %s', _generate_js_general_update(general_state))
 
-    latest_state = DownloadManager.instance().get_latest_state()
-    logger.debug('Latest state: %s', latest_state)
-    logger.info('-L-> %s', _generate_js_general_update(latest_state))
-    yield _build_update(
-        progress_update=_generate_js_general_update(general_state)
-    )
-
+    yield _generate_general_update(general_state)
     logger.debug('Completed.')
-
-    yield _build_update()
 
 
 def _on_id_change(data):
@@ -264,13 +195,19 @@ def _on_id_change(data):
 
     if not data:
         return [
-            gr.HTML.update(value=styled.alert_warning('Nothing passed to download.')),
-            []
+            gr.HTML.update(),
+            [],
+            gr.Button.update(visible=False),  # start_button
+            gr.Button.update(visible=False),  # cancel_button
+            gr.Button.update(visible=True),  # back_button
+            gr.HTML.update(value=styled.alert_warning('Nothing passed to download.'),
+                           visible=True)  # status_message_widget
         ]
 
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
+    record_ids = nav.get_download_record_ids(data)
 
     if record_id is not None:
         records.append(env.storage.get_record_by_id(record_id))
@@ -278,9 +215,17 @@ def _on_id_change(data):
     if group is not None:
         records.extend(env.storage.get_records_by_group(group))
 
+    if record_ids is not None:
+        for record_id in record_ids:
+            records.append(env.storage.get_record_by_id(record_id))
+
     return [
-        gr.HTML.update(value=styled.download_cards(records)),
-        records
+        gr.HTML.update(value=styled.download_cards(records, nav.generate_ui_token())),
+        records,
+        gr.Button.update(visible=True),  # start_button
+        gr.Button.update(visible=False),  # cancel_button
+        gr.Button.update(visible=True),  # back_button
+        gr.HTML.update(visible=False)  # status_message_widget
     ]
 
 
@@ -291,9 +236,14 @@ def _on_cancel_click():
 def download_ui_block():
     with gr.Blocks():
         download_state = gr.State(value=[])
-        download_id_box = gr.Textbox(label='download_id_box', elem_classes='mo-alert-warning', visible=False)
-        download_progress_box = gr.Textbox(label='download_progress_box', elem_classes='mo-alert-warning',
-                                           visible=False)
+        download_id_box = gr.Textbox(label='download_id_box',
+                                     elem_classes='mo-alert-warning',
+                                     visible=False,
+                                     interactive=False)
+        download_progress_box = gr.Textbox(label='download_progress_box',
+                                           elem_classes='mo-alert-warning',
+                                           visible=False,
+                                           interactive=False)
         gr.Markdown('## Downloads')
         status_message_widget = gr.HTML(visible=False)
         with gr.Row():
@@ -305,13 +255,15 @@ def download_ui_block():
         gr.HTML('</hr>')
         html_widget = gr.HTML()
 
-    download_id_box.change(_on_id_change, inputs=download_id_box, outputs=[html_widget, download_state])
+    download_id_box.change(_on_id_change, inputs=download_id_box,
+                           outputs=[html_widget, download_state, start_button, cancel_button, back_button,
+                                    status_message_widget])
     download_progress_box.change(fn=None, inputs=download_progress_box, _js='handleProgressUpdates')
 
     start_button.click(_on_start_click, inputs=download_state,
                        outputs=[status_message_widget, start_button, cancel_button, back_button, download_progress_box])
 
-    cancel_button.click(_on_cancel_click)  # TODO on cancel clicked
+    cancel_button.click(_on_cancel_click, queue=False)
     back_button.click(fn=None, _js='navigateBack')
 
     return download_id_box

@@ -1,3 +1,4 @@
+import ast
 import mimetypes
 import os
 import time
@@ -6,10 +7,10 @@ import gradio as gr
 import gradio.routes
 
 from scripts.mo.environment import *
-from scripts.mo.init_storage import initialize_storage
+from scripts.mo.data.init_storage import initialize_storage
 from scripts.mo.ui_main import main_ui_block
 
-SETTINGS_FILE = 'settings.txt'
+SETTINGS_FILE = 'settings_dev.txt'
 
 mimetypes.init()
 mimetypes.add_type("application/javascript", ".js")
@@ -85,8 +86,7 @@ def read_settings():
 settings = read_settings()
 
 env.mo_storage_type = lambda: settings['mo_storage_type']
-env.mo_notion_api_token = lambda: settings['mo_notion_api_token']
-env.mo_notion_db_id = lambda: settings['mo_notion_db_id']
+env.mo_download_preview = lambda: ast.literal_eval(settings['mo_download_preview'])
 env.mo_model_path = lambda: settings['mo_model_path']
 env.mo_vae_path = lambda: settings['mo_vae_path']
 env.mo_lora_path = lambda: settings['mo_lora_path']
@@ -96,6 +96,7 @@ env.mo_script_dir = ''
 env.mo_layout = lambda: settings['mo_layout']
 env.mo_card_width = lambda: settings['mo_card_width']
 env.mo_card_height = lambda: settings['mo_card_height']
+env.theme = lambda: settings['mo_theme']
 initialize_storage()
 
 
@@ -104,14 +105,9 @@ def storage_type_change(value):
     logger.info(f'mo_storage_type updated: {value}')
 
 
-def notion_api_token_change(value):
-    settings['mo_notion_api_token'] = value
-    logger.info(f'mo_notion_api_token updated: {value}')
-
-
-def notion_db_id_change(value):
-    settings['mo_notion_db_id'] = value
-    logger.info(f'mo_notion_db_id updated: {value}')
+def download_preview_change(value):
+    settings['mo_download_preview'] = value
+    logger.info(f'mo_download_preview updated: {value}')
 
 
 def model_path_change(value):
@@ -154,6 +150,11 @@ def card_height_change(value):
     logger.info(f'mo_card_height updated: {value}')
 
 
+def theme_change(value):
+    settings['mo_theme'] = value
+    logger.info(f'mo_theme updated: {value}')
+
+
 def save_click():
     with open(SETTINGS_FILE, 'w') as f:
         for key, value in settings.items():
@@ -168,21 +169,22 @@ def settings_block():
         card_width = gr.Textbox(env.mo_card_width, label='Cards width:')
         card_height = gr.Textbox(env.mo_card_height, label='Cards height:')
 
-        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_NOTION], value=[env.mo_storage_type()],
+        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_FIREBASE], value=[env.mo_storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
-        notion_api_token = gr.Textbox(env.mo_notion_api_token(), label="Notion Api Token:")
-        notion_db_id = gr.Textbox(env.mo_notion_db_id(), label="Notion Database Id")
+
+        mo_download_preview = gr.Checkbox(value=env.mo_download_preview(), label='Download Preview')
+
         model_path = gr.Textbox(env.mo_model_path(), label='Model path:')
         vae_path = gr.Textbox(env.mo_vae_path(), label='VAE path:')
         lora_path = gr.Textbox(env.mo_lora_path(), label='LORA path:')
         hypernetworks_path = gr.Textbox(env.mo_hypernetworks_path(), label='Hypernetworks path:')
         embeddings_path = gr.Textbox(env.mo_embeddings_path(), label="Embeddings path:")
+        theme_widget = gr.Textbox(env.theme(), label='Theme:')
         button = gr.Button("Save")
 
     storage_type.change(storage_type_change, inputs=storage_type)
-    notion_api_token.change(notion_api_token_change, inputs=notion_api_token)
-    notion_db_id.change(notion_db_id_change, inputs=notion_db_id)
     model_path.change(model_path_change, inputs=model_path)
+    mo_download_preview.change(download_preview_change, inputs=mo_download_preview)
     vae_path.change(vae_path_change, inputs=vae_path)
     lora_path.change(lora_path_change, inputs=lora_path)
     hypernetworks_path.change(hypernetworks_path_change, inputs=hypernetworks_path)
@@ -190,6 +192,7 @@ def settings_block():
     layout_type.change(layout_type_change, inputs=layout_type)
     card_width.change(card_width_change, inputs=card_height)
     card_height.change(card_height_change, inputs=card_height)
+    theme_widget.change(theme_change, inputs=theme_widget)
 
     button.click(save_click)
 
