@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.dl.gdrive_downloader import GDriveDownloader
 from scripts.mo.dl.http_downloader import HttpDownloader
-from scripts.mo.dl.mega_downloader import MegaDownloader
 from scripts.mo.environment import env, logger, calculate_md5, calculate_sha256
 from scripts.mo.models import Record
 
@@ -105,7 +104,6 @@ class DownloadManager:
 
         self._downloaders: list[Downloader] = [
             GDriveDownloader(),
-            MegaDownloader(),
             HttpDownloader()  # Should always be the last one to give a chance for other http schemas
         ]
 

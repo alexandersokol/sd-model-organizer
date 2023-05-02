@@ -5,9 +5,9 @@ from datetime import datetime
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env, LAYOUT_CARDS, logger
-from scripts.mo.models import Record, ModelType, ModelSort
 from scripts.mo.data.storage import map_record_to_dict, map_dict_to_record
+from scripts.mo.environment import env, LAYOUT_CARDS
+from scripts.mo.models import Record, ModelType, ModelSort
 
 
 def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_first: bool) -> list[Record]:
