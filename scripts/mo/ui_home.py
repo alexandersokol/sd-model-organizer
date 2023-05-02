@@ -1,11 +1,13 @@
 import json
 import os.path
+from datetime import datetime
 
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, LAYOUT_CARDS, logger
 from scripts.mo.models import Record, ModelType, ModelSort
+from scripts.mo.data.storage import map_record_to_dict, map_dict_to_record
 
 
 def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_first: bool) -> list[Record]:
@@ -64,7 +66,8 @@ def _prepare_data(state_json: str):
     return [
         html,
         json.dumps(json.dumps(record_ids)),
-        gr.Button.update(visible=len(record_ids) > 0)
+        gr.Button.update(visible=len(record_ids) > 0),
+        gr.Accordion.update(visible=len(record_ids) > 0)
     ]
 
 
@@ -118,6 +121,52 @@ def _on_show_not_downloaded_changed(show_not_downloaded, state_json):
     state = json.loads(state_json)
     state['show_not_downloaded'] = show_not_downloaded
     return json.dumps(state)
+
+
+def _on_export_click(record_ids):
+    ids = json.loads(json.loads(record_ids))
+
+    if len(ids) == 0:
+        return gr.File.update(visible=False)
+
+    records_dict_list = []
+    for id_ in ids:
+        record = env.storage.get_record_by_id(id_)
+        records_dict_list.append(map_record_to_dict(record))
+
+    if len(records_dict_list) > 0:
+        export_dir = os.path.join(env.mo_script_dir, 'export')
+        if not os.path.isdir(export_dir):
+            os.mkdir(export_dir)
+
+        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        path = os.path.join(export_dir, filename)
+        with open(path, 'w') as f:
+            json.dump(records_dict_list, f)
+
+        return gr.File.update(value=path, label='Exported, Click "Download"', visible=True)
+    else:
+        return gr.File.update(visible=False)
+
+
+def _on_import_file_change(import_file):
+    with open(import_file.name, 'r') as f:
+        records_dict_list = json.load(f)
+
+    if len(records_dict_list) == 0:
+        return gr.HTML.update('Nothing to import')
+    else:
+        records_imported = []
+        for record_dict in records_dict_list:
+            record = map_dict_to_record('', record_dict)
+            env.storage.add_record(record)
+            records_imported.append(record.name)
+
+        output = f'Imported records: ({len(records_imported)})'
+        for name in records_imported:
+            output += '<br>'
+            output += name
+        return gr.HTML.update(value=output)
 
 
 def home_ui_block():
@@ -188,21 +237,29 @@ def home_ui_block():
                                                        value=initial_state['show_downloaded'])
                 show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                            value=initial_state['show_not_downloaded'])
-        initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
+        initial_html, initial_record_ids, _, _ = _prepare_data(initial_state_json)
         html_content_widget = gr.HTML(initial_html)
         record_ids_box = gr.Textbox(value=initial_record_ids,
                                     label='record_ids_box',
                                     elem_classes='mo-alert-warning',
                                     visible=False,
                                     interactive=False)
+
+        with gr.Accordion(label='Import/Export', open=False, visible=True) as import_export_widget:
+            import_file_widget = gr.File(label='Import .json file', file_types=['.json'])
+            import_result_widget = gr.HTML()
+            export_button = gr.Button(value='Export')
+            export_file_widget = gr.File(visible=False)
+
         download_all_button.visible = len(initial_record_ids) > 0
+        import_export_widget.visible = len(initial_record_ids) > 0
 
         reload_button.click(_prepare_data, inputs=state_box,
-                            outputs=[html_content_widget, record_ids_box, download_all_button])
+                            outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
         refresh_box.change(_prepare_data, inputs=state_box,
-                           outputs=[html_content_widget, record_ids_box, download_all_button])
+                           outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
         state_box.change(_prepare_data, inputs=state_box,
-                         outputs=[html_content_widget, record_ids_box, download_all_button])
+                         outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
 
         download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         add_button.click(fn=None, _js='navigateAdd')
@@ -226,5 +283,8 @@ def home_ui_block():
         show_not_downloaded_checkbox.change(_on_show_not_downloaded_changed,
                                             inputs=[show_not_downloaded_checkbox, state_box],
                                             outputs=state_box)
+
+        import_file_widget.change(_on_import_file_change, inputs=import_file_widget, outputs=import_result_widget)
+        export_button.click(_on_export_click, inputs=record_ids_box, outputs=export_file_widget)
 
     return refresh_box
