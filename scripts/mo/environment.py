@@ -7,6 +7,7 @@ from scripts.mo.models import ModelType, Record
 from scripts.mo.data.storage import Storage
 
 STORAGE_SQLITE = 'SQLite'
+STORAGE_FIREBASE = 'Firebase'
 
 LAYOUT_CARDS = 'Cards'
 LAYOUT_TABLE = 'Table'

@@ -169,7 +169,7 @@ def settings_block():
         card_width = gr.Textbox(env.mo_card_width, label='Cards width:')
         card_height = gr.Textbox(env.mo_card_height, label='Cards height:')
 
-        storage_type = gr.Dropdown([STORAGE_SQLITE], value=[env.mo_storage_type()],
+        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_FIREBASE], value=[env.mo_storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
 
         mo_download_preview = gr.Checkbox(value=env.mo_download_preview(), label='Download Preview')
