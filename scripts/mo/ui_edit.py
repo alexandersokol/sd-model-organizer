@@ -12,9 +12,16 @@ from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
 
 
-def is_unix_directory_path(path):
-    pattern = r'^\/(?:[\w\d]+\/?)*$'
-    return bool(re.match(pattern, path))
+def is_directory_path_valid(path):
+    if os.path.exists(path):
+        return not os.path.isfile(path) and os.path.isdir(path)
+    else:
+        try:
+            os.makedirs(path)
+            return True
+        except Exception as ex:
+            logger.warning(ex)
+            return False
 
 
 def is_valid_url(url: str) -> bool:
@@ -42,6 +49,8 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if is_blank(model_type_value):
         errors.append('Model type not selected.')
 
+    model_type = ModelType.by_value(model_type_value)
+
     if is_blank(download_url):
         errors.append('Download field is empty.')
     elif not is_valid_url(download_url):
@@ -52,10 +61,10 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if not is_blank(url) and not is_valid_url(url):
         errors.append('Model URL is incorrect.')
 
-    if not is_blank(download_path) and not is_unix_directory_path(download_path):
+    if not is_blank(download_path) and not is_directory_path_valid(download_path):
         errors.append('Download path is incorrect.')
 
-    if model_type_value == ModelType.OTHER.value and is_blank(download_path):
+    if model_type == ModelType.OTHER and is_blank(download_path):
         errors.append('Download path for type "Other" must be defined.')
 
     if not is_blank(download_filename) and not is_valid_filename(download_filename):
@@ -63,6 +72,15 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
 
     if not is_blank(preview_url) and not is_valid_url(preview_url):
         errors.append('Preview URL is incorrect.')
+
+    if not is_blank(download_subdir):
+        if not is_blank(download_path):
+            path = download_subdir
+        else:
+            path = env.get_model_path(model_type)
+        dl_subdir = os.path.join(path, download_subdir)
+        if not is_directory_path_valid(dl_subdir):
+            errors.append(f'Download path with SUBDIR is incorrect: {dl_subdir}')
 
     if errors:
         return [
@@ -83,7 +101,6 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         sha256_hash = ''
         md5_hash = ''
         location = ''
-        model_type = ModelType.by_value(model_type_value)
 
         old_record = None
         if record_id:

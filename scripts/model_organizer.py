@@ -14,8 +14,6 @@ env.mo_layout = lambda: shared.opts.mo_layout
 env.mo_card_width = lambda: shared.opts.mo_card_width
 env.mo_card_height = lambda: shared.opts.mo_card_height
 env.mo_storage_type = lambda: shared.opts.mo_storage_type
-env.mo_notion_api_token = lambda: shared.opts.mo_notion_api_token
-env.mo_notion_db_id = lambda: shared.opts.mo_notion_db_id
 env.mo_download_preview = lambda: shared.opts.mo_download_preview
 env.mo_model_path = lambda: shared.opts.mo_model_path
 env.mo_vae_path = lambda: shared.opts.mo_vae_path
@@ -40,8 +38,6 @@ def on_ui_settings():
         'mo_card_height': OptionInfo(0, 'Card height (default if 0):'),
         'mo_storage_type': OptionInfo(STORAGE_SQLITE, "Storage Type:", gr.Radio,
                                       {"choices": [STORAGE_SQLITE, STORAGE_FIREBASE]}),
-        'mo_notion_api_token': OptionInfo('', 'Notion API Token:'),
-        'mo_notion_db_id': OptionInfo('', 'Notion Database Id:'),
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
         'mo_model_path': OptionInfo('', f'Model directory (If empty uses default: {model_path}):'),
         'mo_vae_path': OptionInfo('', f'VAE directory (If empty uses default: {vae_path}) :'),
