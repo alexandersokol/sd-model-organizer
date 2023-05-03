@@ -6,6 +6,8 @@ needed for Stable Diffusion WebUI, add information, description, own notes and d
 
 ![logo.png](pic/readme/logo.png)
 
+</br>
+
 ## 🚀 Core features
 
 - Sort model records by time added, name, model types, groups and search by name.
@@ -21,7 +23,7 @@ needed for Stable Diffusion WebUI, add information, description, own notes and d
 - Export/import existing model as json files.
 - Dark/Light theme support.
 
-###
+</br>
 
 ## 1. Home Screen
 
@@ -29,7 +31,7 @@ needed for Stable Diffusion WebUI, add information, description, own notes and d
 The main screen of the extension. Displays already added records. May be configured
 to display content as cards or table layout in the webui settings.
 
-###
+</br>
 
 ### 1.1 Controls
 
@@ -41,7 +43,7 @@ to display content as cards or table layout in the webui settings.
   queue.
 - **Add** - Redirects to the Add Record screen.
 
-###
+</br>
 
 ### 1.2 Display Options
 
@@ -57,7 +59,7 @@ screen.
 - **Show downloaded** - Shows downloaded records if checked.
 - **Show not downloaded** - Shows not downloaded records if checked.
 
-###
+</br>
 
 ### 1.3 Cards
 
@@ -70,7 +72,7 @@ After mouse hovering above record card, card options will be displayed:
 - **Edit** - Redirects to the record editing screen.
 - **Remove** - Redirects to the record removal screen.
 
-###
+</br>
 
 ### 1.4 Import/Export
 
@@ -83,7 +85,7 @@ After mouse hovering above record card, card options will be displayed:
   filters applied). Click on download button to download it from the browser, or navigate to
   the `<your_extensions_dir>/sd-model-organizer/export` dir.
 
-###
+</br>
 
 ## 2. Add/Edit Record screen
 
@@ -105,7 +107,7 @@ After mouse hovering above record card, card options will be displayed:
   checked in the extension settings.
 - **Model page URL** - Link to the model page information.
 
-###
+</br>
 
 ### 2.2 Groups
 
@@ -114,7 +116,7 @@ Groups dropdown allows to add groups to the current record from already existing
 expanding `Add Groups` accordion. Type comma-separated group names in the textbox and press `Add Group` button to add
 new groups.
 
-###
+</br>
 
 ### 2.3 Download options
 
@@ -125,14 +127,14 @@ Download options section allows to configure download destination of model's fil
 - **Download File Name** - Downloaded file name. Default if empty.
 - **Subdir** - Downloads file into subdirectory. (for example: `{webui_path}/models/Stable Diffusion/photo/`)
 
-###
+</br>
 
 ### 2.4 Prompts
 
 ![edit_prompts.png](pic/readme/edit_prompts.png)
 Prompts sections allows to note positive and negative prompts of the model record.
 
-###
+</br>
 
 ### 2.5 Description
 
@@ -140,7 +142,7 @@ Prompts sections allows to note positive and negative prompts of the model recor
 Description is textfield that support Rich Text editing with TinyMCE editor.
 Supports different text-styles, links, images, videos, tables and pasting text from clipboard with styles.
 
-###
+</br>
 
 ## 3. Record Details screen
 
@@ -163,7 +165,7 @@ Screen that displays all record's information available:
 - **Negative Prompts** - Negative prompts text if it was added.
 - **Description** - Formatted description text.
 
-###
+</br>
 
 ## 4. Download screen
 
@@ -174,14 +176,14 @@ progress for each separate record.
 ![download_in_progress.png](pic/readme/download_in_progress.png)
 ![download_completed.png](pic/readme/download_completed.png)
 
-###
+</br>
 
 ## 5. Record Removal screen
 
 ![removal.png](pic/readme/removal.png)
 Removal screen allows to remove record itself or with files if record was downloaded and files are available.
 
-###
+</br>
 
 ## 6. Extension settings
 
@@ -201,7 +203,7 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
 - **Hypernetworks directory** - Hypernetworks directory to download Hypernetworks files, uses default path if empty.
 - **Embeddings directory** - Embeddings directory to download Embeddings files, uses default path if empty.
 
-###
+</br>
 
 ## 7. Firestore setup
 
@@ -218,7 +220,7 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
 
 **Note:** Keep this file safe and don't use service account keys from projects that contains any sensitive data.
 
-###
+</br>
 
 ## 📦 Installation
 
@@ -230,7 +232,7 @@ Manually:
 Clone repository into your extensions folder, install `bs4` and `firebase-admin` packages with pip, restart webui if
 needed.
 
-###
+</br>
 
 ## 🤝 Contributing
 
@@ -238,13 +240,13 @@ Contributions, issues, and feature requests are welcome! Feel free to check out 
 contribute. Please keep in mind I'm not a Python/JS/Gradio developer. I'm new to these technologies stack and my overall
 experience with it is about one month only.
 
-###
+</br>
 
 ## 📝 License
 
 This project is licensed under the MIT License. Feel free to use, modify, and distribute it as you wish.
 
-###
+</br>
 
 ## Models on screenshots
 
