@@ -15,11 +15,13 @@ env.mo_card_width = lambda: shared.opts.mo_card_width
 env.mo_card_height = lambda: shared.opts.mo_card_height
 env.mo_storage_type = lambda: shared.opts.mo_storage_type
 env.mo_download_preview = lambda: shared.opts.mo_download_preview
-env.mo_model_path = lambda: shared.opts.mo_model_path
-env.mo_vae_path = lambda: shared.opts.mo_vae_path
-env.mo_lora_path = lambda: shared.opts.mo_lora_path
-env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path
-env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path
+env.mo_model_path = lambda: shared.opts.mo_model_path if shared.opts.mo_model_path else sd_models.model_path
+env.mo_vae_path = lambda: shared.opts.mo_vae_path if shared.opts.mo_vae_path else sd_vae.vae_path
+env.mo_lora_path = lambda: shared.opts.mo_lora_path if shared.opts.mo_lora_path else shared.cmd_opts.lora_dir
+env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path if shared.opts.mo_hypernetworks_path else \
+    shared.cmd_opts.hypernetwork_dir
+env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path if shared.opts.mo_embeddings_path else \
+    shared.cmd_opts.embeddings_dir
 env.mo_script_dir = scripts.basedir()
 env.theme = lambda: shared.cmd_opts.theme
 
