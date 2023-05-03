@@ -397,5 +397,7 @@ function deliverNavObject(navObj) {
 
 onUiLoaded(function () {
     log("UI loaded")
-
+    const script = document.createElement('script');
+    script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+    document.head.appendChild(script);
 })
