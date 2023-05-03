@@ -155,7 +155,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
 
 def _get_files_for_dir(lookup_dir: str) -> list[str]:
     root_dir = os.path.join(lookup_dir, '')
-    extensions = ('.bin', '.ckpt', '.safetensors')
+    extensions = ('.bin', '.ckpt', '.safetensors', '.pt', '.zip')
     result = []
 
     if os.path.isdir(root_dir):
@@ -240,7 +240,7 @@ def _get_bind_existing_update(model_type_value, location_state):
             choices=['']
         )
 
-    if location_state is not None and (not location_state or not os.path.exists(location_state)):
+    if location_state is None or not location_state or not os.path.exists(location_state):
         lookup_dir = os.path.join(env.get_model_path(model_type), '')
 
         files_found = _get_files_for_dir(lookup_dir)

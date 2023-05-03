@@ -14,7 +14,6 @@ from scripts.mo.ui_remove import remove_ui_block
 
 
 def _load_mo_css() -> str:
-    # TODO add and check dark theme colors
     if env.theme() == 'dark':
         colors_css_path = os.path.join(env.mo_script_dir, 'colors-dark.css')
     else:

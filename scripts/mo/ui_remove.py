@@ -8,7 +8,16 @@ from scripts.mo.ui_navigation import generate_ui_token
 
 
 def _on_id_change(record_id):
-    logger.info(f'Remove: on id change: {record_id}', )
+    logger.info(f'_on_id_change record_id: {record_id}', )
+
+    if not record_id:
+        return [
+            gr.HTML.update(value='Record is missing.'),
+            gr.Button.update(visible=True),
+            gr.Button.update(visible=False),
+            gr.Checkbox.update(visible=False),
+            gr.Checkbox.update(visible=False)
+        ]
 
     record = env.storage.get_record_by_id(record_id)
     if record is None:
@@ -30,6 +39,7 @@ def _on_id_change(record_id):
 
 
 def _on_remove_click(record_id, remove_record, remove_files):
+    logger.info(f'_on_remove_click record_id: {record_id} remove_record: {remove_record} remove_files: {remove_files}')
     record = env.storage.get_record_by_id(record_id)
 
     if remove_record:
@@ -43,7 +53,6 @@ def _on_remove_click(record_id, remove_record, remove_files):
         if preview_path and os.path.exists(record.location):
             os.remove(preview_path)
 
-    logger.info(f'record removed {record_id}')
     return generate_ui_token()
 
 
