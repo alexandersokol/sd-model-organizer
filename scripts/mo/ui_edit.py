@@ -387,8 +387,8 @@ def edit_ui_block():
                 download_path_widget = gr.Textbox(label='Download Path:',
                                                   value='',
                                                   max_lines=1,
-                                                  info='UNIX path to the download dir, default if empty. Must start '
-                                                       'with "/" (Required for "Other\" model type)', )
+                                                  info='Path to the download dir, default if empty. '
+                                                       '(Required for "Other\" model type)', )
                 download_filename_widget = gr.Textbox(label='Download File Name:',
                                                       value='',
                                                       max_lines=1,

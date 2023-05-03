@@ -4,7 +4,7 @@ SD Model Organizer is a [Stable Diffusion WebUI](https://github.com/AUTOMATIC111
 that allows users to store information about different models
 needed for Stable Diffusion WebUI, add information, description, own notes and download them.
 
-![readme_home.png](pic/readme_home.png)
+![logo.png](pic/readme/logo.png)
 
 ## 🚀 Core features
 
@@ -21,98 +21,204 @@ needed for Stable Diffusion WebUI, add information, description, own notes and d
 - Export/import existing model as json files.
 - Dark/Light theme support.
 
+## 1. Home Screen
 
+![home.png](pic/readme/home.png)
+The main screen of the extension. Displays already added records. May be configured
+to display content as cards or table layout in the webui settings.
 
+### 1.1 Controls
 
-## Home Screen
+![home_controls.png](pic/readme/home_controls.png)
 
-- Shows model records added by users with cards or table layout
-- Allows one-click download of a model
-- Enables filtering of added model records by name, group, and model type
-- Allows sorting by time added or name
-- Enables exporting/importing model records to/from a JSON file
-- Allows downloading all models that are listed on the home screen
+- **Reload** - Allows to reload data from the storage manually. Avoid using page refresh - it will load only initial
+  data from Gradio.
+- **Download All** - Redirects to the download screen and adds all records displayed on the home screen to the download
+  queue.
+- **Add** - Redirects to the Add Record screen.
 
-## Model Add/Edit Screen
+### 1.2 Display Options
 
-- Requires name field to be filled in, which will be displayed in the model record
-- Requires a model type selection, which currently supports Checkpoint, VAE, Lora, Hyper Network, Embedding, and Other
-- Requires a download URL to download the model
-- Supports a preview image URL that will be displayed in the model record preview, and will also be downloaded with the
-  model
-- Supports adding a model page URL that will be displayed in model details
-- Allows for adding groups to a model record, which can be used as tags. Groups are either taken from already existing
-  records or can be added through the "Add groups" section
-- Allows the user to control where the downloaded file will be placed, including options such
-  as `Download Path`, `Download File Name`, and `Subdir`
-- Includes a "Prompts" section containing two fields: `Positive Prompts` and `Negative Prompts`
-- Supports a `Description` field that uses a WYSWYG TinyMCE editor for adding and editing text with rich text formatting
+![home_display_options.png](pic/readme/home_display_options.png)
+Display options is an accordion that hides sorting and filtering options to be applied for records to show on home
+screen.
 
-## Model Details Screen
+- **Sort By** - Allows to sort records by `Time Added`, `Time Added Reversed`, `Name` and `Name Reveresed`.
+- **Download first** - Downloaded records will be displayed first in the list if checked.
+- **Search by name** - Allows to search records by name, not case-sensitive.
+- **Model types** - Filters records by selected model types.
+- **Groups** - Filters records by selected record groups.
+- **Show downloaded** - Shows downloaded records if checked.
+- **Show not downloaded** - Shows not downloaded records if checked.
 
-- Contains the same fields as the add/edit screen but without the ability to edit them. Empty fields in the model record
-  will not be displayed.
+### 1.3 Cards
 
-## Removal Screen
+![home_cards.png](pic/readme/home_cards.png)
+After mouse hovering above record card, card options will be displayed:
 
-- Allows for removing a model or files related to that model, if such files exist.
+- **Details** - Redirects to the details screen of the current record.
+- **Download** - Redirects to the download screen and adds current records to the download queue. Visible only if models
+  isn't downloaded yet.
+- **Edit** - Redirects to the record editing screen.
+- **Remove** - Redirects to the record removal screen.
 
-## Download Screen
+### 1.4 Import/Export
 
-- Contains cards, one for each model record added for downloading
-- Each card displays a status (Pending, In Progress, Exists, Complete, or Error) in a different color. While a card is
-  in "In Progress" state, the download progress is displayed.
-- Displays a general download status at the top.
+![home_import_export.png](pic/readme/home_import_export.png)
+`Import/Export` Accordion is placed in the bottom of the home screen, click to expand it.
 
-🎉🎉🎉
+- **Import** - Drag and drop .json file with records to import it to the current selected storage. **Note: existing
+  records will not be merged with new ones. Imported records will be added as new.**
+- **Export** - Click to export records displayed on the home screen (Only displayed will be exported, regarding to the
+  filters applied). Click on download button to download it from the browser, or navigate to
+  the `<your_extensions_dir>/sd-model-organizer/export` dir.
 
-SD Model Organizer
-The SD Model Organizer is an extension for the Stable Diffusion WebUI that allows users to store and manage information
-about different models used with the Stable Diffusion system. With this extension, users can easily add, edit, and
-download models, as well as organize them by group, type, or other attributes.
+## 2. Add/Edit Record screen
 
-## 🚀 Features
+### 2.1 Input Fields
 
-The SD Model Organizer extension includes the following features:
+![edit_fields.png](pic/readme/edit_fields.png)
 
-Home Screen
-Model Records Display: Shows model records added by user with cards or table layout.
-One-click Download: Download a model with one click.
-Filtering: Filter added model records by name, group, model type.
-Sorting: Sort by time added or name.
-Export/Import: Export/import model records to/from json file.
-Bulk Download: Download all models that are listed in the home screen.
-Model Add/Edit Screen
-Name: Name field (required) - Name of the model record displayed.
-Model Type: Model type, currently supports Checkpoint, VAE, Lora, Hyper Network, Embedding and Other. (required) - Model
-type, shows badge and takes path were the model will be downloaded.
-Download URL: An url to the model for download (required).
-Preview Image URL: Image url that will be displayed in model record preview, also will be downloaded with a model.
-Model Page URL: An url to the model page, displayed in model details.
-Groups: A list of groups that can be added by user to model record and used as tags. Groups are taken from already
-existing records or can be added via the next section.
-Add Groups Section: Allows adding new groups for models that don't exist yet.
-Download Options Section: Allows users to control where downloaded file will be placed. Contains options such as
-Download Path, Download File Name, and Subdir.
-Prompts Section: Contains two fields Positive Prompts and Negative Prompts.
-Description Field: Supports WYSWYG tinyMCE editor that allows adding and editing text using rich text formatting.
-Model Details Screen
-Same Fields as Add/Edit Screen: Contains the same fields as add/edit screen but without the ability to edit them. Empty
-fields of the model record are not displayed.
-Removal Screen
-Removal of Models: Allows users to remove models or files related to those models if such files exist.
-Download Screen
-Model Download Cards: Contains cards, one per each model record added for downloading.
-Download Status: Each card might have status "Pending", "In Progress", "Exists", "Complete", "Error" colored
-differently. While the card is in "In Progress" state, the download progress is displayed.
-General Download Status: Shows the general download status on top.
-📦 Installation
-The SD Model Organizer can be installed from the Stable Diffusion WebUI. Simply navigate to the Extensions page and
-search for "SD Model Organizer". Click the Install button to add it to your WebUI.
+- **Cancel** - Click to cancel record adding/editing and return to previous screen.
+- **Save** - Saves or adds new model and returns to previous screen.
+- **Name** - Model title to display (Required)
+- **Model type** - Dropdown to select record's model type. Currently
+  supported `Checkpoint`, `VAE`, `Lora`, `Hyper Network`, `Embedding` and other `Other`. If `Download path` is not
+  defined in the `Download options` section, model will be downloaded to the default model's path defined in webui. Also
+  default path might be changed in the extension settings. **Note: `Other` type requires to `Download path` to be set
+  in the `Download Options`**
+- **Download URL** - Link to the model file to download (Required). **Note: if URL will be changed during editing -
+  SHA256, MD5 and file location will be erased. Remove file manually or via remove-files only option**
+- **Preview image URL** - Link to the image for preview. Image will be downloaded if `Download preview` options is
+  checked in the extension settings.
+- **Model page URL** - Link to the model page information.
 
-🤝 Contributing
+### 2.2 Groups
+
+![edit_groups.png](pic/readme/edit_groups.png)
+Groups dropdown allows to add groups to the current record from already existing records or add new ones by
+expanding `Add Groups` accordion. Type comma-separated group names in the textbox and press `Add Group` button to add
+new groups.
+
+### 2.3 Download options
+
+![edit_download_options.png](pic/readme/edit_download_options.png)
+Download options section allows to configure download destination of model's file.
+
+- **Download Path** - Path to the download dir, default if empty. (Required for "Other" model type)
+- **Download File Name** - Downloaded file name. Default if empty.
+- **Subdir** - Downloads file into subdirectory. (for example: `{webui_path}/models/Stable Diffusion/photo/`)
+
+### 2.4 Prompts
+
+![edit_prompts.png](pic/readme/edit_prompts.png)
+Prompts sections allows to note positive and negative prompts of the model record.
+
+### 2.5 Description
+
+![edit_description.png](pic/readme/edit_description.png)
+Description is textfield that support Rich Text editing with TinyMCE editor.
+Supports different text-styles, links, images, videos, tables and pasting text from clipboard with styles.
+
+## 3. Record Details screen
+
+![details.png](pic/readme/details.png)
+Screen that displays all record's information available:
+
+- **Name** - Record name.
+- **Model Type** - Model type.
+- **Size** - Size of model's file in case it was downloaded.
+- **MD5** - Model's md5 hash in case it was downloaded.
+- **SHA256** - Model's sha256 hash in case it was downloaded.
+- **Location** - File path in case model was downloaded.
+- **Model page** - Link to the model's page if it was added.
+- **Groups** - Model's groups.
+- **Download URL** - Model's download link.
+- **Download path** - Download destination directory.
+- **Download filename** - Download destination file name.
+- **Subdir** - Download destination subdirectory.
+- **Positive Prompts** - Positive prompts text if it was added.
+- **Negative Prompts** - Negative prompts text if it was added.
+- **Description** - Formatted description text.
+
+## 4. Download screen
+
+Download screen contains cards with records selected for downloading. Each card contains current state of download
+progress for each separate record.
+
+![download_pending.png](pic/readme/download_pending.png)
+![download_in_progress.png](pic/readme/download_in_progress.png)
+![download_completed.png](pic/readme/download_completed.png)
+
+## 5. Record Removal screen
+
+![removal.png](pic/readme/removal.png)
+Removal screen allows to remove record itself or with files if record was downloaded and files are available.
+
+## 6. Extension settings
+
+![settings.png](pic/readme/settings.png)
+SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` Menu.
+
+- **Layout Type** - Layout type displayed on home screen. Currently two options available `Cards` or `Table`.
+- **Card width** - Card's width on home screen. Default value will be used if 0.
+- **Card height** - Card's height on home screen. Default value will be used if 0.
+- **Storage Type** - Storage type to store model records. `SQLite` is selected by default and stores data
+  in `{sd-webui}/extensions/sd-model-organizer/database.sqlite` file. `Firebase` option allows to store records data in
+  the remove Firestore database, follow instruction in the separate section of this page for setup.
+- **Download Preview** - Enabled downloading models preview with model. Checked by default.
+- **Model directory** - Model's directory to download checkpoints, uses default path if empty.
+- **VAE directory** - VAE directory to download VAE files, uses default path if empty.
+- **Lora directory** - Lora directory to download Lora files, uses default path if empty.
+- **Hypernetworks directory** - Hypernetworks directory to download Hypernetworks files, uses default path if empty.
+- **Embeddings directory** - Embeddings directory to download Embeddings files, uses default path if empty.
+
+## 7. Firestore setup
+
+![firestore_setup.png](pic/readme/firestore_setup.png)
+
+- Go to https://console.firebase.google.com/
+- Create a new project
+- Open a project and navigate to the `Build -> Firestore Database` in the left-side menu.
+- Enable `Firestore Database`.
+- Go to `Project settings`, `Service Accounts` Tab, Select `Firebase Admin SDk`, click on `Generate new private key`.
+- Download json file, move it to the `{sd-webui}/extensions/sd-model-organizer` directory and rename
+  to `service-account-file.json`
+- Restart webui.
+
+**Note:** Keep this file safe and don't use service account keys from projects that contains any sensitive data.
+
+## 📦 Installation
+
+The SD Model Organizer can be installed from the Stable Diffusion WebUI. Simply navigate to the `Extensions` tab, click
+on `Install from URL`, paste link to this repository, click `Install` button and reload webui.
+
+Manually:
+
+Clone repository into your extensions folder, install `bs4` and `firebase-admin` packages with pip, restart webui if
+needed.
+
+## 🤝 Contributing
+
 Contributions, issues, and feature requests are welcome! Feel free to check out the issues page if you want to
-contribute.
+contribute. Please keep in mind I'm not a Python/JS/Gradio developer. I'm new to these technologies stack and my overall
+experience with it is about one month only.
 
-📝 License
+## 📝 License
+
 This project is licensed under the MIT License. Feel free to use, modify, and distribute it as you wish.
+
+## Models on screenshots
+
+- [Deliberate](https://civitai.com/models/4823/deliberate)
+- [Counterfeit-V3.0](https://civitai.com/models/4468/counterfeit-v30)
+- [Corneo's Makima (Chainsaw Man) TI Embedding](https://civitai.com/models/5331/corneos-makima-chainsaw-man-ti-embedding)
+- [SamDoesArts Hypernetwork (Trained on 1.5)](https://civitai.com/models/1187/samdoesarts-hypernetwork-trained-on-15)
+- [ReV Animated](https://civitai.com/models/7371/rev-animated)
+- [Deep Negative V1.x](https://civitai.com/models/4629/deep-negative-v1x)
+- [badhandv4 - AnimeIllustDiffusion](https://civitai.com/models/16993/badhandv4-animeillustdiffusion)
+- [Pure Eros Face](https://civitai.com/models/4514/pure-eros-face)
+- [CharTurner - Character Turnaround helper for 1.5 AND 2.1!](https://civitai.com/models/3036/charturner-character-turnaround-helper-for-15-and-21)
+- [[Toru8P] Waven Chibi Style](https://civitai.com/models/4379/toru8p-waven-chibi-style)
+- [Dantion Marble Statues Hypernetwork](https://civitai.com/models/3810/dantion-marble-statues-hypernetwork)
+- [Axsens inspired Hypernetwork](https://civitai.com/models/4796/axsens-inspired-hypernetwork)

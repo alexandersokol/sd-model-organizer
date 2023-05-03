@@ -66,8 +66,7 @@ def _prepare_data(state_json: str):
     return [
         html,
         json.dumps(json.dumps(record_ids)),
-        gr.Button.update(visible=len(record_ids) > 0),
-        gr.Accordion.update(visible=len(record_ids) > 0)
+        gr.Button.update(visible=len(record_ids) > 0)
     ]
 
 
@@ -237,7 +236,7 @@ def home_ui_block():
                                                        value=initial_state['show_downloaded'])
                 show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                            value=initial_state['show_not_downloaded'])
-        initial_html, initial_record_ids, _, _ = _prepare_data(initial_state_json)
+        initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
         html_content_widget = gr.HTML(initial_html)
         record_ids_box = gr.Textbox(value=initial_record_ids,
                                     label='record_ids_box',
@@ -245,21 +244,20 @@ def home_ui_block():
                                     visible=False,
                                     interactive=False)
 
-        with gr.Accordion(label='Import/Export', open=False, visible=True) as import_export_widget:
+        with gr.Accordion(label='Import/Export', open=False, visible=True):
             import_file_widget = gr.File(label='Import .json file', file_types=['.json'])
             import_result_widget = gr.HTML()
             export_button = gr.Button(value='Export')
             export_file_widget = gr.File(visible=False)
 
         download_all_button.visible = len(initial_record_ids) > 0
-        import_export_widget.visible = len(initial_record_ids) > 0
 
         reload_button.click(_prepare_data, inputs=state_box,
-                            outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
+                            outputs=[html_content_widget, record_ids_box, download_all_button])
         refresh_box.change(_prepare_data, inputs=state_box,
-                           outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
+                           outputs=[html_content_widget, record_ids_box, download_all_button])
         state_box.change(_prepare_data, inputs=state_box,
-                         outputs=[html_content_widget, record_ids_box, download_all_button, import_export_widget])
+                         outputs=[html_content_widget, record_ids_box, download_all_button])
 
         download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         add_button.click(fn=None, _js='navigateAdd')
