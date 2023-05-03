@@ -88,7 +88,11 @@ class Environment:
 
     @staticmethod
     def read_settings():
-        with open(os.path.join(env.mo_script_dir, _SETTINGS_FILE)) as f:
+        path = os.path.join(env.mo_script_dir, _SETTINGS_FILE)
+        if not os.path.exists(path):
+            return {}
+
+        with open(path) as f:
             lines = f.readlines()
 
         result = {}
