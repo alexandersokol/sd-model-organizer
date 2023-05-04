@@ -210,6 +210,9 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
 
 ## 7. Firestore setup
 
+- install `pip install firebase-admin==4.5.0` (latest firebase-admin (6.1.0) has an incompatible protobuf (4.22.0) version
+  dependency. But tensorboard requires 3.20.0 Firebase version that should work fine is 4.5.0.
+
 ![firestore_setup.png](pic/readme/firestore_setup.png)
 
 - Go to https://console.firebase.google.com/
@@ -232,8 +235,8 @@ on `Install from URL`, paste link to this repository, click `Install` button and
 
 Manually:
 
-Clone repository into your extensions folder, install `bs4` and `firebase-admin==4.5.0` packages with pip, restart webui if
-needed.
+Clone repository into your extensions folder, install `bs4` and `firebase-admin==4.5.0` if you are going to use Firebase
+storage type packages with pip, restart webui if needed.
 
 <br></br>
 

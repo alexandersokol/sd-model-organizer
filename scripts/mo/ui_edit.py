@@ -46,10 +46,11 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if is_blank(name):
         errors.append('Name field is empty.')
 
-    if is_blank(model_type_value):
+    if not is_blank(model_type_value):
+        model_type = ModelType.by_value(model_type_value)
+    else:
         errors.append('Model type not selected.')
-
-    model_type = ModelType.by_value(model_type_value)
+        model_type = None
 
     if is_blank(download_url):
         errors.append('Download field is empty.')
@@ -64,7 +65,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if not is_blank(download_path) and not is_directory_path_valid(download_path):
         errors.append('Download path is incorrect.')
 
-    if model_type == ModelType.OTHER and is_blank(download_path):
+    if model_type is not None and model_type == ModelType.OTHER and is_blank(download_path):
         errors.append('Download path for type "Other" must be defined.')
 
     if not is_blank(download_filename) and not is_valid_filename(download_filename):
@@ -73,7 +74,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if not is_blank(preview_url) and not is_valid_url(preview_url):
         errors.append('Preview URL is incorrect.')
 
-    if not is_blank(download_subdir):
+    if not is_blank(download_subdir) and model_type is not None:
         if not is_blank(download_path):
             path = download_subdir
         else:

@@ -4,6 +4,7 @@ from datetime import datetime
 
 import gradio as gr
 
+import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.data.storage import map_record_to_dict, map_dict_to_record
 from scripts.mo.environment import env, LAYOUT_CARDS
@@ -66,7 +67,8 @@ def _prepare_data(state_json: str):
     return [
         html,
         json.dumps(json.dumps(record_ids)),
-        gr.Button.update(visible=len(record_ids) > 0)
+        gr.Button.update(visible=len(record_ids) > 0),
+        gr.Dropdown.update(value=state['groups'], choices=_get_available_groups())
     ]
 
 
@@ -165,7 +167,10 @@ def _on_import_file_change(import_file):
         for name in records_imported:
             output += '<br>'
             output += name
-        return gr.HTML.update(value=output)
+        return [
+            gr.HTML.update(value=output),
+            nav.generate_ui_token()
+        ]
 
 
 def home_ui_block():
@@ -191,7 +196,7 @@ def home_ui_block():
         'sort_downloaded_first': sort_downloaded_first
     }
     initial_state_json = json.dumps(initial_state)
-    initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
+    initial_html, initial_record_ids, download_all_update, _ = _prepare_data(initial_state_json)
 
     with gr.Blocks():
         refresh_box = gr.Textbox(label='refresh_box',
@@ -209,7 +214,7 @@ def home_ui_block():
             gr.Markdown('## Records list')
             gr.Markdown('')
             reload_button = gr.Button('Reload')
-            download_all_button = gr.Button('Download All', visible=len(initial_record_ids) > 0)
+            download_all_button = gr.Button('Download All', visible=download_all_update['visible'])
             add_button = gr.Button('Add')
 
         with gr.Accordion(label='Display options', open=False):
@@ -252,11 +257,11 @@ def home_ui_block():
             export_file_widget = gr.File(visible=False)
 
         reload_button.click(_prepare_data, inputs=state_box,
-                            outputs=[html_content_widget, record_ids_box, download_all_button])
+                            outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
         refresh_box.change(_prepare_data, inputs=state_box,
-                           outputs=[html_content_widget, record_ids_box, download_all_button])
+                           outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
         state_box.change(_prepare_data, inputs=state_box,
-                         outputs=[html_content_widget, record_ids_box, download_all_button])
+                         outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
 
         download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         add_button.click(fn=None, _js='navigateAdd')
@@ -281,7 +286,8 @@ def home_ui_block():
                                             inputs=[show_not_downloaded_checkbox, state_box],
                                             outputs=state_box)
 
-        import_file_widget.change(_on_import_file_change, inputs=import_file_widget, outputs=import_result_widget)
+        import_file_widget.change(_on_import_file_change, inputs=import_file_widget,
+                                  outputs=[import_result_widget, refresh_box])
         export_button.click(_on_export_click, inputs=record_ids_box, outputs=export_file_widget)
 
     return refresh_box

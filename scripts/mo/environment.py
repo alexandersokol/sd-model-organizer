@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os.path
+import shutil
 from typing import Callable
 
 from scripts.mo.models import ModelType, Record
@@ -39,10 +40,12 @@ class CustomFormatter(logging.Formatter):
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
+# handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.WARNING)
 
 handler.setFormatter(CustomFormatter())
 
@@ -91,6 +94,14 @@ class Environment:
         if not os.path.isdir(dir_path):
             os.mkdir(dir_path)
         return dir_path
+
+    def clear_temp_dir(self):
+        try:
+            temp_dir_path = self.temp_dir()
+            if os.path.isdir(temp_dir_path):
+                shutil.rmtree(temp_dir_path)
+        except Exception as ex:
+            logger.exception(ex)
 
     @staticmethod
     def read_settings():

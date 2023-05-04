@@ -1,9 +1,8 @@
 // add tinymce
 const script = document.createElement('script');
 script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
+// script.src = 'https://cdn.tiny.cloud/1/x4uky7gf82jcmseg81ymjdn05edp1yjtulefc66biwztkikf/tinymce/6/tinymce.min.js';
 document.head.appendChild(script);
-
-// <script type="text/javascript" src="file=extensions/sd-model-organizer/javascript/model_organizer.js?1683193573.5684547"></script>
 
 function findElem(elementId) {
     return document.getElementById(elementId)
@@ -11,7 +10,7 @@ function findElem(elementId) {
 }
 
 function log(text) {
-    console.log(text)
+    // console.log(text)
 }
 
 function handleDescriptionPreviewContentChange(content, theme) {

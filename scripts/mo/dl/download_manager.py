@@ -70,6 +70,9 @@ def _get_preview_extension(url):
     extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
     for ext in extensions:
         if url.endswith(ext):
+            # webui doesn't look for previews with .jpeg extension
+            if ext == '.jpeg':
+                return ".jpg"
             return ext
     return 'png'
 
@@ -179,6 +182,7 @@ class DownloadManager:
 
     def _download_loop(self, records: list[Record]):
         try:
+            env.clear_temp_dir()
             for record in records:
                 for upd in self._download_record(record):
                     self._state_update(record_id=record.id_, record_state=upd)
@@ -202,6 +206,7 @@ class DownloadManager:
         except Exception as ex:
             self._state_update(general_status=GENERAL_STATUS_ERROR, exception=str(ex))
             logger.exception(ex)
+        env.clear_temp_dir()
 
         self._stop_event.set()
         self._running = False
@@ -259,6 +264,8 @@ class DownloadManager:
             logger.exception(ex)
             return
 
+        env.clear_temp_dir()
+
         if self._stop_event.is_set():
             return
 
@@ -295,6 +302,8 @@ class DownloadManager:
             except Exception as ex:
                 yield {'exception_preview': ex}
                 logger.exception(ex)
+
+            env.clear_temp_dir()
 
         yield {'status': RECORD_STATUS_COMPLETED}
 
