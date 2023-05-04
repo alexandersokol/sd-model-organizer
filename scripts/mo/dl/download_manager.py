@@ -24,7 +24,7 @@ RECORD_STATUS_ERROR = 'Error'
 RECORD_STATUS_CANCELLED = 'Cancelled'
 
 
-def _get_destination_file_dir(record: Record) -> str:
+def _get_destination_file_path(filename: str, record: Record) -> str:
     path = record.download_path
     if not path:
         path = env.get_model_path(record.model_type)
@@ -35,7 +35,7 @@ def _get_destination_file_dir(record: Record) -> str:
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    return path
+    return os.path.join(path, filename)
 
 
 def _get_filename_from_url(url):
@@ -224,8 +224,7 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            destination_dir = _get_destination_file_dir(record)
-            destination_file_path = os.path.join(destination_dir, filename)
+            destination_file_path = _get_destination_file_path(filename, record)
             logger.debug('destination_file_path: %s', destination_file_path)
 
             yield {'destination': destination_file_path}
@@ -238,18 +237,15 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
+            with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
                 if self._stop_event.is_set():
                     return
-
-                # shutil.move(temp.name, destination_file_path)
-                # os.chmod(destination_file_path, 0o644)
-                temp.close()
-                os.rename(temp.name, destination_file_path)
+                shutil.move(temp.name, destination_file_path)
+                os.chmod(destination_file_path, 0o644)
                 logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
             record.location = destination_file_path
@@ -275,8 +271,7 @@ class DownloadManager:
                 if self._stop_event.is_set():
                     return
 
-                preview_destination_dir = _get_destination_file_dir(record)
-                preview_destination_file_path = os.path.join(preview_destination_dir)
+                preview_destination_file_path = _get_destination_file_path(preview_filename, record)
                 logger.debug('preview_destination_file_path: %s', preview_destination_file_path)
                 yield {'preview_destination': preview_destination_file_path}
 
@@ -285,7 +280,7 @@ class DownloadManager:
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
-                with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
+                with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
                     logger.debug('Downloading preview into tmp file: %s', temp.name)
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):
@@ -294,10 +289,8 @@ class DownloadManager:
                     if self._stop_event.is_set():
                         return
 
-                    # shutil.move(temp.name, preview_destination_file_path)
-                    # os.chmod(destination_file_path, 0o644)
-                    temp.close()
-                    os.rename(temp.name, preview_destination_file_path)
+                    shutil.move(temp.name, preview_destination_file_path)
+                    os.chmod(destination_file_path, 0o644)
                     logger.debug('Move from tmp file to preview destination: %s', preview_destination_file_path)
             except Exception as ex:
                 yield {'exception_preview': ex}
