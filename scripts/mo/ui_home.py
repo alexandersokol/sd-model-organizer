@@ -191,6 +191,7 @@ def home_ui_block():
         'sort_downloaded_first': sort_downloaded_first
     }
     initial_state_json = json.dumps(initial_state)
+    initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
 
     with gr.Blocks():
         refresh_box = gr.Textbox(label='refresh_box',
@@ -208,7 +209,7 @@ def home_ui_block():
             gr.Markdown('## Records list')
             gr.Markdown('')
             reload_button = gr.Button('Reload')
-            download_all_button = gr.Button('Download All')
+            download_all_button = gr.Button('Download All', visible=len(initial_record_ids) > 0)
             add_button = gr.Button('Add')
 
         with gr.Accordion(label='Display options', open=False):
@@ -236,7 +237,7 @@ def home_ui_block():
                                                        value=initial_state['show_downloaded'])
                 show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                            value=initial_state['show_not_downloaded'])
-        initial_html, initial_record_ids, _ = _prepare_data(initial_state_json)
+
         html_content_widget = gr.HTML(initial_html)
         record_ids_box = gr.Textbox(value=initial_record_ids,
                                     label='record_ids_box',
@@ -249,8 +250,6 @@ def home_ui_block():
             import_result_widget = gr.HTML()
             export_button = gr.Button(value='Export')
             export_file_widget = gr.File(visible=False)
-
-        download_all_button.visible = len(initial_record_ids) > 0
 
         reload_button.click(_prepare_data, inputs=state_box,
                             outputs=[html_content_widget, record_ids_box, download_all_button])
