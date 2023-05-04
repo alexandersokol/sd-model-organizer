@@ -1,7 +1,9 @@
 // add tinymce
 const script = document.createElement('script');
-script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
 document.head.appendChild(script);
+
+// <script type="text/javascript" src="file=extensions/sd-model-organizer/javascript/model_organizer.js?1683193573.5684547"></script>
 
 function findElem(elementId) {
     return document.getElementById(elementId)
@@ -397,7 +399,7 @@ function deliverNavObject(navObj) {
 
 onUiLoaded(function () {
     log("UI loaded")
-    const script = document.createElement('script');
-    script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
-    document.head.appendChild(script);
+    // const script = document.createElement('script');
+    // script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
+    // document.head.appendChild(script);
 })
