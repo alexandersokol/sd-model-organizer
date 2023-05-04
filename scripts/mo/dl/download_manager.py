@@ -237,7 +237,7 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            with tempfile.NamedTemporaryFile(delete=False) as temp:
+            with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
@@ -280,7 +280,7 @@ class DownloadManager:
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
-                with tempfile.NamedTemporaryFile(delete=False) as temp:
+                with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
                     logger.debug('Downloading preview into tmp file: %s', temp.name)
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):

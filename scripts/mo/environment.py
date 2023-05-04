@@ -86,6 +86,12 @@ class Environment:
             return None
         return path.strip()
 
+    def temp_dir(self) -> str:
+        dir_path = os.path.join(self.mo_script_dir, 'tmp')
+        if not os.path.isdir(dir_path):
+            os.mkdir(dir_path)
+        return dir_path
+
     @staticmethod
     def read_settings():
         path = os.path.join(env.mo_script_dir, _SETTINGS_FILE)
