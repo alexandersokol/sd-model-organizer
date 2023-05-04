@@ -232,7 +232,7 @@ on `Install from URL`, paste link to this repository, click `Install` button and
 
 Manually:
 
-Clone repository into your extensions folder, install `bs4` and `firebase-admin` packages with pip, restart webui if
+Clone repository into your extensions folder, install `bs4` and `firebase-admin==4.5.0` packages with pip, restart webui if
 needed.
 
 <br></br>

@@ -113,7 +113,6 @@ def _generate_js_record_update(record_id, update):
 
 
 def _generate_general_update(update):
-    logger.info(f'upd: {update}')
     status_message = None
 
     is_start_button_visible = None
