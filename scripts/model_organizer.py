@@ -1,12 +1,22 @@
 import gradio as gr
 import modules.scripts as scripts
 from modules import script_callbacks
-from modules import shared, sd_models, sd_vae
+from modules import shared, sd_models, sd_vae, paths
 from modules.shared import OptionInfo
 
 from scripts.mo.data.init_storage import initialize_storage
 from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
+
+
+def _lycoris_path() -> str:
+    if hasattr(shared.opts, 'mo_lycoris_path') and shared.opts.mo_lycoris_path:
+        return shared.opts.mo_lycoris_path
+    elif hasattr(shared.cmd_opts, 'lyco_dir') and shared.cmd_opts.lyco_dir:
+        return shared.cmd_opts.lyco_dir
+    else:
+        return os.path.join(paths.models_path, 'LyCORIS')
+
 
 env.mo_layout = lambda: shared.opts.mo_layout if hasattr(shared.opts, 'mo_layout') else LAYOUT_CARDS
 
@@ -32,6 +42,8 @@ env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path if \
     hasattr(shared.opts,
             'mo_hypernetworks_path') and shared.opts.mo_hypernetworks_path else shared.cmd_opts.hypernetwork_dir
 
+env.lycoris_path = _lycoris_path
+
 env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path if \
     hasattr(shared.opts, 'mo_embeddings_path') and shared.opts.mo_embeddings_path else shared.cmd_opts.embeddings_dir
 
@@ -45,6 +57,10 @@ def on_ui_settings():
     lora_path = shared.cmd_opts.lora_dir
     hypernetworks_path = shared.cmd_opts.hypernetwork_dir
     embeddings_path = shared.cmd_opts.embeddings_dir
+    if hasattr(shared.cmd_opts, 'lyco_dir') and shared.cmd_opts.lyco_dir:
+        lycoris_path = shared.cmd_opts.lyco_dir
+    else:
+        lycoris_path = os.path.join(paths.models_path, 'LyCORIS')
 
     mo_options = shared.options_section(('mo', 'Model Organizer'), {
         'mo_layout': OptionInfo(LAYOUT_CARDS, "Layout Type:", gr.Radio,
@@ -59,6 +75,8 @@ def on_ui_settings():
         'mo_lora_path': OptionInfo('', f'Lora directory (If empty uses default: {lora_path}):'),
         'mo_hypernetworks_path': OptionInfo('',
                                             f'Hypernetworks directory (If empty uses default: {hypernetworks_path}):'),
+        'mo_lycoris_path': OptionInfo('',
+                                      f'LyCORIS directory (If empty uses default: {lycoris_path}):'),
         'mo_embeddings_path': OptionInfo('', f'Embeddings directory (If empty uses default: {embeddings_path}):')
     })
     shared.options_templates.update(mo_options)

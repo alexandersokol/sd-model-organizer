@@ -6,6 +6,7 @@ class ModelType(Enum):
     VAE = 'VAE'
     LORA = 'Lora'
     HYPER_NETWORK = 'Hyper Network'
+    LYCORIS = 'LyCORIS'
     EMBEDDING = 'Embedding'
     OTHER = 'Other'
 

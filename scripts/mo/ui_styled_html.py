@@ -2,8 +2,8 @@ import os
 from typing import List
 
 import scripts.mo.ui_format as ui_format
-from scripts.mo.models import Record, ModelType
 from scripts.mo.environment import env
+from scripts.mo.models import Record, ModelType
 
 _NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
 _NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
@@ -64,6 +64,8 @@ def _model_type_css_class(model_type: ModelType) -> str:
         css_class = 'mo-badge-lora'
     elif model_type == ModelType.HYPER_NETWORK:
         css_class = 'mo-badge-hyper-network'
+    elif model_type == ModelType.LYCORIS:
+        css_class = 'mo-badge-lycoris'
     elif model_type == ModelType.EMBEDDING:
         css_class = 'mo-badge-embedding'
     elif model_type == ModelType.OTHER:
@@ -78,6 +80,7 @@ def _no_preview_image_url() -> str:
         return f'https://github.com/alexandersokol/sd-model-organizer/raw/develop/pic/no-preview-dark-blue.png'
     else:
         return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
+
 
 def records_table(records: List[Record]) -> str:
     table_html = '<div class="mo-container">'

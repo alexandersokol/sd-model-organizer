@@ -62,6 +62,7 @@ class Environment:
     mo_vae_path: Callable[[], str]
     mo_lora_path: Callable[[], str]
     mo_hypernetworks_path: Callable[[], str]
+    lycoris_path: Callable[[], str]
     mo_embeddings_path: Callable[[], str]
     mo_script_dir: str
     mo_layout: Callable[[], str]
@@ -83,6 +84,8 @@ class Environment:
             path = self.mo_lora_path()
         elif model_type == model_type.HYPER_NETWORK:
             path = self.mo_hypernetworks_path()
+        elif model_type == model_type.LYCORIS:
+            path = self.lycoris_path()
         elif model_type == model_type.EMBEDDING:
             path = self.mo_embeddings_path()
         else:

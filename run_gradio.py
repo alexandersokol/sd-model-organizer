@@ -91,6 +91,7 @@ env.mo_model_path = lambda: settings['mo_model_path']
 env.mo_vae_path = lambda: settings['mo_vae_path']
 env.mo_lora_path = lambda: settings['mo_lora_path']
 env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
+env.lycoris_path = lambda: settings['lycoris_path']
 env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
 env.mo_script_dir = ''
 env.mo_layout = lambda: settings['mo_layout']

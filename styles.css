@@ -34,11 +34,11 @@
     border-color: var(--mo-alert-secondary-border-color) !important;
 }
 
-.mo-alert-secondary h2{
+.mo-alert-secondary h2 {
     color: var(--mo-alert-secondary-text-color) !important;
 }
 
-.mo-alert-secondary p{
+.mo-alert-secondary p {
     color: var(--mo-alert-secondary-text-color) !important;
 }
 
@@ -303,6 +303,11 @@
 .mo-badge-hyper-network {
     color: var(--mo-badge-hyper-network-text-color) !important;
     background-color: var(--mo-badge-hyper-network-background-color) !important;
+}
+
+.mo-badge-lycoris {
+    color: var(--mo-badge-lycoris-text-color) !important;
+    background-color: var(--mo-badge-lycoris-background-color) !important;
 }
 
 .mo-badge-embedding {
