@@ -56,18 +56,18 @@ class Environment:
     storage: Storage
     storage_error: str
 
-    mo_storage_type: Callable[[], str]
-    mo_download_preview: Callable[[], bool]
-    mo_model_path: Callable[[], str]
-    mo_vae_path: Callable[[], str]
-    mo_lora_path: Callable[[], str]
-    mo_hypernetworks_path: Callable[[], str]
+    storage_type: Callable[[], str]
+    download_preview: Callable[[], bool]
+    model_path: Callable[[], str]
+    vae_path: Callable[[], str]
+    lora_path: Callable[[], str]
+    hypernetworks_path: Callable[[], str]
     lycoris_path: Callable[[], str]
-    mo_embeddings_path: Callable[[], str]
-    mo_script_dir: str
-    mo_layout: Callable[[], str]
-    mo_card_width: Callable[[], str]
-    mo_card_height: Callable[[], str]
+    embeddings_path: Callable[[], str]
+    script_dir: str
+    layout: Callable[[], str]
+    card_width: Callable[[], str]
+    card_height: Callable[[], str]
 
     def is_storage_initialized(self) -> bool:
         return hasattr(self, 'storage')
@@ -77,23 +77,23 @@ class Environment:
 
     def get_model_path(self, model_type: ModelType):
         if model_type == ModelType.CHECKPOINT:
-            path = self.mo_model_path()
+            path = self.model_path()
         elif model_type == ModelType.VAE:
-            path = self.mo_vae_path()
+            path = self.vae_path()
         elif model_type == ModelType.LORA:
-            path = self.mo_lora_path()
+            path = self.lora_path()
         elif model_type == model_type.HYPER_NETWORK:
-            path = self.mo_hypernetworks_path()
+            path = self.hypernetworks_path()
         elif model_type == model_type.LYCORIS:
             path = self.lycoris_path()
         elif model_type == model_type.EMBEDDING:
-            path = self.mo_embeddings_path()
+            path = self.embeddings_path()
         else:
             return None
         return path.strip()
 
     def temp_dir(self) -> str:
-        dir_path = os.path.join(self.mo_script_dir, 'tmp')
+        dir_path = os.path.join(self.script_dir, 'tmp')
         if not os.path.isdir(dir_path):
             os.mkdir(dir_path)
         return dir_path
@@ -108,7 +108,7 @@ class Environment:
 
     @staticmethod
     def read_settings():
-        path = os.path.join(env.mo_script_dir, _SETTINGS_FILE)
+        path = os.path.join(env.script_dir, _SETTINGS_FILE)
         if not os.path.exists(path):
             return {}
 
@@ -125,7 +125,7 @@ class Environment:
 
     @staticmethod
     def save_settings(settings: dict):
-        with open(os.path.join(env.mo_script_dir, _SETTINGS_FILE), 'w') as f:
+        with open(os.path.join(env.script_dir, _SETTINGS_FILE), 'w') as f:
             for key, value in settings.items():
                 f.write(f'{key}: {value}\n')
             logger.info('Settings saved')

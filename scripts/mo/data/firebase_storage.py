@@ -18,7 +18,7 @@ def _filter_download(record: Record, show_downloaded, show_not_downloaded):
 class FirebaseStorage(Storage):
 
     def __init__(self):
-        cred = credentials.Certificate(os.path.join(env.mo_script_dir, "service-account-file.json"))
+        cred = credentials.Certificate(os.path.join(env.script_dir, "service-account-file.json"))
         self.app = firebase_admin.initialize_app(cred)
         self.firestore_client = firestore.client()
 

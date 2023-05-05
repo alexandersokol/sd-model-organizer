@@ -85,75 +85,75 @@ def read_settings():
 
 settings = read_settings()
 
-env.mo_storage_type = lambda: settings['mo_storage_type']
-env.mo_download_preview = lambda: ast.literal_eval(settings['mo_download_preview'])
-env.mo_model_path = lambda: settings['mo_model_path']
-env.mo_vae_path = lambda: settings['mo_vae_path']
-env.mo_lora_path = lambda: settings['mo_lora_path']
-env.mo_hypernetworks_path = lambda: settings['mo_hypernetworks_path']
+env.storage_type = lambda: settings['storage_type']
+env.download_preview = lambda: ast.literal_eval(settings['download_preview'])
+env.model_path = lambda: settings['model_path']
+env.vae_path = lambda: settings['vae_path']
+env.lora_path = lambda: settings['lora_path']
+env.hypernetworks_path = lambda: settings['hypernetworks_path']
 env.lycoris_path = lambda: settings['lycoris_path']
-env.mo_embeddings_path = lambda: settings['mo_embeddings_path']
-env.mo_script_dir = ''
-env.mo_layout = lambda: settings['mo_layout']
-env.mo_card_width = lambda: settings['mo_card_width']
-env.mo_card_height = lambda: settings['mo_card_height']
-env.theme = lambda: settings['mo_theme']
+env.embeddings_path = lambda: settings['embeddings_path']
+env.script_dir = ''
+env.layout = lambda: settings['layout']
+env.card_width = lambda: settings['card_width']
+env.card_height = lambda: settings['card_height']
+env.theme = lambda: settings['theme']
 initialize_storage()
 
 
 def storage_type_change(value):
-    settings['mo_storage_type'] = value
-    logger.info(f'mo_storage_type updated: {value}')
+    settings['storage_type'] = value
+    logger.info(f'storage_type updated: {value}')
 
 
 def download_preview_change(value):
-    settings['mo_download_preview'] = value
-    logger.info(f'mo_download_preview updated: {value}')
+    settings['download_preview'] = value
+    logger.info(f'download_preview updated: {value}')
 
 
 def model_path_change(value):
-    settings['mo_model_path'] = value
-    logger.info(f'mo_model_path updated: {value}')
+    settings['model_path'] = value
+    logger.info(f'model_path updated: {value}')
 
 
 def vae_path_change(value):
-    settings['mo_vae_path'] = value
-    logger.info(f'mo_vae_path updated: {value}')
+    settings['vae_path'] = value
+    logger.info(f'vae_path updated: {value}')
 
 
 def lora_path_change(value):
-    settings['mo_lora_path'] = value
-    logger.info(f'mo_lora_path updated: {value}')
+    settings['lora_path'] = value
+    logger.info(f'lora_path updated: {value}')
 
 
 def hypernetworks_path_change(value):
-    settings['mo_hypernetworks_path'] = value
-    logger.info(f'mo_hypernetworks_path updated: {value}')
+    settings['hypernetworks_path'] = value
+    logger.info(f'hypernetworks_path updated: {value}')
 
 
 def embeddings_path_change(value):
-    settings['mo_embeddings_path'] = value
-    logger.info(f'mo_embeddings_path updated: {value}')
+    settings['embeddings_path'] = value
+    logger.info(f'embeddings_path updated: {value}')
 
 
 def layout_type_change(value):
-    settings['mo_layout'] = value
-    logger.info(f'mo_layout updated: {value}')
+    settings['layout'] = value
+    logger.info(f'layout updated: {value}')
 
 
 def card_width_change(value):
-    settings['mo_card_width'] = value
-    logger.info(f'mo_card_width updated: {value}')
+    settings['card_width'] = value
+    logger.info(f'card_width updated: {value}')
 
 
 def card_height_change(value):
-    settings['mo_card_height'] = value
-    logger.info(f'mo_card_height updated: {value}')
+    settings['card_height'] = value
+    logger.info(f'card_height updated: {value}')
 
 
 def theme_change(value):
-    settings['mo_theme'] = value
-    logger.info(f'mo_theme updated: {value}')
+    settings['theme'] = value
+    logger.info(f'theme updated: {value}')
 
 
 def save_click():
@@ -165,27 +165,27 @@ def save_click():
 
 def settings_block():
     with gr.Column():
-        layout_type = gr.Dropdown([LAYOUT_CARDS, LAYOUT_TABLE], value=[env.mo_layout()],
+        layout_type = gr.Dropdown([LAYOUT_CARDS, LAYOUT_TABLE], value=[env.layout()],
                                   label="Layout type:", info='Select records layout type.')
-        card_width = gr.Textbox(env.mo_card_width, label='Cards width:')
-        card_height = gr.Textbox(env.mo_card_height, label='Cards height:')
+        card_width = gr.Textbox(env.card_width, label='Cards width:')
+        card_height = gr.Textbox(env.card_height, label='Cards height:')
 
-        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_FIREBASE], value=[env.mo_storage_type()],
+        storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_FIREBASE], value=[env.storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
 
-        mo_download_preview = gr.Checkbox(value=env.mo_download_preview(), label='Download Preview')
+        download_preview = gr.Checkbox(value=env.download_preview(), label='Download Preview')
 
-        model_path = gr.Textbox(env.mo_model_path(), label='Model path:')
-        vae_path = gr.Textbox(env.mo_vae_path(), label='VAE path:')
-        lora_path = gr.Textbox(env.mo_lora_path(), label='LORA path:')
-        hypernetworks_path = gr.Textbox(env.mo_hypernetworks_path(), label='Hypernetworks path:')
-        embeddings_path = gr.Textbox(env.mo_embeddings_path(), label="Embeddings path:")
+        model_path = gr.Textbox(env.model_path(), label='Model path:')
+        vae_path = gr.Textbox(env.vae_path(), label='VAE path:')
+        lora_path = gr.Textbox(env.lora_path(), label='LORA path:')
+        hypernetworks_path = gr.Textbox(env.hypernetworks_path(), label='Hypernetworks path:')
+        embeddings_path = gr.Textbox(env.embeddings_path(), label="Embeddings path:")
         theme_widget = gr.Textbox(env.theme(), label='Theme:')
         button = gr.Button("Save")
 
     storage_type.change(storage_type_change, inputs=storage_type)
     model_path.change(model_path_change, inputs=model_path)
-    mo_download_preview.change(download_preview_change, inputs=mo_download_preview)
+    download_preview.change(download_preview_change, inputs=download_preview)
     vae_path.change(vae_path_change, inputs=vae_path)
     lora_path.change(lora_path_change, inputs=lora_path)
     hypernetworks_path.change(hypernetworks_path_change, inputs=hypernetworks_path)

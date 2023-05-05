@@ -397,7 +397,7 @@ def download_cards(records: list[Record], token) -> str:
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
-        if record.preview_url and env.mo_download_preview():
+        if record.preview_url and env.download_preview():
             content += _download_url(id_, record.preview_url, True)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)

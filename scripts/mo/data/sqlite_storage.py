@@ -42,7 +42,7 @@ class SQLiteStorage(Storage):
 
     def _connection(self):
         if not hasattr(self.local, "connection"):
-            db_file_path = os.path.join(env.mo_script_dir, _DB_FILE)
+            db_file_path = os.path.join(env.script_dir, _DB_FILE)
             self.local.connection = sqlite3.connect(db_file_path, _DB_TIMEOUT)
         return self.local.connection
 

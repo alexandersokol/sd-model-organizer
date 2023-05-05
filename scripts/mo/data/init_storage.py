@@ -23,17 +23,17 @@ def _init_firebase_storage():
 
 def initialize_storage():
     error = None
-    if hasattr(env, 'mo_storage_type'):
-        storage_type = env.mo_storage_type()
+    if hasattr(env, 'storage_type'):
+        storage_type = env.storage_type()
 
         if storage_type == STORAGE_SQLITE:
             error = _init_sqlite_storage()
         elif storage_type == STORAGE_FIREBASE:
             error = _init_firebase_storage()
         else:
-            error = f'unknown mo_storage_type attribute value: {storage_type}'
+            error = f'unknown storage_type attribute value: {storage_type}'
     else:
-        env.storage_error = 'mo_storage_type attribute is missing.'
+        env.storage_error = 'storage_type attribute is missing.'
 
     if error is not None:
         env.storage_error = f'Unable to initialize database: {error}'

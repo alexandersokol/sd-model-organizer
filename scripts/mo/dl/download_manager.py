@@ -269,7 +269,7 @@ class DownloadManager:
         if self._stop_event.is_set():
             return
 
-        if record.preview_url and env.mo_download_preview():
+        if record.preview_url and env.download_preview():
             try:
                 preview_filename = _get_preview_filename(record.preview_url, filename)
                 logger.debug('Preview image name: %s', preview_filename)

@@ -18,36 +18,36 @@ def _lycoris_path() -> str:
         return os.path.join(paths.models_path, 'LyCORIS')
 
 
-env.mo_layout = lambda: shared.opts.mo_layout if hasattr(shared.opts, 'mo_layout') else LAYOUT_CARDS
+env.layout = lambda: shared.opts.mo_layout if hasattr(shared.opts, 'mo_layout') else LAYOUT_CARDS
 
-env.mo_card_width = lambda: shared.opts.mo_card_width if hasattr(shared.opts, 'mo_card_width') else 0
+env.card_width = lambda: shared.opts.mo_card_width if hasattr(shared.opts, 'mo_card_width') else 0
 
-env.mo_card_height = lambda: shared.opts.mo_card_height if hasattr(shared.opts, 'mo_card_height') else 0
+env.card_height = lambda: shared.opts.mo_card_height if hasattr(shared.opts, 'mo_card_height') else 0
 
-env.mo_storage_type = lambda: shared.opts.mo_storage_type if hasattr(shared.opts, 'mo_storage_type') else STORAGE_SQLITE
+env.storage_type = lambda: shared.opts.mo_storage_type if hasattr(shared.opts, 'mo_storage_type') else STORAGE_SQLITE
 
-env.mo_download_preview = lambda: shared.opts.mo_download_preview if hasattr(shared.opts,
-                                                                             'mo_download_preview') else True
+env.download_preview = lambda: shared.opts.mo_download_preview if hasattr(shared.opts,
+                                                                          'mo_download_preview') else True
 
-env.mo_model_path = lambda: shared.opts.mo_model_path if hasattr(shared.opts, 'mo_model_path') and \
-                                                         shared.opts.mo_model_path else sd_models.model_path
+env.model_path = lambda: shared.opts.mo_model_path if hasattr(shared.opts, 'mo_model_path') and \
+                                                      shared.opts.mo_model_path else sd_models.model_path
 
-env.mo_vae_path = lambda: shared.opts.mo_vae_path if hasattr(shared.opts, 'mo_vae_path') and \
+env.vae_path = lambda: shared.opts.mo_vae_path if hasattr(shared.opts, 'mo_vae_path') and \
                                                      shared.opts.mo_vae_path else sd_vae.vae_path
 
-env.mo_lora_path = lambda: shared.opts.mo_lora_path if hasattr(shared.opts, 'mo_lora_path') and \
+env.lora_path = lambda: shared.opts.mo_lora_path if hasattr(shared.opts, 'mo_lora_path') and \
                                                        shared.opts.mo_lora_path else shared.cmd_opts.lora_dir
 
-env.mo_hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path if \
+env.hypernetworks_path = lambda: shared.opts.mo_hypernetworks_path if \
     hasattr(shared.opts,
             'mo_hypernetworks_path') and shared.opts.mo_hypernetworks_path else shared.cmd_opts.hypernetwork_dir
 
 env.lycoris_path = _lycoris_path
 
-env.mo_embeddings_path = lambda: shared.opts.mo_embeddings_path if \
+env.embeddings_path = lambda: shared.opts.mo_embeddings_path if \
     hasattr(shared.opts, 'mo_embeddings_path') and shared.opts.mo_embeddings_path else shared.cmd_opts.embeddings_dir
 
-env.mo_script_dir = scripts.basedir()
+env.script_dir = scripts.basedir()
 env.theme = lambda: shared.cmd_opts.theme
 
 

@@ -58,7 +58,7 @@ def _prepare_data(state_json: str):
         sort_downloaded_first=state['sort_downloaded_first']
     )
 
-    if env.mo_layout() == LAYOUT_CARDS:
+    if env.layout() == LAYOUT_CARDS:
         html = styled.records_cards(records)
     else:
         html = styled.records_table(records)
@@ -136,7 +136,7 @@ def _on_export_click(record_ids):
         records_dict_list.append(map_record_to_dict(record))
 
     if len(records_dict_list) > 0:
-        export_dir = os.path.join(env.mo_script_dir, 'export')
+        export_dir = os.path.join(env.script_dir, 'export')
         if not os.path.isdir(export_dir):
             os.mkdir(export_dir)
 
