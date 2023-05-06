@@ -247,6 +247,7 @@ class DownloadManager:
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
+                temp.close()
                 if self._stop_event.is_set():
                     return
                 shutil.move(temp.name, destination_file_path)
@@ -293,6 +294,7 @@ class DownloadManager:
                                                            self._stop_event):
                         yield {'preview_dl': upd}
 
+                    temp.close()
                     if self._stop_event.is_set():
                         return
 
