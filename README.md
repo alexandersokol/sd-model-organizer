@@ -1,8 +1,10 @@
 # SD Model Organizer
 
 SD Model Organizer is a [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui]) extension
-that allows users to store information about different models
-needed for Stable Diffusion WebUI, add information, description, own notes and download them.
+that allows to store and manage own model collections, add information, own notes, previews about model. Easily download
+from any external direct link or shared file link from Google Drive. Share own models collection with json file or use
+remote Firestore database to make it available and synced on several devices.
+
 
 ![logo.png](pic/readme/logo.png)
 
@@ -15,12 +17,14 @@ needed for Stable Diffusion WebUI, add information, description, own notes and d
 - Downloads batch of models regarding to the filter applied on home screen.
 - Downloads models to the model type predefined path or manually selected.
 - Downloads models into subdirectories.
-- Downloads model's preview.
-- Add model preview.
+- Downloads model's image preview to make it visible in additional networks.
+- Bind new record with already existing model file locally.
+- Add image external url as model's preview.
 - Add model description and own notes with rich text editor (TinyMCE)
 - Stores model records in local SQLite database.
 - Stores model records in remote Firebase Firestore.
 - Export/import existing model as json files.
+- Remove local files related to model.
 - Dark/Light theme support.
 
 <br></br>
@@ -210,7 +214,8 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
 
 ## 7. Firestore setup
 
-- install `pip install firebase-admin==4.5.0` (latest firebase-admin (6.1.0) has an incompatible protobuf (4.22.0) version
+- install `pip install firebase-admin==4.5.0` (latest firebase-admin (6.1.0) has an incompatible protobuf (4.22.0)
+  version
   dependency. But tensorboard requires 3.20.0 Firebase version that should work fine is 4.5.0.
 
 ![firestore_setup.png](pic/readme/firestore_setup.png)
