@@ -27,13 +27,6 @@ def _default_vae_path() -> str:
         return os.path.join(paths.models_path, 'VAE')
 
 
-def _lycoris_path() -> str:
-    if hasattr(shared.opts, 'mo_lycoris_path') and shared.opts.mo_lycoris_path:
-        return shared.opts.mo_lycoris_path
-    else:
-        return _default_lycoris_path()
-
-
 def _default_lora_path() -> str:
     if hasattr(shared.cmd_opts, 'lora_dir') and shared.cmd_opts.lora_dir:
         return shared.cmd_opts.lora_dir
@@ -57,9 +50,16 @@ def _default_lycoris_path() -> str:
 
 def _default_embeddings_path() -> str:
     if hasattr(shared.cmd_opts, 'embeddings_dir') and shared.cmd_opts.embeddings_dir:
-        return shared.cmd_opts.hypernetwork_dir
+        return shared.cmd_opts.embeddings_dir
     else:
         return os.path.join(paths.data_path, 'embeddings')
+
+
+def _lycoris_path() -> str:
+    if hasattr(shared.opts, 'mo_lycoris_path') and shared.opts.mo_lycoris_path:
+        return shared.opts.mo_lycoris_path
+    else:
+        return _default_lycoris_path()
 
 
 env.layout = lambda: shared.opts.mo_layout if hasattr(shared.opts, 'mo_layout') else LAYOUT_CARDS

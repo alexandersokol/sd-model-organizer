@@ -1,7 +1,6 @@
 import hashlib
 import logging
 import os.path
-import shutil
 from typing import Callable
 
 from scripts.mo.models import ModelType, Record
@@ -91,20 +90,6 @@ class Environment:
         else:
             return None
         return path.strip()
-
-    def temp_dir(self) -> str:
-        dir_path = os.path.join(self.script_dir, 'tmp')
-        if not os.path.isdir(dir_path):
-            os.mkdir(dir_path)
-        return dir_path
-
-    def clear_temp_dir(self):
-        try:
-            temp_dir_path = self.temp_dir()
-            if os.path.isdir(temp_dir_path):
-                shutil.rmtree(temp_dir_path)
-        except Exception as ex:
-            logger.exception(ex)
 
     @staticmethod
     def read_settings():

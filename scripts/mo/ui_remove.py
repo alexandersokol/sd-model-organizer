@@ -50,7 +50,7 @@ def _on_remove_click(record_id, remove_record, remove_files):
             os.remove(record.location)
 
         preview_path = find_preview_file(record)
-        if preview_path and os.path.exists(record.location):
+        if preview_path and os.path.exists(preview_path):
             os.remove(preview_path)
 
     return generate_ui_token()

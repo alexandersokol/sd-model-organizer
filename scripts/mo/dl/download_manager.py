@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import threading
 from copy import deepcopy
@@ -24,7 +23,7 @@ RECORD_STATUS_ERROR = 'Error'
 RECORD_STATUS_CANCELLED = 'Cancelled'
 
 
-def _get_destination_file_path(filename: str, record: Record) -> str:
+def _get_destination_dir_path(record: Record) -> str:
     path = record.download_path
     if not path:
         path = env.get_model_path(record.model_type)
@@ -35,7 +34,7 @@ def _get_destination_file_path(filename: str, record: Record) -> str:
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    return os.path.join(path, filename)
+    return path
 
 
 def _get_filename_from_url(url):
@@ -104,6 +103,7 @@ class DownloadManager:
         self._state = {}
         self._latest_state = {}
         self._thread = None
+        self._temp_files = set()
 
         self._downloaders: list[Downloader] = [
             GDriveDownloader(),
@@ -182,7 +182,7 @@ class DownloadManager:
 
     def _download_loop(self, records: list[Record]):
         try:
-            env.clear_temp_dir()
+            self._clear_temp_files()
             for record in records:
                 for upd in self._download_record(record):
                     self._state_update(record_id=record.id_, record_state=upd)
@@ -206,7 +206,7 @@ class DownloadManager:
         except Exception as ex:
             self._state_update(general_status=GENERAL_STATUS_ERROR, exception=str(ex))
             logger.exception(ex)
-        env.clear_temp_dir()
+        self._clear_temp_files()
 
         self._stop_event.set()
         self._running = False
@@ -229,7 +229,8 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            destination_file_path = _get_destination_file_path(filename, record)
+            destination_dir = _get_destination_dir_path(record)
+            destination_file_path = os.path.join(destination_dir, filename)
             logger.debug('destination_file_path: %s', destination_file_path)
 
             yield {'destination': destination_file_path}
@@ -242,15 +243,19 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
+            with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
+                self._temp_files.add(temp)
                 for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
                 temp.close()
+
                 if self._stop_event.is_set():
                     return
-                shutil.move(temp.name, destination_file_path)
+
+                os.rename(temp.name, destination_file_path)
+                self._temp_files.remove(temp)
                 os.chmod(destination_file_path, 0o644)
                 logger.debug('Move from tmp file to destination: %s', destination_file_path)
 
@@ -265,7 +270,7 @@ class DownloadManager:
             logger.exception(ex)
             return
 
-        env.clear_temp_dir()
+        self._clear_temp_files()
 
         if self._stop_event.is_set():
             return
@@ -279,7 +284,8 @@ class DownloadManager:
                 if self._stop_event.is_set():
                     return
 
-                preview_destination_file_path = _get_destination_file_path(preview_filename, record)
+                destination_dir = _get_destination_dir_path(record)
+                preview_destination_file_path = os.path.join(destination_dir, preview_filename)
                 logger.debug('preview_destination_file_path: %s', preview_destination_file_path)
                 yield {'preview_destination': preview_destination_file_path}
 
@@ -288,24 +294,27 @@ class DownloadManager:
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
-                with tempfile.NamedTemporaryFile(delete=False, dir=env.temp_dir()) as temp:
+                with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
                     logger.debug('Downloading preview into tmp file: %s', temp.name)
+                    self._temp_files.add(temp)
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):
                         yield {'preview_dl': upd}
 
                     temp.close()
+
                     if self._stop_event.is_set():
                         return
 
-                    shutil.move(temp.name, preview_destination_file_path)
+                    os.rename(temp.name, preview_destination_file_path)
+                    self._temp_files.remove(temp)
                     os.chmod(destination_file_path, 0o644)
                     logger.debug('Move from tmp file to preview destination: %s', preview_destination_file_path)
             except Exception as ex:
                 yield {'exception_preview': ex}
                 logger.exception(ex)
 
-            env.clear_temp_dir()
+            self._clear_temp_files()
 
         yield {'status': RECORD_STATUS_COMPLETED}
 
@@ -320,3 +329,14 @@ class DownloadManager:
             if downloader.accepts_url(url):
                 return True
         return False
+
+    def _clear_temp_files(self):
+        for temp_file in self._temp_files:
+            try:
+                if temp_file:
+                    temp_file.close()
+                if os.path.exists(temp_file.name):
+                    os.remove(temp_file.name)
+            except Exception as ex:
+                logger.warning(f'Failed to remove temp_file: {temp_file.name}')
+                logger.exception(ex)
