@@ -260,11 +260,7 @@ def _download(
             resume = False
             # mkstemp is preferred, but does not work on Windows
             # https://github.com/wkentaro/gdown/issues/153
-            tmp_file = tempfile.mktemp(
-                suffix=tempfile.template,
-                prefix=osp.basename(output),
-                dir=osp.dirname(output),
-            )
+            tmp_file = output
         f = open(tmp_file, "ab")
     else:
         tmp_file = None
@@ -324,7 +320,8 @@ def _download(
 
         if tmp_file:
             f.close()
-            shutil.move(tmp_file, output)
+            if tmp_file != output:
+                shutil.move(tmp_file, output)
 
         yield {
             'bytes_ready': total,
