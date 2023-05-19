@@ -156,7 +156,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
 
 def _get_files_for_dir(lookup_dir: str) -> list[str]:
     root_dir = os.path.join(lookup_dir, '')
-    extensions = ('.bin', '.ckpt', '.safetensors', '.pt', '.zip')
+    extensions = ('.bin', '.ckpt', '.safetensors', '.pt')
     result = []
 
     if os.path.isdir(root_dir):

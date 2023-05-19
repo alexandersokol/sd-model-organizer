@@ -326,6 +326,17 @@ function navigateAdd() {
     return []
 }
 
+function navigateImportExport(){
+     log('Navigate import_export screen')
+        const navObj = {
+            screen: "import_export",
+            token: generateUUID(),
+            backstack: populateBackstack()
+        };
+        deliverNavObject(navObj)
+        return []
+}
+
 function navigateEdit(id) {
     log('Navigate edit screen for id: ' + id)
     const navObj = {

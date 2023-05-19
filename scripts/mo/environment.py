@@ -39,12 +39,12 @@ class CustomFormatter(logging.Formatter):
 
 
 logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.WARNING)
 
 handler = logging.StreamHandler()
-# handler.setLevel(logging.DEBUG)
-handler.setLevel(logging.WARNING)
+handler.setLevel(logging.DEBUG)
+# handler.setLevel(logging.WARNING)
 
 handler.setFormatter(CustomFormatter())
 

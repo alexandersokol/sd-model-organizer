@@ -10,6 +10,7 @@ from scripts.mo.ui_details import details_ui_block
 from scripts.mo.ui_download import download_ui_block
 from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_home import home_ui_block
+from scripts.mo.ui_import_export import import_export_ui_block
 from scripts.mo.ui_remove import remove_ui_block
 
 
@@ -52,6 +53,7 @@ def on_json_box_change(json_state, home_refresh_token):
         gr.Column.update(visible=state['is_edit_visible']),
         gr.Column.update(visible=state['is_remove_visible']),
         gr.Column.update(visible=state['is_download_visible']),
+        gr.Column.update(visible=state['is_import_export_visible']),
 
         gr.Textbox.update(value=home_refresh_token),
         gr.Textbox.update(value=state['details_record_id']),
@@ -90,6 +92,9 @@ def main_ui_block():
         with gr.Column(visible=False) as download_block:
             download_id_box = download_ui_block()
 
+        with gr.Column(visible=False) as import_export_block:
+            import_export_ui_block()
+
         _json_nav_box.change(on_json_box_change,
                              inputs=[_json_nav_box, home_refresh_box],
                              outputs=[home_block,
@@ -97,6 +102,7 @@ def main_ui_block():
                                       edit_record_block,
                                       remove_record_block,
                                       download_block,
+                                      import_export_block,
 
                                       home_refresh_box,
                                       details_id_box,
