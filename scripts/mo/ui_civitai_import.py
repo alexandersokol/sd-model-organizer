@@ -7,6 +7,7 @@ import requests
 
 from scripts.mo.environment import logger
 from scripts.mo.ui_styled_html import alert_danger
+from scripts.mo.ui_format import format_kilobytes
 
 
 def _get_model_images(model_version_dict):
@@ -19,6 +20,56 @@ def _get_model_images(model_version_dict):
                 url = image['url']
                 result.append((url, url))
 
+    return result
+
+
+def _create_model_dict(json_data):
+    result = {
+        'id': json_data['id'],
+        'name': json_data['name'],
+        'type': json_data['type'],  # TODO type parse
+        'nsfw': json_data['nsfw'],
+        'tags': json_data['tags'],  # TODO tags parse
+    }
+
+    if json_data.get('modelVersions') is not None:
+        model_versions_dict = json_data['modelVersions']
+        versions = []
+        for version_data in model_versions_dict:
+            version = {
+                'id': version_data['id'],
+                'name': version_data['name'],
+                'updated_at': version_data['updatedAt'],
+            }
+
+            if version_data.get('images') is not None:
+                images_data = version_data['images']
+                images = []
+                for image_data in images_data:
+                    url = image_data['url']
+                    images.append((url, url))
+                version['images'] = images
+
+            if version_data.get('files') is not None:
+                files_data = version_data['files']
+                files = []
+                for file_data in files_data:
+                    file = {
+                        'id': file_data['id'],
+                        'name': file_data['name'],
+                        'sizeKB': file_data['sizeKB'],  # TODO parse display size
+                        'type': file_data['type'],  # TODO parse model
+                        'fp': file_data['metadata']['fp'], # TODO if exists
+                        'size': file_data['metadata']['size'], # TODO if exists pruned | full
+                        'format': file_data['metadata']['format'],
+                        'display_name': f"{file_data['name']} - {format_kilobytes(file_data['sizeKB'])}",  # TODO format name
+                        'download_url': file_data['downloadUrl'],
+                        'is_primary': file_data['primary'] if file_data.get('primary') else False
+                    }
+                    files.append(file)
+                version['files'] = files
+            versions.append(version)
+        result['versions'] = versions
     return result
 
 
@@ -36,7 +87,8 @@ def _on_import_url_clicked(url):
             gr.Dropdown.update(value=None, choices=[], visible=False),
             gr.Textbox.update(value='', visible=False),
             gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False)
+            gr.Gallery.update(value=None, visible=False),
+            gr.Dropdown(visible=False)
         ]
 
     if url.isdigit():
@@ -56,7 +108,8 @@ def _on_import_url_clicked(url):
             gr.Dropdown.update(value=None, choices=[], visible=False),
             gr.Textbox.update(value='', visible=False),
             gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False)
+            gr.Gallery.update(value=None, visible=False),
+            gr.Dropdown(visible=False)
         ]
 
     url = f"https://civitai.com/api/v1/models/{model_id}"
@@ -66,6 +119,7 @@ def _on_import_url_clicked(url):
 
     if response.status_code == 200:
         data = response.json()
+        data_dict = _create_model_dict(data)
 
         model_name = data['name'] if data.get('name') is not None and data['name'] else ''
         model_tags = []
@@ -102,7 +156,8 @@ def _on_import_url_clicked(url):
             gr.Dropdown.update(value=selected_version, choices=model_versions, visible=True),
             gr.Textbox.update(value=preview_images[0][0], visible=True),
             gr.Accordion.update(visible=True),
-            gr.Gallery.update(value=preview_images, visible=True)
+            gr.Gallery.update(value=preview_images, visible=True),
+            gr.Dropdown(visible=True)
         ]
     else:
         return [
@@ -114,7 +169,8 @@ def _on_import_url_clicked(url):
             gr.Dropdown.update(value=None, choices=[], visible=False),
             gr.Textbox.update(value='', visible=False),
             gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False)
+            gr.Gallery.update(value=None, visible=False),
+            gr.Dropdown(visible=False)
         ]
 
 
@@ -144,6 +200,8 @@ def civitai_import_ui_block():
     with gr.Accordion(label='Image previews', visible=False, open=False) as preview_accordion:
         preview_gallery = gr.Gallery(elem_id='preview_gallery', visible=False).style(grid=10, height="auto")
 
+    files_dropdown = gr.Dropdown(label='Model Files:', visible=False)
+
     import_url_button.click(_on_import_url_clicked,
                             inputs=import_url_textbox,
                             outputs=[import_result_html,
@@ -154,7 +212,8 @@ def civitai_import_ui_block():
                                      model_version_dropdown,
                                      preview_url_widget,
                                      preview_accordion,
-                                     preview_gallery
+                                     preview_gallery,
+                                     files_dropdown
                                      ])
 
     preview_gallery.select(fn=_on_preview_selected, inputs=preview_gallery)

@@ -5,8 +5,17 @@ def format_percentage(part, total):
 def format_bytes(bytes_to_format):
     units = ['B', 'KB', 'MB', 'GB', 'TB']
     i = 0
-    while bytes_to_format >= 1000 and i < len(units) - 1:
-        bytes_to_format /= 1000
+    while bytes_to_format >= 1024 and i < len(units) - 1:
+        bytes_to_format /= 1024
+        i += 1
+    return f"{bytes_to_format:.2f} {units[i]}"
+
+
+def format_kilobytes(bytes_to_format):
+    units = ['KB', 'MB', 'GB', 'TB']
+    i = 0
+    while bytes_to_format >= 1024 and i < len(units) - 1:
+        bytes_to_format /= 1024
         i += 1
     return f"{bytes_to_format:.2f} {units[i]}"
 
