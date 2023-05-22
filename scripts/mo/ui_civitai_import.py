@@ -1,13 +1,12 @@
-import json
 import re
 from urllib.parse import urlparse
 
 import gradio as gr
 import requests
 
-from scripts.mo.environment import logger
-from scripts.mo.ui_styled_html import alert_danger
+from scripts.mo.models import ModelType
 from scripts.mo.ui_format import format_kilobytes
+from scripts.mo.ui_styled_html import alert_danger
 
 
 def _get_model_images(model_version_dict):
@@ -23,13 +22,44 @@ def _get_model_images(model_version_dict):
     return result
 
 
+def _list_contains_string_ignore_case(string_list, substring):
+    for string in string_list:
+        if substring.lower() in string.lower():
+            return True
+    return False
+
+
 def _create_model_dict(json_data):
+    if json_data['type'] == 'Checkpoint':
+        model_type = ModelType.CHECKPOINT
+    elif json_data['type'] == 'TextualInversion':
+        model_type = ModelType.EMBEDDING
+    elif json_data['type'] == 'Hypernetwork':
+        model_type = ModelType.EMBEDDING
+    elif json_data['type'] == 'LORA':
+        model_type = ModelType.LORA
+    elif json_data['type'] == 'LoCon':
+        model_type = ModelType.LYCORIS
+    else:
+        model_type = ModelType.OTHER
+
+    model_tags = []
+
+    if json_data.get('tags') is not None:
+        tags = json_data['tags']
+        for tag in tags:
+            model_tags.append(tag)
+
+    if json_data['nsfw'] and not _list_contains_string_ignore_case(model_tags, 'nsfw'):
+        model_tags.append('NSFW')
+
     result = {
         'id': json_data['id'],
         'name': json_data['name'],
-        'type': json_data['type'],  # TODO type parse
+        'mode_type': model_type,
+        'origin_type': json_data['type'],
         'nsfw': json_data['nsfw'],
-        'tags': json_data['tags'],  # TODO tags parse
+        'tags': ', '.join(model_tags) if len(model_tags) > 0 else ''
     }
 
     if json_data.get('modelVersions') is not None:
@@ -42,6 +72,14 @@ def _create_model_dict(json_data):
                 'updated_at': version_data['updatedAt'],
             }
 
+            trained_words = []
+            if version_data.get('trainedWords') is not None:
+                words = version_data['trainedWords']
+                for word in words:
+                    trained_words.append(word)
+
+            version['trained_words'] = ', '.join(trained_words) if len(trained_words) > 0 else ''
+
             if version_data.get('images') is not None:
                 images_data = version_data['images']
                 images = []
@@ -53,16 +91,46 @@ def _create_model_dict(json_data):
             if version_data.get('files') is not None:
                 files_data = version_data['files']
                 files = []
+
                 for file_data in files_data:
+                    file_name = file_data['name'] if file_data.get('name') is not None else ''
+                    file_type = file_data['type'] if file_data.get('type') is not None else ''
+                    fp = file_data['metadata']['fp'] if file_data['metadata'].get('fp') is not None else ''
+                    file_size = file_data['metadata']['size'] if file_data['metadata'].get('size') is not None else ''
+                    file_format = file_data['metadata']['format'] if file_data['metadata'].get(
+                        'format') is not None else ''
+                    file_size_formatted = format_kilobytes(file_data['sizeKB']) if file_data.get(
+                        'sizeKB') is not None else ''
+
+                    display_name = ''
+
+                    if file_name:
+                        display_name += file_name
+
+                    if file_type:
+                        display_name += ' | '
+                        display_name += file_type
+
+                    if fp:
+                        display_name += ' | '
+                        display_name += fp
+
+                    if file_size:
+                        display_name += ' | '
+                        display_name += file_size
+
+                    if file_format:
+                        display_name += ' | '
+                        display_name += file_format
+
+                    if file_size_formatted:
+                        display_name += ' | '
+                        display_name += file_size_formatted
+
                     file = {
                         'id': file_data['id'],
-                        'name': file_data['name'],
-                        'sizeKB': file_data['sizeKB'],  # TODO parse display size
-                        'type': file_data['type'],  # TODO parse model
-                        'fp': file_data['metadata']['fp'], # TODO if exists
-                        'size': file_data['metadata']['size'], # TODO if exists pruned | full
-                        'format': file_data['metadata']['format'],
-                        'display_name': f"{file_data['name']} - {format_kilobytes(file_data['sizeKB'])}",  # TODO format name
+                        'file_name': file_data['name'],
+                        'display_name': display_name,
                         'download_url': file_data['downloadUrl'],
                         'is_primary': file_data['primary'] if file_data.get('primary') else False
                     }
@@ -73,22 +141,18 @@ def _create_model_dict(json_data):
     return result
 
 
-def _on_import_url_clicked(url):
+def _on_fetch_url_clicked(url):
     pattern = r'^https:\/\/civitai\.com\/models\/\d+\/[a-zA-Z0-9-]+$'
     if not re.match(pattern, url) and not url.isdigit():
         return [
+            None,
             gr.HTML.update(value=alert_danger('Invalid Url. The link should be a link to the model page like '
                                               'https://civitai.com/models/00000/model_name '
                                               'OR model id like 00000')),
             gr.Accordion.update(visible=False),
             gr.JSON.update(value='{}'),
-            gr.Textbox.update(value='', visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Dropdown.update(value=None, choices=[], visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False),
-            gr.Dropdown(visible=False)
+            gr.Column.update(visible=False),
+            *_create_ui_update()
         ]
 
     if url.isdigit():
@@ -98,18 +162,14 @@ def _on_import_url_clicked(url):
 
     if not model_id.isdigit():
         return [
+            None,
             gr.HTML.update(value=alert_danger(
                 'Failed to parse model id. Check your input is valid civitai.com model url '
                 'or model id.')),
             gr.Accordion.update(visible=False),
             gr.JSON.update(value='{}'),
-            gr.Textbox.update(value='', visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Dropdown.update(value=None, choices=[], visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False),
-            gr.Dropdown(visible=False)
+            gr.Column.update(visible=False),
+            *_create_ui_update()
         ]
 
     url = f"https://civitai.com/api/v1/models/{model_id}"
@@ -121,61 +181,90 @@ def _on_import_url_clicked(url):
         data = response.json()
         data_dict = _create_model_dict(data)
 
-        model_name = data['name'] if data.get('name') is not None and data['name'] else ''
-        model_tags = []
-
-        if data.get('tags') is not None:
-            tags = data['tags']
-            for tag in tags:
-                model_tags.append(tag['name'])
-
-        model_versions = []
-        selected_version = None
-        preview_images = None
-
-        if data.get('modelVersions') is not None:
-            model_versions_dict = data['modelVersions']
-            for version in model_versions_dict:
-                version_name = version['name']
-                model_versions.append(version_name)
-                if selected_version is None:
-                    selected_version = version_name
-
-            if len(model_versions) > 0:
-                preview_images = _get_model_images(data['modelVersions'][0])
-
-        if selected_version is not None:
-            model_name += f' [{selected_version}]'
-
         return [
+            data_dict,
             gr.HTML.update(value=''),
             gr.Accordion.update(visible=True),
-            gr.JSON.update(value=json.dumps(data)),
-            gr.Textbox.update(value=model_name, visible=True),
-            gr.Textbox.update(value=', '.join(model_tags), visible=True),
-            gr.Dropdown.update(value=selected_version, choices=model_versions, visible=True),
-            gr.Textbox.update(value=preview_images[0][0], visible=True),
-            gr.Accordion.update(visible=True),
-            gr.Gallery.update(value=preview_images, visible=True),
-            gr.Dropdown(visible=True)
+            gr.JSON.update(value=data),
+            gr.Column.update(visible=True),
+            *_create_ui_update(data_dict)
         ]
     else:
         return [
+            None,
             gr.HTML.update(value=alert_danger(f'Request failed with status code: {response.status_code}')),
             gr.Accordion.update(visible=False, open=False),
             gr.JSON.update(value='{}'),
-            gr.Textbox.update(value='', visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Dropdown.update(value=None, choices=[], visible=False),
-            gr.Textbox.update(value='', visible=False),
-            gr.Accordion.update(visible=False),
-            gr.Gallery.update(value=None, visible=False),
-            gr.Dropdown(visible=False)
+            gr.Column.update(visible=False),
+            *_create_ui_update()
         ]
 
 
-def _on_preview_selected(selected_preview):
-    logger.debug(f'selected preview: {selected_preview}')
+def _create_ui_update(data_dict=None, selected_version=None, selected_file=None) -> list:
+    if data_dict is None:
+        return [
+            gr.Textbox.update(value=''),
+            gr.Dropdown.update(value='', ),
+            gr.Textbox.update(value=''),
+            gr.Dropdown.update(value='', choices=[]),
+            gr.Textbox.update(value=''),
+            gr.Gallery.update(value=None),
+            gr.Textbox.update(value=''),
+            gr.Dropdown.update(value='', choices=[]),
+        ]
+
+    version = None
+    if selected_version is None:
+        version = data_dict['versions'][0]
+    else:
+        versions = data_dict['versions']
+        for ver in versions:
+            if ver['name'] == selected_version:
+                version = ver
+                break
+        if version is None:
+            version = data_dict['versions'][0]
+
+    file = None
+    if selected_file is None:
+        file = next(item for item in version['files'] if item['is_primary'])
+    else:
+        for fl in version['files']:
+            if fl['display_name'] == selected_file:
+                file = fl
+                break
+        if file is None:
+            file = next(item for item in version['files'] if item['is_primary'])
+    if file is None:
+        file = version['files'][0]
+
+    name = f"{data_dict['name']} [{version['name']}]"
+    model_type = data_dict['mode_type'].value
+    tags = data_dict['tags']
+    model_version = version['name']
+    model_versions = list(map(lambda x: x['name'], data_dict['versions']))
+
+    image_url = version['images'][0][0] if len(version['images']) else ''
+
+    file_version = file['display_name']
+    file_versions = list(map(lambda x: x['display_name'], version['files']))
+
+    prompts = version['trained_words']
+
+    return [
+        gr.Textbox.update(value=name),
+        gr.Dropdown.update(value=model_type),
+        gr.Textbox.update(value=tags),
+        gr.Dropdown.update(value=model_version, choices=model_versions),
+        gr.Textbox.update(value=image_url),
+        gr.Gallery.update(version['images']),
+        gr.Dropdown.update(value=file_version, choices=file_versions),
+        gr.Textbox.update(value=prompts)
+    ]
+
+
+def _on_model_version_selected(data_dict, selected_version):
+    return _create_ui_update(data_dict=data_dict, selected_version=selected_version)
 
 
 def civitai_import_ui_block():
@@ -185,35 +274,58 @@ def civitai_import_ui_block():
         gr.Markdown()
         gr.Markdown()
         gr.Markdown()
-        import_url_button = gr.Button('Import URL')
+        fetch_url_button = gr.Button('Fetch URL')
 
     import_result_html = gr.HTML('')
-    with gr.Accordion(label='JSON Response', visible=False, open=False) as json_accordion:
-        import_result_json = gr.JSON()
+    import_model_state = gr.State(None)
 
-    name_widget = gr.Textbox(label='Name', visible=False, interactive=True)
-    tags_widget = gr.Textbox(label='Tags', visible=False, interactive=True)
-    model_version_dropdown = gr.Dropdown(label='Model Version', visible=False, interactive=True)
-    preview_url_widget = gr.Textbox(label='Preview image URL. Or copy-paste another preview url from the'
-                                          ' \"Image Previews\" gallery below', visible=False, interactive=True)
+    with gr.Column(visible=False) as content_container:
+        name_widget = gr.Textbox(label='Name', interactive=True)
 
-    with gr.Accordion(label='Image previews', visible=False, open=False) as preview_accordion:
-        preview_gallery = gr.Gallery(elem_id='preview_gallery', visible=False).style(grid=10, height="auto")
+        model_type_dropdown = gr.Dropdown(choices=[model_type.value for model_type in ModelType],
+                                          value='',
+                                          label='Model type:', interactive=True)
 
-    files_dropdown = gr.Dropdown(label='Model Files:', visible=False)
+        tags_textbox = gr.Textbox(label='Tags', interactive=True)
+        model_version_dropdown = gr.Dropdown(label='Model Version', interactive=True)
+        files_dropdown = gr.Dropdown(label='Model Files:', interactive=True)
+        prompts_textbox = gr.Textbox(label='Trained words (Prompts):', interactive=True)
 
-    import_url_button.click(_on_import_url_clicked,
-                            inputs=import_url_textbox,
-                            outputs=[import_result_html,
-                                     json_accordion,
-                                     import_result_json,
-                                     name_widget,
-                                     tags_widget,
-                                     model_version_dropdown,
-                                     preview_url_widget,
-                                     preview_accordion,
-                                     preview_gallery,
-                                     files_dropdown
-                                     ])
+        preview_url_widget = gr.Textbox(label='Preview image URL. Or copy-paste another preview url from the'
+                                              ' \"Image Previews\" gallery below', interactive=True)
 
-    preview_gallery.select(fn=_on_preview_selected, inputs=preview_gallery)
+        with gr.Accordion(label='Image previews', open=False):
+            preview_gallery = gr.Gallery(elem_id='preview_gallery').style(grid=10, height="auto")
+
+        with gr.Accordion(label='JSON Response', visible=False, open=False) as json_accordion:
+            import_result_json = gr.JSON()
+
+    fetch_url_button.click(_on_fetch_url_clicked,
+                           inputs=import_url_textbox,
+                           outputs=[import_model_state,
+                                    import_result_html,
+                                    json_accordion,
+                                    import_result_json,
+                                    content_container,
+                                    name_widget,
+                                    model_type_dropdown,
+                                    tags_textbox,
+                                    model_version_dropdown,
+                                    preview_url_widget,
+                                    preview_gallery,
+                                    files_dropdown,
+                                    prompts_textbox
+                                    ])
+
+    model_version_dropdown.select(fn=_on_model_version_selected,
+                                  inputs=[import_model_state, model_version_dropdown],
+                                  outputs=[
+                                      name_widget,
+                                      model_type_dropdown,
+                                      tags_textbox,
+                                      model_version_dropdown,
+                                      preview_url_widget,
+                                      preview_gallery,
+                                      files_dropdown,
+                                      prompts_textbox
+                                  ])
