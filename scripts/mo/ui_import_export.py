@@ -75,11 +75,9 @@ def import_export_ui_block():
         with gr.Tab("Export JSON"):
             export_button = gr.Button(value='Export')
             export_file_widget = gr.File(visible=False)
-        with gr.Tab("Import URL"):
+        with gr.Tab("Import Civitai URL"):
             with gr.Column():
                 civitai_import_ui_block()
-        with gr.Tab("Import .info"):
-            gr.Textbox(".info Import")
 
     back_button.click(fn=None, _js='navigateBack')
 
