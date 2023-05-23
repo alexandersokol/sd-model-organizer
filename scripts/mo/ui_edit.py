@@ -5,6 +5,7 @@ import time
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
+from scripts.mo.data.storage import map_dict_to_record
 from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256, calculate_md5
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
@@ -27,7 +28,7 @@ def is_directory_path_valid(path):
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
                                    download_path: str, download_filename: str, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
-                                   groups: list[str], back_token: str, bind_existing: str):
+                                   groups: list[str], back_token: str, bind_existing: str, sha256_state):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -101,7 +102,8 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
                 sha256_hash = old_record.sha256_hash
                 md5_hash = old_record.md5_hash
                 location = old_record.location
-
+        elif old_record is None and sha256_state is not None:
+            sha256_hash = sha256_state
         elif bind_existing:
             location = os.path.join(env.get_model_path(model_type), download_subdir, download_filename)
             sha256_hash = calculate_sha256(location)
@@ -159,6 +161,9 @@ def _on_id_changed(record_data):
     record_data = json.loads(record_data)
     if record_data.get('record_id') is not None and record_data['record_id']:
         record = env.storage.get_record_by_id(record_data['record_id'])
+    elif record_data.get('prefilled_json') is not None and record_data['prefilled_json']:
+        prefilled = json.loads(record_data['prefilled_json'])
+        record = map_dict_to_record(prefilled.get('id_'), prefilled)
     else:
         record = None
 
@@ -187,6 +192,7 @@ def _on_id_changed(record_data):
     positive_prompts = '' if record is None else record.positive_prompts
     negative_prompts = '' if record is None else record.negative_prompts
     record_groups = [] if record is None else record.groups
+    sha256 = None if record is None or not bool(record.sha256_hash) else record.sha256_hash
 
     available_groups = env.storage.get_available_groups()
     logger.info('Groups loaded: %s', available_groups)
@@ -207,7 +213,7 @@ def _on_id_changed(record_data):
 
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False),
-            bind_with_existing, location_state]
+            bind_with_existing, location_state, sha256]
 
 
 def _get_bind_existing_update(model_type_value, location_state):
@@ -315,6 +321,8 @@ def edit_ui_block():
                            visible=False,
                            value=env.theme())
 
+    sha256_preload_state = gr.State()
+
     title_widget = gr.Markdown()
     available_groups_state = gr.State()
     location_state = gr.State({})
@@ -418,7 +426,7 @@ def edit_ui_block():
                                              download_path_widget, download_filename_widget, download_subdir_widget,
                                              preview_url_widget, description_output_widget, positive_prompts_widget,
                                              negative_prompts_widget, groups_widget, edit_back_box,
-                                             bind_with_existing_widget],
+                                             bind_with_existing_widget, sha256_preload_state],
                                      outputs=[error_widget, edit_back_box])
 
     edit_id_box.change(_on_id_changed,
@@ -427,7 +435,7 @@ def edit_ui_block():
                                 preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget,
-                                bind_with_existing_widget, location_state]
+                                bind_with_existing_widget, location_state, sha256_preload_state]
                        )
 
     save_widget.click(fn=None, _js='handleRecordSave')

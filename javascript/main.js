@@ -1,7 +1,7 @@
 // add tinymce
 const script = document.createElement('script');
-script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
-// script.src = 'https://cdn.tiny.cloud/1/x4uky7gf82jcmseg81ymjdn05edp1yjtulefc66biwztkikf/tinymce/6/tinymce.min.js';
+//script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
+ script.src = 'https://cdn.tiny.cloud/1/x4uky7gf82jcmseg81ymjdn05edp1yjtulefc66biwztkikf/tinymce/6/tinymce.min.js';
 document.head.appendChild(script);
 
 function findElem(elementId) {

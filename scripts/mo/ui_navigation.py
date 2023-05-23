@@ -11,6 +11,7 @@ _IMPORT_EXPORT = 'import_export'
 
 _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
+_NODE_PREFILLED_JSON = 'prefilled_json'
 _NODE_GROUP = 'group'
 _NODE_RECORD_IDS = 'record_ids'
 
@@ -91,8 +92,10 @@ def get_nav_state(json_nav) -> dict:
         elif nav_dict[_NODE_SCREEN] == _EDIT:
             state['is_edit_visible'] = True
             edit_data = {'token': generate_ui_token()}
-            if nav_dict.get('record_id') is not None:
-                edit_data['record_id'] = nav_dict[_NODE_RECORD_ID]
+            if nav_dict.get(_NODE_RECORD_ID) is not None:
+                edit_data[_NODE_RECORD_ID] = nav_dict[_NODE_RECORD_ID]
+            if nav_dict.get(_NODE_PREFILLED_JSON) is not None:
+                edit_data[_NODE_PREFILLED_JSON] = nav_dict[_NODE_PREFILLED_JSON]
             state['edit_data'] = json.dumps(edit_data)
 
         elif nav_dict[_NODE_SCREEN] == _REMOVE:
