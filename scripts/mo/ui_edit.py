@@ -1,6 +1,5 @@
 import json
 import os.path
-import re
 import time
 
 import gradio as gr
@@ -10,6 +9,7 @@ from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256, ca
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
+from scripts.mo.utils import is_blank, is_valid_filename, is_valid_url
 
 
 def is_directory_path_valid(path):
@@ -22,20 +22,6 @@ def is_directory_path_valid(path):
         except Exception as ex:
             logger.warning(ex)
             return False
-
-
-def is_valid_url(url: str) -> bool:
-    pattern = re.compile(r'^https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+')
-    return bool(pattern.match(url))
-
-
-def is_valid_filename(filename: str) -> bool:
-    pattern = re.compile(r'^[^\x00-\x1f\\/?*:|"<>]+$')
-    return bool(pattern.match(filename))
-
-
-def is_blank(s):
-    return len(s.strip()) == 0
 
 
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
