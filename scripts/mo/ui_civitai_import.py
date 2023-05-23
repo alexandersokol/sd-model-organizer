@@ -1,3 +1,4 @@
+import json
 import re
 import time
 from urllib.parse import urlparse, parse_qs
@@ -5,6 +6,7 @@ from urllib.parse import urlparse, parse_qs
 import gradio as gr
 import requests
 
+from scripts.mo.data.storage import map_record_to_dict
 from scripts.mo.environment import env
 from scripts.mo.models import ModelType, Record
 from scripts.mo.ui_format import format_kilobytes
@@ -299,8 +301,8 @@ def _on_model_type_changed(model_type_value):
     ]
 
 
-def _on_import_clicked(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
-                       prompts, include_description):
+def _prepare_import_data(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+                         prompts, include_description):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -340,17 +342,14 @@ def _on_import_clicked(state, import_url, name, model_type_value, tags, model_ve
         errors.append('File version not defined.')
 
     if errors:
-        return [
-            gr.HTML.update(value=alert_danger(errors), visible=True),
-            gr.Column.update()
-        ]
+        return errors
 
     download_url = file['download_url']
     description = state['description'] if include_description else ''
     groups = list(map(lambda x: x.strip(), tags.split(','))) if bool(tags.strip()) else []
     sha256 = file['sha256']
 
-    record = Record(
+    return Record(
         id_=None,
         name=name,
         model_type=model_type,
@@ -364,12 +363,77 @@ def _on_import_clicked(state, import_url, name, model_type_value, tags, model_ve
         created_at=time.time()
     )
 
-    env.storage.add_record(record)
 
-    return [
-        gr.HTML.update(value='', visible=False),
-        gr.Column.update(visible=False)
-    ]
+def _on_import_clicked(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+                       prompts, include_description):
+    result = _prepare_import_data(
+        state=state,
+        import_url=import_url,
+        name=name,
+        model_type_value=model_type_value,
+        tags=tags,
+        model_version_value=model_version_value,
+        preview_url=preview_url,
+        file_value=file_value,
+        prompts=prompts,
+        include_description=include_description
+    )
+
+    if isinstance(result, list):
+        return [
+            gr.HTML.update(value=alert_danger(result), visible=True),
+            gr.Column.update()
+        ]
+    elif isinstance(result, Record):
+        env.storage.add_record(result)
+        return [
+            gr.HTML.update(value='', visible=False),
+            gr.Column.update(visible=False)
+        ]
+    else:
+        return [
+            gr.HTML.update(value=alert_danger('Unpredicted behaviour, try to reload page and fill data again'),
+                           visible=True),
+            gr.Column.update()
+        ]
+
+
+def _on_edit_clicked(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+                     prompts, include_description):
+    result = _prepare_import_data(
+        state=state,
+        import_url=import_url,
+        name=name,
+        model_type_value=model_type_value,
+        tags=tags,
+        model_version_value=model_version_value,
+        preview_url=preview_url,
+        file_value=file_value,
+        prompts=prompts,
+        include_description=include_description
+    )
+
+    if isinstance(result, list):
+        return [
+            gr.HTML.update(value=alert_danger(result), visible=True),
+            gr.Column.update(),
+            gr.Textbox.update()
+        ]
+    elif isinstance(result, Record):
+        record_dict = map_record_to_dict(result)
+        record_json = json.dumps(record_dict)
+        return [
+            gr.HTML.update(value='', visible=False),
+            gr.Column.update(visible=False),
+            gr.Textbox.update(value=record_json)
+        ]
+    else:
+        return [
+            gr.HTML.update(value=alert_danger('Unpredicted behaviour, try to reload page and fill data again'),
+                           visible=True),
+            gr.Column.update(),
+            gr.Textbox.update()
+        ]
 
 
 def civitai_import_ui_block():
@@ -426,6 +490,11 @@ def civitai_import_ui_block():
         with gr.Row():
             edit_button = gr.Button("Edit before save")
             import_button = gr.Button("Import")
+
+        prefill_json_box = gr.Textbox(label='prefill_json_box',
+                                      elem_classes='mo-alert-warning',
+                                      interactive=False,
+                                      visible=False)
 
     fetch_url_button.click(_on_fetch_url_clicked,
                            inputs=import_url_textbox,
@@ -484,3 +553,22 @@ def civitai_import_ui_block():
                             import_result_html,
                             content_container
                         ])
+
+    edit_button.click(fn=_on_edit_clicked,
+                      inputs=[import_model_state,
+                              import_url_textbox,
+                              name_widget,
+                              model_type_dropdown,
+                              tags_textbox,
+                              model_version_dropdown,
+                              preview_url_textbox,
+                              files_dropdown,
+                              prompts_textbox,
+                              description_checkbox],
+                      outputs=[
+                          import_result_html,
+                          content_container,
+                          prefill_json_box
+                      ])
+
+    prefill_json_box.change(fn=None, inputs=prefill_json_box, _js='navigateEditPrefilled')

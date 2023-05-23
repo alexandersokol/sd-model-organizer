@@ -10,7 +10,7 @@ function findElem(elementId) {
 }
 
 function log(text) {
-    // console.log(text)
+     console.log(text)
 }
 
 function handleDescriptionPreviewContentChange(content, theme) {
@@ -349,6 +349,18 @@ function navigateEdit(id) {
     return []
 }
 
+function navigateEditPrefilled(json_data) {
+    log('Navigate edit screen for prefilled json: ' + json_data)
+    const navObj = {
+        screen: "edit",
+        prefilled_json: json_data,
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
 function navigateDownloadRecord(id) {
     log('Navigate download screen for id: ' + id)
     const navObj = {
@@ -409,7 +421,4 @@ function deliverNavObject(navObj) {
 
 onUiLoaded(function () {
     log("UI loaded")
-    // const script = document.createElement('script');
-    // script.src = 'http://my-awesome-static-bucket.s3-website.eu-north-1.amazonaws.com/tinymce/tinymce.min.js';
-    // document.head.appendChild(script);
 })
