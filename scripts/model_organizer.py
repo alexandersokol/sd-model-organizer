@@ -64,9 +64,11 @@ def _lycoris_path() -> str:
 
 env.layout = lambda: shared.opts.mo_layout if hasattr(shared.opts, 'mo_layout') else LAYOUT_CARDS
 
-env.card_width = lambda: shared.opts.mo_card_width if hasattr(shared.opts, 'mo_card_width') else 0
+env.card_width = lambda: shared.opts.mo_card_width if hasattr(shared.opts, 'mo_card_width') and \
+                                                      shared.opts.mo_card_width else DEFAULT_CARD_WIDTH
 
-env.card_height = lambda: shared.opts.mo_card_height if hasattr(shared.opts, 'mo_card_height') else 0
+env.card_height = lambda: shared.opts.mo_card_height if hasattr(shared.opts, 'mo_card_height') and \
+                                                        shared.opts.mo_card_height else DEFAULT_CARD_HEIGHT
 
 env.storage_type = lambda: shared.opts.mo_storage_type if hasattr(shared.opts, 'mo_storage_type') else STORAGE_SQLITE
 
@@ -108,7 +110,7 @@ def on_ui_settings():
         'mo_vae_path': OptionInfo('', f'VAE directory (If empty uses default: {_default_vae_path()}) :'),
         'mo_lora_path': OptionInfo('', f'Lora directory (If empty uses default: {_default_lora_path()}):'),
         'mo_hypernetworks_path': OptionInfo('',
-                                            f'Hypernetworks directory (If empty uses default: ' 
+                                            f'Hypernetworks directory (If empty uses default: '
                                             f'{_default_hypernetworks_path()}):'),
         'mo_lycoris_path': OptionInfo('',
                                       f'LyCORIS directory (If empty uses default: {_default_lycoris_path()}):'),

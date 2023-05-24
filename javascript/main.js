@@ -419,6 +419,22 @@ function deliverNavObject(navObj) {
     console.log('JSON Nav dispatched: ' + navJson)
 }
 
+isHomeInitialStateInvoked = false
+
+function invokeHomeInitialStateLoad(){
+    if(!isHomeInitialStateInvoked){
+        const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
+        const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
+        stateTextArea.value = initialStateTextArea.value
+        const event = new Event('input', {'bubbles': true, "composed": true});
+        findElem('mo-home-state-box').querySelector('textarea').dispatchEvent(event);
+        console.log('Initial load state dispatched')
+        isHomeInitialStateInvoked = true
+    }
+    return []
+}
+
 onUiLoaded(function () {
     log("UI loaded")
+    invokeHomeInitialStateLoad() // TODO On tab opened
 })

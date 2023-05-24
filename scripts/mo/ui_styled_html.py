@@ -296,13 +296,6 @@ def record_details(record: Record) -> str:
 
 def records_cards(records: List[Record]) -> str:
     content = '<div class="mo-card-grid">'
-    content += """
-    <script>
-    function handleRemoveClick(recordId) {
-    console.log('remove: ' + recordId)
-    }
-    </script>
-    """
 
     for record in records:
         content += '<div class="mo-card">'
