@@ -65,7 +65,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
 def main_ui_block():
     css_styles = _load_mo_css()
-    with gr.Blocks(css=css_styles) as main_block:
+    with gr.Blocks(css=css_styles, elem_id='model_organizer_tab') as main_block:
         gr.HTML(f'<style>{css_styles}</style>')
         if env.is_storage_has_errors():
             gr.HTML(styled.alert_danger(env.storage_error))
@@ -77,7 +77,7 @@ def main_ui_block():
         _json_nav_box = gr.Textbox(value=nav.navigate_home(), label='mo_json_nav_box', elem_id='mo_json_nav_box',
                                    elem_classes='mo-alert-warning', visible=False)
 
-        with gr.Column(visible=True) as home_block:
+        with gr.Column(visible=True, elem_id='mo_home_tab') as home_block:
             home_refresh_box = home_ui_block()
 
         with gr.Column(visible=False) as record_details_block:

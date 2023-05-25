@@ -5,8 +5,8 @@ import scripts.mo.ui_format as ui_format
 from scripts.mo.environment import env
 from scripts.mo.models import Record, ModelType
 
-_NO_PREVIEW_DARK = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-dark.png'
-_NO_PREVIEW_LIGHT = 'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
+_NO_PREVIEW_DARK = 'file=extensions/sd-model-organizer/pic/no-preview-dark-blue.png'
+_NO_PREVIEW_LIGHT = 'file=extensions/sd-model-organizer/pic/no-preview-light.png'
 
 
 def alert_danger(value) -> str:
@@ -77,9 +77,9 @@ def _model_type_css_class(model_type: ModelType) -> str:
 
 def _no_preview_image_url() -> str:
     if env.theme() == 'dark':
-        return f'https://github.com/alexandersokol/sd-model-organizer/raw/develop/pic/no-preview-dark-blue.png'
+        return _NO_PREVIEW_DARK
     else:
-        return f'https://github.com/alexandersokol/sd-model-organizer/raw/master/pic/no-preview-light.png'
+        return _NO_PREVIEW_LIGHT
 
 
 def records_table(records: List[Record]) -> str:

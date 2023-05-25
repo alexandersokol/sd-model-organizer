@@ -1,7 +1,6 @@
 // add tinymce
 const script = document.createElement('script');
-//script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
- script.src = 'https://cdn.tiny.cloud/1/x4uky7gf82jcmseg81ymjdn05edp1yjtulefc66biwztkikf/tinymce/6/tinymce.min.js';
+script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
 document.head.appendChild(script);
 
 function findElem(elementId) {
@@ -422,19 +421,24 @@ function deliverNavObject(navObj) {
 isHomeInitialStateInvoked = false
 
 function invokeHomeInitialStateLoad(){
+    log('invokeHomeInitialStateLoad')
     if(!isHomeInitialStateInvoked){
         const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
         const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
         stateTextArea.value = initialStateTextArea.value
         const event = new Event('input', {'bubbles': true, "composed": true});
         findElem('mo-home-state-box').querySelector('textarea').dispatchEvent(event);
-        console.log('Initial load state dispatched')
         isHomeInitialStateInvoked = true
+        log('initial home state invoked')
     }
     return []
 }
 
 onUiLoaded(function () {
     log("UI loaded")
-    invokeHomeInitialStateLoad() // TODO On tab opened
+    homeTab = findElem('mo_home_tab')
+    intersectionObserver = new IntersectionObserver((entries) => {
+        if (entries[0].intersectionRatio > 0) invokeHomeInitialStateLoad();
+    });
+    intersectionObserver.observe(homeTab);
 })

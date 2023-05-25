@@ -98,7 +98,7 @@ env.theme = lambda: shared.cmd_opts.theme
 
 
 def on_ui_settings():
-    mo_options = shared.options_section(('mo', 'Model Organizer'), {
+    opts = {
         'mo_layout': OptionInfo(LAYOUT_CARDS, "Layout Type:", gr.Radio,
                                 {"choices": [LAYOUT_CARDS, LAYOUT_TABLE]}),
         'mo_card_width': OptionInfo(0, 'Card width (default if 0):'),
@@ -106,6 +106,9 @@ def on_ui_settings():
         'mo_storage_type': OptionInfo(STORAGE_SQLITE, "Storage Type:", gr.Radio,
                                       {"choices": [STORAGE_SQLITE, STORAGE_FIREBASE]}),
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
+    }
+
+    dir_opts = {
         'mo_model_path': OptionInfo('', f'Model directory (If empty uses default: {_default_model_path()}):'),
         'mo_vae_path': OptionInfo('', f'VAE directory (If empty uses default: {_default_vae_path()}) :'),
         'mo_lora_path': OptionInfo('', f'Lora directory (If empty uses default: {_default_lora_path()}):'),
@@ -116,7 +119,12 @@ def on_ui_settings():
                                       f'LyCORIS directory (If empty uses default: {_default_lycoris_path()}):'),
         'mo_embeddings_path': OptionInfo('', f'Embeddings directory (If empty uses default: '
                                              f'{_default_embeddings_path()}):')
-    })
+    }
+
+    if hasattr(shared.cmd_opts, 'mo_show_dir_settings') and shared.cmd_opts.mo_show_dir_settings:
+        opts.update(dir_opts)
+
+    mo_options = shared.options_section(('mo', 'Model Organizer'), opts)
     shared.options_templates.update(mo_options)
     initialize_storage()
 
