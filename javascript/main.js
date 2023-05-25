@@ -336,6 +336,17 @@ function navigateImportExport(){
         return []
 }
 
+function navigateDebug(){
+     log('Navigate debug screen')
+        const navObj = {
+            screen: "debug",
+            token: generateUUID(),
+            backstack: populateBackstack()
+        };
+        deliverNavObject(navObj)
+        return []
+}
+
 function navigateEdit(id) {
     log('Navigate edit screen for id: ' + id)
     const navObj = {

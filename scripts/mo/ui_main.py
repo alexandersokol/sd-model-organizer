@@ -6,6 +6,7 @@ import gradio as gr
 import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env
+from scripts.mo.ui_debug import debug_ui_block
 from scripts.mo.ui_details import details_ui_block
 from scripts.mo.ui_download import download_ui_block
 from scripts.mo.ui_edit import edit_ui_block
@@ -54,6 +55,7 @@ def on_json_box_change(json_state, home_refresh_token):
         gr.Column.update(visible=state['is_remove_visible']),
         gr.Column.update(visible=state['is_download_visible']),
         gr.Column.update(visible=state['is_import_export_visible']),
+        gr.Column.update(visible=state['is_debug_visible']),
 
         gr.Textbox.update(value=home_refresh_token),
         gr.Textbox.update(value=state['details_record_id']),
@@ -95,6 +97,9 @@ def main_ui_block():
         with gr.Column(visible=False) as import_export_block:
             import_export_ui_block()
 
+        with gr.Column(visible=False) as debug_block:
+            debug_ui_block()
+
         _json_nav_box.change(on_json_box_change,
                              inputs=[_json_nav_box, home_refresh_box],
                              outputs=[home_block,
@@ -103,6 +108,7 @@ def main_ui_block():
                                       remove_record_block,
                                       download_block,
                                       import_export_block,
+                                      debug_block,
 
                                       home_refresh_box,
                                       details_id_box,

@@ -20,3 +20,4 @@ gr.close_all()
 # --lora-dir /Users/alexander/Downloads/sd-downloads/lora
 # --lyco-dir /Users/alexander/Downloads/sd-downloads/lyco
 # --theme dark
+# --mo-debug

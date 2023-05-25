@@ -191,19 +191,21 @@ def home_ui_block():
                                label='state_box',
                                elem_classes='mo-alert-warning',
                                elem_id='mo-home-state-box',
-                               visible=True,
+                               visible=False,
                                interactive=False)
 
         gr.Textbox(value=initial_state_json,
                    label='initial_state_box',
                    elem_classes='mo-alert-warning',
                    elem_id='mo-initial-state-box',
-                   visible=True,
+                   visible=False,
                    interactive=False)
 
         with gr.Row():
             gr.Markdown('## Records list')
-            gr.Markdown('')
+            if not env.is_debug_mode_enabled():
+                gr.Markdown('')
+            debug_button = gr.Button('Debug', visible=env.is_debug_mode_enabled())
             reload_button = gr.Button('Reload')
             download_all_button = gr.Button('Download All', visible=False)
             import_export_button = gr.Button('Import/Export')
@@ -249,6 +251,7 @@ def home_ui_block():
         state_box.change(_prepare_data, inputs=state_box,
                          outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
 
+        debug_button.click(fn=None, _js='navigateDebug')
         download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         import_export_button.click(fn=None, _js='navigateImportExport')
         add_button.click(fn=None, _js='navigateAdd')

@@ -93,6 +93,8 @@ env.lycoris_path = _lycoris_path
 env.embeddings_path = lambda: shared.opts.mo_embeddings_path if \
     hasattr(shared.opts, 'mo_embeddings_path') and shared.opts.mo_embeddings_path else _default_embeddings_path()
 
+env.is_debug_mode_enabled = lambda: hasattr(shared.cmd_opts, 'mo_debug') and shared.cmd_opts.mo_debug
+
 env.script_dir = scripts.basedir()
 env.theme = lambda: shared.cmd_opts.theme
 
