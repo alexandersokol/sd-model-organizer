@@ -98,7 +98,10 @@ def main_ui_block():
             import_export_ui_block()
 
         with gr.Column(visible=False) as debug_block:
-            debug_ui_block()
+            if env.is_debug_mode_enabled():
+                debug_ui_block()
+            else:
+                gr.Row()
 
         _json_nav_box.change(on_json_box_change,
                              inputs=[_json_nav_box, home_refresh_box],

@@ -7,9 +7,9 @@ from urllib.parse import urlparse
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.dl.gdrive_downloader import GDriveDownloader
 from scripts.mo.dl.http_downloader import HttpDownloader
-from scripts.mo.environment import env, logger, calculate_md5, calculate_sha256
+from scripts.mo.environment import env, logger, calculate_md5
 from scripts.mo.models import Record
-from scripts.mo.utils import resize_preview_image, get_model_filename_without_extension
+from scripts.mo.utils import resize_preview_image, get_model_filename_without_extension, calculate_sha256
 
 GENERAL_STATUS_IN_PROGRESS = 'In Progress'
 GENERAL_STATUS_CANCELLED = 'Cancelled'

@@ -134,14 +134,6 @@ def calculate_md5(file_path):
     return md5.hexdigest()
 
 
-def calculate_sha256(file_path):
-    with open(file_path, 'rb') as file:
-        sha256_hash = hashlib.sha256()
-        while chunk := file.read(4096):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
-
-
 def find_preview_file(record: Record):
     preview_file_path = None
 

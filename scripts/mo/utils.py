@@ -1,3 +1,6 @@
+import datetime
+import hashlib
+import json
 import os
 import re
 import urllib.parse
@@ -5,6 +8,8 @@ import urllib.parse
 from PIL import Image
 
 from scripts.mo.environment import env
+
+_HASH_CACHE_FILENAME = 'hash_cache.json'
 
 model_extensions = ['.bin', '.ckpt', '.safetensors', '.pt']
 preview_extensions = [".png", ".jpg", ".webp"]
@@ -93,3 +98,42 @@ def resize_preview_image(input_file, output_file):
     canvas.paste(resized_image, (x_position, y_position))
 
     canvas.save(output_file, "JPEG")
+
+
+def calculate_file_temp_hash(file_path):
+    creation_timestamp = os.path.getctime(file_path)
+    creation_datetime = datetime.datetime.fromtimestamp(creation_timestamp)
+
+    modification_timestamp = os.path.getmtime(file_path)
+    modification_datetime = datetime.datetime.fromtimestamp(modification_timestamp)
+
+    input_string = f'{creation_datetime} {modification_datetime}'
+
+    md5_hash = hashlib.md5()
+    md5_hash.update(input_string.encode('utf-8'))
+    return md5_hash.hexdigest()
+
+
+def calculate_sha256(file_path):
+    with open(file_path, 'rb') as file:
+        sha256_hash = hashlib.sha256()
+        while chunk := file.read(4096):
+            sha256_hash.update(chunk)
+    return sha256_hash.hexdigest()
+
+
+def get_hash_cache_file():
+    return os.path.join(env.script_dir, _HASH_CACHE_FILENAME)
+
+
+def read_hash_cache() -> list:
+    file_path = get_hash_cache_file()
+    if os.path.isfile(file_path):
+        with open(file_path) as file:
+            return json.load(file)
+    return []
+
+
+def write_hash_cache(hash_cache: list):
+    with open(get_hash_cache_file(), 'w') as file:
+        json.dump(hash_cache, file, indent=4)
