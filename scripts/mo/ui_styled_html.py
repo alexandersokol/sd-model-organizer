@@ -123,9 +123,12 @@ def records_table(records: List[Record]) -> str:
 
         # Add actions column
         table_html += '<div class="mo-col mo-col-actions ">'
-        table_html += '<button class="mo-btn mo-btn-primary" ' \
-                      f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button>'
-        table_html += '<br>'
+
+        if record.is_download_possible():
+            table_html += '<button class="mo-btn mo-btn-primary" ' \
+                          f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button>'
+            table_html += '<br>'
+
         table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
                       f'onclick="navigateEdit(\'{record.id_}\')">Edit</button>'
         table_html += '<br>'
@@ -318,7 +321,7 @@ def records_cards(records: List[Record]) -> str:
         content += '<button type="button" class="mo-btn mo-btn-success" ' \
                    f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
-        if not record.location or not os.path.exists(record.location):
+        if record.is_download_possible():
             content += '<button type="button" class="mo-btn mo-btn-primary" ' \
                        f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 

@@ -21,7 +21,7 @@ def on_id_changed(record_id):
                 gr.HTML.update(visible=bool(record.description)),
                 gr.Textbox.update(value=record.description),
                 gr.Button.update(visible=True),
-                gr.Button.update(visible=not record.location)
+                gr.Button.update(visible=record.is_download_possible())
             ]
 
     return [

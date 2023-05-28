@@ -39,12 +39,11 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         errors.append('Model type not selected.')
         model_type = None
 
-    if is_blank(download_url):
-        errors.append('Download field is empty.')
-    elif not is_valid_url(download_url):
-        errors.append('Download URL is incorrect')
-    elif not DownloadManager.instance().check_url_can_be_handled(download_url):
-        errors.append(f"Model can't be downloaded from URL: {download_url}")
+    if not is_blank(download_url):
+        if not is_valid_url(download_url):
+            errors.append('Download URL is incorrect')
+        elif not DownloadManager.instance().check_url_can_be_handled(download_url):
+            errors.append(f"Model can't be downloaded from URL: {download_url}")
 
     if not is_blank(url) and not is_valid_url(url):
         errors.append('Model URL is incorrect.')
@@ -156,7 +155,7 @@ def _on_id_changed(record_data):
     name = '' if record is None else record.name
     model_type = '' if record is None else record.model_type.value
 
-    if record is None:
+    if record is None or not record.download_url:
         download_url = gr.Textbox.update(
             value='',
             label='Download URL:'
@@ -328,7 +327,7 @@ def edit_ui_block():
             download_url_widget = gr.Textbox(label='Download URL:',
                                              value='',
                                              max_lines=1,
-                                             info='Link to the model file (Required)')
+                                             info='Link to the model file (Optional)')
             preview_url_widget = gr.Textbox(label='Preview image URL:',
                                             value='',
                                             max_lines=1,
