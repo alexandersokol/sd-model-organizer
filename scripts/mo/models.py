@@ -81,6 +81,9 @@ class Record:
     def is_download_possible(self) -> bool:
         return self.is_downloadable() and not self.is_file_exists()
 
+    def is_local_file_record(self):
+        return self.id_ is None and self.is_file_exists() and not self.is_downloadable()
+
     def __str__(self):
         return f'id="{self.id_}", ' \
                f'name="{self.name}", ' \

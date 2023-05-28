@@ -1,7 +1,7 @@
 import gradio as gr
 import modules.scripts as scripts
 from modules import script_callbacks
-from modules import shared, sd_models, sd_vae, paths
+from modules import shared, sd_models, sd_vae, paths, ui_extra_networks
 from modules.shared import OptionInfo
 
 from scripts.mo.data.init_storage import initialize_storage
@@ -132,6 +132,15 @@ def on_ui_settings():
 
 
 def on_ui_tabs():
+
+    if env.is_debug_mode_enabled(): # TODO Remove these lines
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/ckpt')
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/vae')
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/embeddings')
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/hypernetworks')
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/lora')
+        ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/lyco')
+
     return (main_ui_block(), "Model Organizer", "model_organizer"),
 
 

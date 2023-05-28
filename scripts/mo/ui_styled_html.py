@@ -316,20 +316,24 @@ def records_cards(records: List[Record]) -> str:
         content += '<div class="mo-card-hover">'
         content += '<div class="mo-card-hover-buttons">'
 
-        content += '<button type="button" class="mo-btn mo-btn-success" '
+        if record.is_local_file_record():
+            content += '<button type="button" class="mo-btn mo-btn-success" ' \
+                       f'onclick="navigateDetails(\'{record.id_}\')">Add</button><br>'
+            content += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                       f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+        else:
+            content += '<button type="button" class="mo-btn mo-btn-success" ' \
+                       f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
 
-        content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                   f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
+            if record.is_download_possible():
+                content += '<button type="button" class="mo-btn mo-btn-primary" ' \
+                           f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
 
-        if record.is_download_possible():
-            content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                       f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+            content += '<button type="button" class="mo-btn mo-btn-warning" ' \
+                       f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
 
-        content += '<button type="button" class="mo-btn mo-btn-warning" ' \
-                   f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
-
-        content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                   f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+            content += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                       f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
 
         content += '</div>'
         content += '</div>'

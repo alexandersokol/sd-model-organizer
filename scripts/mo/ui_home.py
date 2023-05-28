@@ -55,7 +55,6 @@ def _get_local_model_files() -> list[Record]:
                 name=os.path.basename(file),
                 model_type=model_type,
                 location=file,
-                download_url='',
                 created_at=time.time(),
                 preview_url=link_preview(preview_file) if preview_file is not None and preview_file else ''
             )
@@ -83,7 +82,13 @@ def _prepare_data(state_json: str):
         show_not_downloaded=state['show_not_downloaded']
     )
 
-    records.extend(_get_local_model_files())
+    local_records = _get_local_model_files()
+
+    if len(local_records) > 0:
+        bound_locations = list(map(lambda r: r.location, records))
+        bound_locations = list(filter(lambda r: bool(r), bound_locations))
+        local_records = list(filter(lambda r: r.location not in bound_locations, local_records))
+        records.extend(local_records)
 
     records = _sort_records(
         records=records,
