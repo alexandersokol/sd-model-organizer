@@ -3,18 +3,18 @@ const script = document.createElement('script');
 script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
 document.head.appendChild(script);
 
+let isHomeInitialStateInvoked = false
+
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
 }
 
 function log(text) {
-     console.log(text)
+    console.log(text)
 }
 
-function handleDescriptionPreviewContentChange(content, theme) {
-    log('handleDescriptionPreviewContentChange')
-
+function setupDescriptionPreview(content, theme) {
     if (tinymce.get('mo-description-preview') == null) {
         tinymce.init({
             selector: '#mo-description-preview',
@@ -36,14 +36,21 @@ function handleDescriptionPreviewContentChange(content, theme) {
     if (inst.initialized) {
         inst.setContent(content)
     }
+}
+
+function handleDescriptionPreviewContentChange(content) {
+    log('handleDescriptionPreviewContentChange')
+
+    getTheme()
+        .then(theme => {
+            setupDescriptionPreview(content, theme)
+        })
 
     return []
 }
 
 
-function handleDescriptionEditorContentChange(content, theme) {
-    log('handleDescriptionEditorContentChange')
-
+function setupDescriptionEdit(content, theme) {
     let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
 
     if (tinymce.get('mo-description-editor') == null) {
@@ -64,6 +71,15 @@ function handleDescriptionEditorContentChange(content, theme) {
     if (inst.initialized) {
         inst.setContent(contentData)
     }
+}
+
+function handleDescriptionEditorContentChange(content) {
+    log('handleDescriptionEditorContentChange')
+
+    getTheme()
+        .then(theme => {
+            setupDescriptionEdit(content, theme)
+        })
 
     return []
 }
@@ -142,7 +158,6 @@ function updateDownloadCardState(id, state) {
     updateDownloadBlockVisibility(id, 'info-bar', isDownloadProgressVisible, 'flex')
     updateDownloadBlockVisibility(id, 'progress', isDownloadProgressVisible, 'flex')
     updateDownloadBlockVisibility(id, 'result-box', isResultBoxVisible, 'block')
-
 }
 
 function updateResultText(id, title, text) {
@@ -325,26 +340,26 @@ function navigateAdd() {
     return []
 }
 
-function navigateImportExport(){
-     log('Navigate import_export screen')
-        const navObj = {
-            screen: "import_export",
-            token: generateUUID(),
-            backstack: populateBackstack()
-        };
-        deliverNavObject(navObj)
-        return []
+function navigateImportExport() {
+    log('Navigate import_export screen')
+    const navObj = {
+        screen: "import_export",
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
 }
 
-function navigateDebug(){
-     log('Navigate debug screen')
-        const navObj = {
-            screen: "debug",
-            token: generateUUID(),
-            backstack: populateBackstack()
-        };
-        deliverNavObject(navObj)
-        return []
+function navigateDebug() {
+    log('Navigate debug screen')
+    const navObj = {
+        screen: "debug",
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
 }
 
 function navigateEdit(id) {
@@ -429,11 +444,9 @@ function deliverNavObject(navObj) {
     console.log('JSON Nav dispatched: ' + navJson)
 }
 
-isHomeInitialStateInvoked = false
-
-function invokeHomeInitialStateLoad(){
+function invokeHomeInitialStateLoad() {
     log('invokeHomeInitialStateLoad')
-    if(!isHomeInitialStateInvoked){
+    if (!isHomeInitialStateInvoked) {
         const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
         const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
         stateTextArea.value = initialStateTextArea.value
@@ -445,92 +458,61 @@ function invokeHomeInitialStateLoad(){
     return []
 }
 
-function testGET(){
-    log('testGET')
-    const origin = window.location.origin;
-    fetch(origin + '/gg/model?id_=6')
-        .then(response => response.json())
-        .then(data => {
-        // Handle the parsed JSON data here
-        log(data);
-     })
-    .catch(error => {
-        // Handle any errors that occurred during the request
-        log(error);
-    });
-}
-
-function handleDarkMode(){
-    log('handleDarkMode')
-    var parsedUrl = new URL(window.location.href);
-    var theme = parsedUrl.searchParams.get('__theme');
-    log('theme=' + theme)
-
-
-}
-
-function handleLightMode(){
-    log('handleDarkMode')
-    var parsedUrl = new URL(window.location.href);
-    var theme = parsedUrl.searchParams.get('__theme');
-    log('theme=' + theme)
-
-
-}
-
-function getTheme(){
-    return new Promise((resolve, reject) => {
-        var parsedUrl = new URL(window.location.href)
-        var theme = parsedUrl.searchParams.get('__theme')
-        if (theme != null){
+function getTheme() {
+    return new Promise((resolve, _) => {
+        const parsedUrl = new URL(window.location.href)
+        const theme = parsedUrl.searchParams.get('__theme')
+        if (theme != null) {
+            log('theme resolved: ' + theme)
             resolve(theme)
-        } else{
-             fetch(origin + '/mo/display-options')
-            .then(response => response.json())
-            .then(data => {
-                log('card width: ' + data.card_width)
-                log('card height: ' + data.card_height)
-                log('theme: ' + data.theme)
-                resolve(data.theme)
-            })
-            .catch(error => {
-                reject(error)
-            });
+        } else {
+            fetch(origin + '/mo/display-options')
+                .then(response => response.json())
+                .then(data => {
+                    log('display options received:')
+                    log(data)
+                    resolve(data.theme)
+                })
+                .catch(_ => {
+                    resolve('light')
+                });
         }
     });
 }
 
-function installStyles(theme){
-    var linkElementColors = document.createElement('link');
+function installStyles(theme) {
+    const linkElementColors = document.createElement('link');
     linkElementColors.rel = 'stylesheet';
 
-    if (theme === 'dark'){
-        linkElementColors.href = 'file=extensions/sd-model-organizer/colors-dark.css';
+    log("theme:" + theme)
+    const timestamp = '?v=' + new Date().getTime();
+
+    if (theme === 'dark') {
+        log('installing dark theme')
+        linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-dark.css' + timestamp;
     } else {
-        linkElementColors.href = 'file=extensions/sd-model-organizer/colors-light.css';
+        log('installing light theme')
+        linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-light.css' + timestamp;
     }
 
     document.head.appendChild(linkElementColors);
 
-    var linkElementStyles = document.createElement('link');
+    const linkElementStyles = document.createElement('link');
     linkElementStyles.rel = 'stylesheet';
-    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles.css';
+    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles/styles.css';
     document.head.appendChild(linkElementStyles);
 }
 
 onUiLoaded(function () {
     log("UI loaded")
-    homeTab = findElem('mo_home_tab')
-    intersectionObserver = new IntersectionObserver((entries) => {
+    const homeTab = findElem('mo_home_tab')
+    const intersectionObserver = new IntersectionObserver((entries) => {
         if (entries[0].intersectionRatio > 0) invokeHomeInitialStateLoad();
     });
     intersectionObserver.observe(homeTab);
 
     getTheme()
-    .then(data => {
-        resolve(data.theme)
-    })
-    .catch(error => {
-        print(error)
-    });
+        .then(data => {
+            installStyles(data)
+        })
 })

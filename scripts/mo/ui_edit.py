@@ -301,10 +301,6 @@ def edit_ui_block():
                                elem_classes='mo-alert-warning',
                                interactive=False,
                                visible=False)
-    theme_box = gr.Textbox(label='theme_box',
-                           elem_classes='mo-alert-warning',
-                           visible=False,
-                           value=env.theme())
 
     sha256_preload_state = gr.State()
 
@@ -402,7 +398,7 @@ def edit_ui_block():
                                            interactive=False,
                                            visible=False)
 
-    description_input_widget.change(fn=None, inputs=[description_input_widget, theme_box],
+    description_input_widget.change(fn=None, inputs=description_input_widget,
                                     _js='handleDescriptionEditorContentChange')
 
     description_output_widget.change(_on_description_output_changed,

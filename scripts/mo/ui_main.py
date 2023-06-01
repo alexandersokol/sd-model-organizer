@@ -68,8 +68,7 @@ def on_json_box_change(json_state, home_refresh_token):
 
 def main_ui_block():
     css_styles = _load_mo_css()
-    with gr.Blocks(css=css_styles, elem_id='model_organizer_tab') as main_block:
-        gr.HTML(f'<style>{css_styles}</style>')
+    with gr.Blocks(elem_id='model_organizer_tab') as main_block:
         if env.is_storage_has_errors():
             gr.HTML(styled.alert_danger(env.storage_error))
             return main_block

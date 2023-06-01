@@ -296,10 +296,6 @@ def _details_top(record: Record) -> str:
 def record_details(record: Record) -> str:
     content = '<div class="mo-details-container">'
     content += _details_top(record)
-    content += '<button type="button" class="mo-btn mo-btn-success" ' \
-               f'onclick="handleDarkMode()">Dark</button><br>'
-    content += '<button type="button" class="mo-btn mo-btn-success" ' \
-               f'onclick="handleLightMode()">Light</button><br>'
     content += '</div>'
     return content
 
@@ -353,9 +349,6 @@ def records_cards(records: List[Record]) -> str:
 
             content += '<button type="button" class="mo-btn mo-btn-danger" ' \
                        f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
-
-            content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                       f'onclick="testGET()">TEST</button><br>'
 
         content += '</div>'
         content += '</div>'
