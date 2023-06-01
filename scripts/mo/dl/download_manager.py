@@ -2,6 +2,7 @@ import os
 import tempfile
 import threading
 from copy import deepcopy
+from typing import List
 from urllib.parse import urlparse
 
 from scripts.mo.dl.downloader import Downloader
@@ -90,7 +91,7 @@ class DownloadManager:
         self._thread = None
         self._temp_files = set()
 
-        self._downloaders: list[Downloader] = [
+        self._downloaders: List = [
             GDriveDownloader(),
             HttpDownloader()  # Should always be the last one to give a chance for other http schemas
         ]
@@ -112,7 +113,7 @@ class DownloadManager:
     def get_latest_state(self) -> dict:
         return self._latest_state
 
-    def start_download(self, records: list[Record]):
+    def start_download(self, records: List):
         if not self._stop_event.is_set():
             logger.warning('Download already running')
             return
@@ -165,7 +166,7 @@ class DownloadManager:
         self._state = new_general_state
         self._latest_state = latest_state
 
-    def _download_loop(self, records: list[Record]):
+    def _download_loop(self, records: List):
         try:
             self._clear_temp_files()
             for record in records:

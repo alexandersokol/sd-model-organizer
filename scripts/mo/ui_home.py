@@ -1,6 +1,7 @@
 import json
 import os.path
 import time
+from typing import List
 
 import gradio as gr
 
@@ -10,7 +11,7 @@ from scripts.mo.models import Record, ModelType, ModelSort
 from scripts.mo.utils import get_model_files_in_dir, find_preview_file, link_preview
 
 
-def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_first: bool) -> list[Record]:
+def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: bool) -> List:
     if sort_downloaded_first:
         if sort_order == ModelSort.TIME_ADDED_ASC:
             sorted_records = sorted(records,
@@ -41,10 +42,10 @@ def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_
     return sorted_records
 
 
-def _get_local_model_files() -> list[Record]:
+def _get_local_model_files() -> List:
     result = []
 
-    def search_in_dir(model_type) -> list[Record]:
+    def search_in_dir(model_type) -> List:
         dir_path = env.get_model_path(model_type)
         local = []
         files = get_model_files_in_dir(dir_path)

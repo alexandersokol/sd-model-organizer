@@ -28,7 +28,7 @@ def is_directory_path_valid(path):
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
                                    download_path: str, download_filename: str, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
-                                   groups: list[str], back_token: str, bind_existing: str, sha256_state):
+                                   groups, back_token: str, bind_existing: str, sha256_state):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')

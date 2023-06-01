@@ -1,4 +1,5 @@
 import os.path
+from typing import List
 
 import firebase_admin
 from firebase_admin import credentials
@@ -25,7 +26,7 @@ class FirebaseStorage(Storage):
     def _records(self) -> CollectionReference:
         return self.firestore_client.collection('records')
 
-    def get_all_records(self) -> list[Record]:
+    def get_all_records(self) -> List:
         record_refs = self._records().stream()
         records = []
         for ref in record_refs:
@@ -33,7 +34,7 @@ class FirebaseStorage(Storage):
         return records
 
     def query_records(self, name_query=None, groups=None, model_types=None, show_downloaded=None,
-                      show_not_downloaded=None) -> list[Record]:
+                      show_not_downloaded=None) -> List:
 
         query_ref = self._records()
         if model_types is not None and model_types:
@@ -67,7 +68,7 @@ class FirebaseStorage(Storage):
     def remove_record(self, _id):
         self._records().document(_id).delete()
 
-    def get_available_groups(self) -> list[str]:
+    def get_available_groups(self) -> List:
         records = self.get_all_records()
         groups = []
         for record in records:
@@ -75,7 +76,7 @@ class FirebaseStorage(Storage):
                 groups.extend(record.groups)
         return list(set(groups))
 
-    def get_records_by_group(self, group: str) -> list[Record]:
+    def get_records_by_group(self, group: str) -> List:
         col_ref = self._records()
 
         query_ref = col_ref.where('group', 'array_contains', f'%{group}%')
@@ -85,7 +86,7 @@ class FirebaseStorage(Storage):
             records.append(map_dict_to_record(ref.id, ref.to_dict()))
         return records
 
-    def get_all_records_locations(self) -> list[str]:
+    def get_all_records_locations(self) -> List:
         records = self.get_all_records()
         locations = []
         for record in records:

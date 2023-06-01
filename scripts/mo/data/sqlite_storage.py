@@ -2,6 +2,7 @@ import os
 import sqlite3
 import threading
 import time
+from typing import List
 
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
@@ -129,7 +130,7 @@ class SQLiteStorage(Storage):
         cursor.execute('INSERT INTO Version VALUES (5)')
         self._connection().commit()
 
-    def get_all_records(self) -> list[Record]:
+    def get_all_records(self) -> List:
         cursor = self._connection().cursor()
         cursor.execute('SELECT * FROM Record')
         rows = cursor.fetchall()
@@ -139,7 +140,7 @@ class SQLiteStorage(Storage):
         return result
 
     def query_records(self, name_query: str = None, groups=None, model_types=None, show_downloaded=True,
-                      show_not_downloaded=True) -> list[Record]:
+                      show_not_downloaded=True) -> List:
 
         query = 'SELECT * FROM Record'
 
@@ -207,7 +208,7 @@ class SQLiteStorage(Storage):
         row = cursor.fetchone()
         return None if row is None else map_row_to_record(row)
 
-    def get_records_by_group(self, group: str) -> list[Record]:
+    def get_records_by_group(self, group: str) -> List:
         cursor = self._connection().cursor()
         cursor.execute(f"SELECT * FROM Record WHERE LOWER(groups) LIKE '%{group}%'")
         rows = cursor.fetchall()
@@ -305,7 +306,7 @@ class SQLiteStorage(Storage):
         cursor.execute("DELETE FROM Record WHERE id=?", (_id,))
         self._connection().commit()
 
-    def get_available_groups(self) -> list[str]:
+    def get_available_groups(self) -> List:
         cursor = self._connection().cursor()
         cursor.execute('SELECT groups FROM Record')
         rows = cursor.fetchall()
@@ -317,7 +318,7 @@ class SQLiteStorage(Storage):
         result = list(set(result))
         return list(filter(None, result))
 
-    def get_all_records_locations(self) -> list[str]:
+    def get_all_records_locations(self) -> List:
         cursor = self._connection().cursor()
         cursor.execute('SELECT location FROM Record')
         rows = cursor.fetchall()

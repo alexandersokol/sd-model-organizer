@@ -4,6 +4,7 @@ import json
 import os
 import re
 import urllib.parse
+from typing import List
 
 from PIL import Image
 
@@ -34,7 +35,7 @@ def is_valid_filename(filename: str) -> bool:
     return bool(pattern.match(filename))
 
 
-def get_model_files_in_dir(lookup_dir: str) -> list[str]:
+def get_model_files_in_dir(lookup_dir: str) -> List:
     root_dir = os.path.join(lookup_dir, '')
     extensions = ('.bin', '.ckpt', '.safetensors', '.pt')
     result = []

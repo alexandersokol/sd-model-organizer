@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Dict, List
 
 from scripts.mo.models import Record, ModelType
 
 
-def map_dict_to_record(id_, raw: dict) -> Record:
+def map_dict_to_record(id_, raw: Dict) -> Record:
     return Record(
         id_=id_,
         name=raw['name'],
@@ -50,12 +51,12 @@ def map_record_to_dict(record: Record) -> dict:
 class Storage(ABC):
 
     @abstractmethod
-    def get_all_records(self) -> list[Record]:
+    def get_all_records(self) -> List:
         pass
 
     @abstractmethod
     def query_records(self, name_query=None, groups=None, model_types=None, show_downloaded=None,
-                      show_not_downloaded=None) -> list[Record]:
+                      show_not_downloaded=None) -> List:
         pass
 
     @abstractmethod
@@ -75,13 +76,13 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    def get_available_groups(self) -> list[str]:
+    def get_available_groups(self) -> List:
         pass
 
     @abstractmethod
-    def get_records_by_group(self, group: str) -> list[Record]:
+    def get_records_by_group(self, group: str) -> List:
         pass
 
     @abstractmethod
-    def get_all_records_locations(self) -> list[str]:
+    def get_all_records_locations(self) -> List:
         pass

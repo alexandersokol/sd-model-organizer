@@ -85,7 +85,7 @@ def _no_preview_image_url() -> str:
         return _NO_PREVIEW_LIGHT
 
 
-def records_table(records: List[Record]) -> str:
+def records_table(records: List) -> str:
     table_html = '<div class="mo-container">'
     table_html += '<div class="mo-row mo-row-header">'
     table_html += '<div class="mo-col mo-col-preview"><span class="mo-text-header">Preview</span></div>'
@@ -161,7 +161,7 @@ def _create_content_link(link: str) -> str:
     return f'<a class="mo-nav-link" target="_blank" href="{link}">{link}</a>'
 
 
-def _create_groups(groups: list[str]) -> str:
+def _create_groups(groups: List) -> str:
     groups_html = ''
     for group in groups:
         groups_html += f'<span class="mo-badge mo-badge-group" onclick="">{group}</span>'
@@ -300,7 +300,7 @@ def record_details(record: Record) -> str:
     return content
 
 
-def records_cards(records: List[Record]) -> str:
+def records_cards(records: List) -> str:
     content = '<div class="mo-card-grid">'
 
     for record in records:
@@ -396,7 +396,7 @@ def _download_progress_bar(record_id, is_preview: bool) -> str:
     return content
 
 
-def download_cards(records: list[Record], token) -> str:
+def download_cards(records: List, token) -> str:
     content = f'<div class="mo-downloads-container" token="{token}">'
     counter = 0
     for record in records:

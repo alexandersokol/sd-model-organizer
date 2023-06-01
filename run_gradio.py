@@ -2,6 +2,7 @@ import ast
 import mimetypes
 import os
 import time
+from typing import List
 
 import gradio as gr
 import gradio.routes
@@ -27,7 +28,7 @@ class ScriptLoader:
         self.loaded_scripts = []
 
     @staticmethod
-    def get_scripts(path: str, file_type: str) -> list[tuple[str, str]]:
+    def get_scripts(path: str, file_type: str) -> List:
         """Returns list of tuples
         Each tuple contains the full filepath and filename as strings
         """
