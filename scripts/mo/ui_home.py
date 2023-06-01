@@ -50,13 +50,16 @@ def _get_local_model_files() -> list[Record]:
         files = get_model_files_in_dir(dir_path)
         for file in files:
             preview_file = find_preview_file(file)
+            filename = os.path.basename(file)
             rec = Record(
                 id_=None,
-                name=os.path.basename(file),
+                name=filename,
                 model_type=model_type,
                 location=file,
                 created_at=time.time(),
-                preview_url=link_preview(preview_file) if preview_file is not None and preview_file else ''
+                preview_url=link_preview(preview_file) if preview_file is not None and preview_file else '',
+                download_filename=filename,
+                download_path=os.path.dirname(file)
             )
             local.append(rec)
         return local

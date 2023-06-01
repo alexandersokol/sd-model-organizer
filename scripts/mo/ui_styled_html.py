@@ -1,7 +1,10 @@
+import html
+import json
 import os
 from typing import List
 
 import scripts.mo.ui_format as ui_format
+from scripts.mo.data.storage import map_record_to_dict
 from scripts.mo.environment import env
 from scripts.mo.models import Record, ModelType
 
@@ -317,8 +320,20 @@ def records_cards(records: List[Record]) -> str:
         content += '<div class="mo-card-hover-buttons">'
 
         if record.is_local_file_record():
+
+            temp_record = Record(
+                id_=record.id_,
+                location=record.location,
+                model_type=record.model_type,
+                name=record.name,
+                download_path=record.download_path,
+                download_filename=record.download_filename
+            )
+            json_record = html.escape(json.dumps(map_record_to_dict(temp_record)))
+
             content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                       f'onclick="navigateDetails(\'{record.id_}\')">Add</button><br>'
+                       f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
+
             content += '<button type="button" class="mo-btn mo-btn-danger" ' \
                        f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
         else:

@@ -143,6 +143,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
 
 def _on_id_changed(record_data):
     record_data = json.loads(record_data)
+    prefilled = None
     if record_data.get('record_id') is not None and record_data['record_id']:
         record = env.storage.get_record_by_id(record_data['record_id'])
     elif record_data.get('prefilled_json') is not None and record_data['prefilled_json']:
@@ -151,7 +152,7 @@ def _on_id_changed(record_data):
     else:
         record = None
 
-    title = '## Add model' if record is None else '## Edit model'
+    title = '## Add model' if record is None or prefilled is not None else '## Edit model'
     name = '' if record is None else record.name
     model_type = '' if record is None else record.model_type.value
 
