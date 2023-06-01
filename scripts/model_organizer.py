@@ -108,8 +108,8 @@ def on_ui_settings():
     opts = {
         'mo_layout': OptionInfo(LAYOUT_CARDS, "Layout Type:", gr.Radio,
                                 {"choices": [LAYOUT_CARDS, LAYOUT_TABLE]}),
-        'mo_card_width': OptionInfo(0, 'Card width (default if 0):'),
-        'mo_card_height': OptionInfo(0, 'Card height (default if 0):'),
+        'mo_card_width': OptionInfo(250, 'Card width (250 default value):'),
+        'mo_card_height': OptionInfo(350, 'Card height (350 default value):'),
         'mo_storage_type': OptionInfo(STORAGE_SQLITE, "Storage Type:", gr.Radio,
                                       {"choices": [STORAGE_SQLITE, STORAGE_FIREBASE]}),
         'mo_download_preview': OptionInfo(True, 'Download Preview'),

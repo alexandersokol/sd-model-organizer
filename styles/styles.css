@@ -1,9 +1,3 @@
-/* needed only for IDE. Gradio ignores it*/
-:root {
-    --mo-card-width: 250px;
-    --mo-card-height: 350px;
-}
-
 /* Alerts */
 .mo-alert {
     position: relative;

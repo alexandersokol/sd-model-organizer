@@ -15,7 +15,12 @@ model_extensions = ['.bin', '.ckpt', '.safetensors', '.pt']
 preview_extensions = [".png", ".jpg", ".webp"]
 
 
-def is_blank(s):
+def is_blank(s: str) -> bool:
+    """
+    Checks string is empty or contains only whitespaces.
+    :param s: String to check.
+    :return: True if string is empty or contains only whitespaces.
+    """
     return len(s.strip()) == 0
 
 

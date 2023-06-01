@@ -5,15 +5,29 @@ document.head.appendChild(script);
 
 let isHomeInitialStateInvoked = false
 
+/**
+ * Finds an element in document.
+ * @param elementId - element id.
+ * @returns {*}
+ */
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
 }
 
+/**
+ * Prints log into console. Must be disabled before merging into main branch.
+ * @param text
+ */
 function log(text) {
     console.log(text)
 }
 
+/**
+ * Creates tinymce instance if it doesn't exist, setups theme and NOT editable content.
+ * @param content - html content to display.
+ * @param theme - theme to setup, 'dark' for dark theme and others for light one.
+ */
 function setupDescriptionPreview(content, theme) {
     if (tinymce.get('mo-description-preview') == null) {
         tinymce.init({
@@ -38,6 +52,11 @@ function setupDescriptionPreview(content, theme) {
     }
 }
 
+/**
+ * Function called from gradio to set description preview NOT editable content.
+ * @param content - content to display.
+ * @returns {*[]} Gradio wants an array returned.
+ */
 function handleDescriptionPreviewContentChange(content) {
     log('handleDescriptionPreviewContentChange')
 
@@ -49,7 +68,11 @@ function handleDescriptionPreviewContentChange(content) {
     return []
 }
 
-
+/**
+ * Creates tinymce instance if it doesn't exist, setups theme and editable content.
+ * @param content - html content to display and edit.
+ * @param theme - theme to setup, 'dark' for dark theme and others for light one.
+ */
 function setupDescriptionEdit(content, theme) {
     let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
 
@@ -73,6 +96,11 @@ function setupDescriptionEdit(content, theme) {
     }
 }
 
+/**
+ * Function called from gradio to set description editable content.
+ * @param content - content to edit.
+ * @returns {*[]} Gradio wants an array returned.
+ */
 function handleDescriptionEditorContentChange(content) {
     log('handleDescriptionEditorContentChange')
 
@@ -480,6 +508,30 @@ function getTheme() {
     });
 }
 
+function getCardsSize() {
+    return new Promise((resolve) => {
+            fetch(origin + '/mo/display-options')
+                .then(response => response.json())
+                .then(data => {
+                    resolve([data.card_width, data.card_height])
+                })
+                .catch(_ => {
+                    resolve([250, 350])
+                });
+        }
+    )
+}
+
+function installCardsSize(width, height) {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = ':root {\n' +
+        '    --mo-card-width: ' + width + 'px;\n' +
+        '    --mo-card-height: ' + height + 'px;\n' +
+        '}';
+
+    document.documentElement.appendChild(styleElement);
+}
+
 function installStyles(theme) {
     const linkElementColors = document.createElement('link');
     linkElementColors.rel = 'stylesheet';
@@ -514,5 +566,10 @@ onUiLoaded(function () {
     getTheme()
         .then(data => {
             installStyles(data)
+        })
+
+    getCardsSize()
+        .then(size => {
+            installCardsSize(size[0], size[1])
         })
 })
