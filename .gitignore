@@ -8,3 +8,4 @@ dev/
 tmp/
 service-account-file.json
 export/
+hash_cache.json

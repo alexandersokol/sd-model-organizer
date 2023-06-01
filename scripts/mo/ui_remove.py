@@ -5,6 +5,7 @@ import gradio as gr
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, logger, find_preview_file
 from scripts.mo.ui_navigation import generate_ui_token
+from scripts.mo.utils import find_preview_file
 
 
 def _on_id_change(record_id):
@@ -19,39 +20,55 @@ def _on_id_change(record_id):
             gr.Checkbox.update(visible=False)
         ]
 
-    record = env.storage.get_record_by_id(record_id)
-    if record is None:
+    if os.path.isfile(record_id):
         return [
-            gr.HTML.update(value='Record was not found in database.'),
+            gr.HTML.update(
+                value=styled.alert_danger(f'Are you sure you what to remove "{os.path.basename(record_id)}"?')),
             gr.Button.update(visible=True),
-            gr.Button.update(visible=False),
-            gr.Checkbox.update(visible=False),
-            gr.Checkbox.update(visible=False)
+            gr.Button.update(visible=True),
+            gr.Checkbox.update(visible=False, value=True),
+            gr.Checkbox.update(visible=False, value=True)
         ]
+    else:
+        record = env.storage.get_record_by_id(record_id)
+        if record is None:
+            return [
+                gr.HTML.update(value='Record was not found in database.'),
+                gr.Button.update(visible=True),
+                gr.Button.update(visible=False),
+                gr.Checkbox.update(visible=False),
+                gr.Checkbox.update(visible=False)
+            ]
 
-    return [
-        gr.HTML.update(value=styled.alert_danger(f'Are you sure you what to remove "{record.name}"?')),
-        gr.Button.update(visible=True),
-        gr.Button.update(visible=True),
-        gr.Checkbox.update(visible=bool(record.location), value=True),
-        gr.Checkbox.update(visible=bool(record.location), value=True)
-    ]
+        return [
+            gr.HTML.update(value=styled.alert_danger(f'Are you sure you what to remove "{record.name}"?')),
+            gr.Button.update(visible=True),
+            gr.Button.update(visible=True),
+            gr.Checkbox.update(visible=bool(record.location), value=True),
+            gr.Checkbox.update(visible=bool(record.location), value=True)
+        ]
 
 
 def _on_remove_click(record_id, remove_record, remove_files):
     logger.info(f'_on_remove_click record_id: {record_id} remove_record: {remove_record} remove_files: {remove_files}')
-    record = env.storage.get_record_by_id(record_id)
+    if os.path.isfile(record_id):
+        preview_file = find_preview_file(record_id)
+        if os.path.isfile(preview_file):
+            os.remove(preview_file)
+        os.remove(record_id)
+    else:
+        record = env.storage.get_record_by_id(record_id)
 
-    if remove_record:
-        env.storage.remove_record(record_id)
+        if remove_record:
+            env.storage.remove_record(record_id)
 
-    if record.location and remove_files:
-        if record.location and os.path.exists(record.location):
-            os.remove(record.location)
+        if record.location and remove_files:
+            if record.location and os.path.exists(record.location):
+                os.remove(record.location)
 
-        preview_path = find_preview_file(record)
-        if preview_path and os.path.exists(preview_path):
-            os.remove(preview_path)
+            preview_path = find_preview_file(record)
+            if preview_path and os.path.exists(preview_path):
+                os.remove(preview_path)
 
     return generate_ui_token()
 

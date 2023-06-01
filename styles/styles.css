@@ -1,11 +1,3 @@
-/* needed only for IDE. Gradio ignores it*/
-@import "colors-dark.css";
-
-:root {
-    --mo-card-width: 250px;
-    --mo-card-height: 350px;
-}
-
 /* Alerts */
 .mo-alert {
     position: relative;

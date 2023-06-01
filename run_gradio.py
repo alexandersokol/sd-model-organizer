@@ -6,8 +6,8 @@ import time
 import gradio as gr
 import gradio.routes
 
-from scripts.mo.environment import *
 from scripts.mo.data.init_storage import initialize_storage
+from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
 
 SETTINGS_FILE = 'settings_dev.txt'
@@ -95,8 +95,8 @@ env.lycoris_path = lambda: settings['lycoris_path']
 env.embeddings_path = lambda: settings['embeddings_path']
 env.script_dir = ''
 env.layout = lambda: settings['layout']
-env.card_width = lambda: settings['card_width']
-env.card_height = lambda: settings['card_height']
+env.card_width = lambda: settings['card_width'] if settings['card_width'] else DEFAULT_CARD_WIDTH
+env.card_height = lambda: settings['card_height'] if settings['card_height'] else DEFAULT_CARD_HEIGHT
 env.theme = lambda: settings['theme']
 initialize_storage()
 
@@ -167,8 +167,8 @@ def settings_block():
     with gr.Column():
         layout_type = gr.Dropdown([LAYOUT_CARDS, LAYOUT_TABLE], value=[env.layout()],
                                   label="Layout type:", info='Select records layout type.')
-        card_width = gr.Textbox(env.card_width, label='Cards width:')
-        card_height = gr.Textbox(env.card_height, label='Cards height:')
+        card_width = gr.Textbox(env.card_width(), label='Cards width:')
+        card_height = gr.Textbox(env.card_height(), label='Cards height:')
 
         storage_type = gr.Dropdown([STORAGE_SQLITE, STORAGE_FIREBASE], value=[env.storage_type()],
                                    label="Storage type:", info='Select storage type to save data.')
@@ -219,12 +219,15 @@ def testing_block():
 
 
 with gr.Blocks() as demo:
+    init_home_button = gr.Button('Init home state')
     with gr.Tab("Model Organizer"):
         main_ui_block()
     with gr.Tab("Settings"):
         settings_block()
     with gr.Tab("Testing"):
         testing_block()
+
+    init_home_button.click(fn=None, _js='invokeHomeInitialStateLoad')
 
 js_loader = JavaScriptLoader()
 demo.queue()

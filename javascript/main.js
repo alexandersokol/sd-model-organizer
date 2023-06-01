@@ -1,21 +1,34 @@
 // add tinymce
 const script = document.createElement('script');
-//script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
- script.src = 'https://cdn.tiny.cloud/1/x4uky7gf82jcmseg81ymjdn05edp1yjtulefc66biwztkikf/tinymce/6/tinymce.min.js';
+script.src = 'file=extensions/sd-model-organizer/javascript/tinymce/tinymce.min.js';
 document.head.appendChild(script);
 
+let isHomeInitialStateInvoked = false
+
+/**
+ * Finds an element in document.
+ * @param elementId - element id.
+ * @returns {*}
+ */
 function findElem(elementId) {
     return document.getElementById(elementId)
     // return gradioApp().getElementById(elementId)
 }
 
+/**
+ * Prints log into console. Must be disabled before merging into main branch.
+ * @param text
+ */
 function log(text) {
-     console.log(text)
+    console.log(text)
 }
 
-function handleDescriptionPreviewContentChange(content, theme) {
-    log('handleDescriptionPreviewContentChange')
-
+/**
+ * Creates tinymce instance if it doesn't exist, setups theme and NOT editable content.
+ * @param content - html content to display.
+ * @param theme - theme to setup, 'dark' for dark theme and others for light one.
+ */
+function setupDescriptionPreview(content, theme) {
     if (tinymce.get('mo-description-preview') == null) {
         tinymce.init({
             selector: '#mo-description-preview',
@@ -37,14 +50,30 @@ function handleDescriptionPreviewContentChange(content, theme) {
     if (inst.initialized) {
         inst.setContent(content)
     }
+}
+
+/**
+ * Function called from gradio to set description preview NOT editable content.
+ * @param content - content to display.
+ * @returns {*[]} Gradio wants an array returned.
+ */
+function handleDescriptionPreviewContentChange(content) {
+    log('handleDescriptionPreviewContentChange')
+
+    getTheme()
+        .then(theme => {
+            setupDescriptionPreview(content, theme)
+        })
 
     return []
 }
 
-
-function handleDescriptionEditorContentChange(content, theme) {
-    log('handleDescriptionEditorContentChange')
-
+/**
+ * Creates tinymce instance if it doesn't exist, setups theme and editable content.
+ * @param content - html content to display and edit.
+ * @param theme - theme to setup, 'dark' for dark theme and others for light one.
+ */
+function setupDescriptionEdit(content, theme) {
     let contentData = content.replace(/<\[\[token=".*?"]]>/, '');
 
     if (tinymce.get('mo-description-editor') == null) {
@@ -65,6 +94,20 @@ function handleDescriptionEditorContentChange(content, theme) {
     if (inst.initialized) {
         inst.setContent(contentData)
     }
+}
+
+/**
+ * Function called from gradio to set description editable content.
+ * @param content - content to edit.
+ * @returns {*[]} Gradio wants an array returned.
+ */
+function handleDescriptionEditorContentChange(content) {
+    log('handleDescriptionEditorContentChange')
+
+    getTheme()
+        .then(theme => {
+            setupDescriptionEdit(content, theme)
+        })
 
     return []
 }
@@ -143,7 +186,6 @@ function updateDownloadCardState(id, state) {
     updateDownloadBlockVisibility(id, 'info-bar', isDownloadProgressVisible, 'flex')
     updateDownloadBlockVisibility(id, 'progress', isDownloadProgressVisible, 'flex')
     updateDownloadBlockVisibility(id, 'result-box', isResultBoxVisible, 'block')
-
 }
 
 function updateResultText(id, title, text) {
@@ -326,15 +368,26 @@ function navigateAdd() {
     return []
 }
 
-function navigateImportExport(){
-     log('Navigate import_export screen')
-        const navObj = {
-            screen: "import_export",
-            token: generateUUID(),
-            backstack: populateBackstack()
-        };
-        deliverNavObject(navObj)
-        return []
+function navigateImportExport() {
+    log('Navigate import_export screen')
+    const navObj = {
+        screen: "import_export",
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
+}
+
+function navigateDebug() {
+    log('Navigate debug screen')
+    const navObj = {
+        screen: "debug",
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+    return []
 }
 
 function navigateEdit(id) {
@@ -419,6 +472,104 @@ function deliverNavObject(navObj) {
     console.log('JSON Nav dispatched: ' + navJson)
 }
 
+function invokeHomeInitialStateLoad() {
+    log('invokeHomeInitialStateLoad')
+    if (!isHomeInitialStateInvoked) {
+        const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
+        const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
+        stateTextArea.value = initialStateTextArea.value
+        const event = new Event('input', {'bubbles': true, "composed": true});
+        findElem('mo-home-state-box').querySelector('textarea').dispatchEvent(event);
+        isHomeInitialStateInvoked = true
+        log('initial home state invoked')
+    }
+    return []
+}
+
+function getTheme() {
+    return new Promise((resolve, _) => {
+        const parsedUrl = new URL(window.location.href)
+        const theme = parsedUrl.searchParams.get('__theme')
+        if (theme != null) {
+            log('theme resolved: ' + theme)
+            resolve(theme)
+        } else {
+            fetch(origin + '/mo/display-options')
+                .then(response => response.json())
+                .then(data => {
+                    log('display options received:')
+                    log(data)
+                    resolve(data.theme)
+                })
+                .catch(_ => {
+                    resolve('light')
+                });
+        }
+    });
+}
+
+function getCardsSize() {
+    return new Promise((resolve) => {
+            fetch(origin + '/mo/display-options')
+                .then(response => response.json())
+                .then(data => {
+                    resolve([data.card_width, data.card_height])
+                })
+                .catch(_ => {
+                    resolve([250, 350])
+                });
+        }
+    )
+}
+
+function installCardsSize(width, height) {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = ':root {\n' +
+        '    --mo-card-width: ' + width + 'px;\n' +
+        '    --mo-card-height: ' + height + 'px;\n' +
+        '}';
+
+    document.documentElement.appendChild(styleElement);
+}
+
+function installStyles(theme) {
+    const linkElementColors = document.createElement('link');
+    linkElementColors.rel = 'stylesheet';
+
+    log("theme:" + theme)
+    const timestamp = '?v=' + new Date().getTime();
+
+    if (theme === 'dark') {
+        log('installing dark theme')
+        linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-dark.css' + timestamp;
+    } else {
+        log('installing light theme')
+        linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-light.css' + timestamp;
+    }
+
+    document.head.appendChild(linkElementColors);
+
+    const linkElementStyles = document.createElement('link');
+    linkElementStyles.rel = 'stylesheet';
+    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles/styles.css';
+    document.head.appendChild(linkElementStyles);
+}
+
 onUiLoaded(function () {
     log("UI loaded")
+    const homeTab = findElem('mo_home_tab')
+    const intersectionObserver = new IntersectionObserver((entries) => {
+        if (entries[0].intersectionRatio > 0) invokeHomeInitialStateLoad();
+    });
+    intersectionObserver.observe(homeTab);
+
+    getTheme()
+        .then(data => {
+            installStyles(data)
+        })
+
+    getCardsSize()
+        .then(size => {
+            installCardsSize(size[0], size[1])
+        })
 })

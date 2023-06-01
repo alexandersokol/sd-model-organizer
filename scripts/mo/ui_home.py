@@ -1,11 +1,13 @@
 import json
 import os.path
+import time
 
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, LAYOUT_CARDS
 from scripts.mo.models import Record, ModelType, ModelSort
+from scripts.mo.utils import get_model_files_in_dir, find_preview_file, link_preview
 
 
 def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_first: bool) -> list[Record]:
@@ -39,6 +41,39 @@ def _sort_records(records: list[Record], sort_order: ModelSort, sort_downloaded_
     return sorted_records
 
 
+def _get_local_model_files() -> list[Record]:
+    result = []
+
+    def search_in_dir(model_type) -> list[Record]:
+        dir_path = env.get_model_path(model_type)
+        local = []
+        files = get_model_files_in_dir(dir_path)
+        for file in files:
+            preview_file = find_preview_file(file)
+            filename = os.path.basename(file)
+            rec = Record(
+                id_=None,
+                name=filename,
+                model_type=model_type,
+                location=file,
+                created_at=time.time(),
+                preview_url=link_preview(preview_file) if preview_file is not None and preview_file else '',
+                download_filename=filename,
+                download_path=os.path.dirname(file)
+            )
+            local.append(rec)
+        return local
+
+    result.extend(search_in_dir(ModelType.CHECKPOINT))
+    result.extend(search_in_dir(ModelType.VAE))
+    result.extend(search_in_dir(ModelType.LORA))
+    result.extend(search_in_dir(ModelType.HYPER_NETWORK))
+    result.extend(search_in_dir(ModelType.EMBEDDING))
+    result.extend(search_in_dir(ModelType.LYCORIS))
+
+    return result
+
+
 def _prepare_data(state_json: str):
     state = json.loads(state_json)
 
@@ -49,6 +84,15 @@ def _prepare_data(state_json: str):
         show_downloaded=state['show_downloaded'],
         show_not_downloaded=state['show_not_downloaded']
     )
+
+    local_records = _get_local_model_files()
+
+    if len(local_records) > 0:
+        bound_locations = list(map(lambda r: r.location, records))
+        bound_locations = list(filter(lambda r: bool(r), bound_locations))
+        local_records = list(filter(lambda r: r.location not in bound_locations, local_records))
+        records.extend(local_records)
+
     records = _sort_records(
         records=records,
         sort_order=ModelSort.by_value(state['sort_order']),
@@ -144,7 +188,6 @@ def home_ui_block():
         'sort_downloaded_first': sort_downloaded_first
     }
     initial_state_json = json.dumps(initial_state)
-    initial_html, initial_record_ids, download_all_update, _ = _prepare_data(initial_state_json)
 
     with gr.Blocks():
         refresh_box = gr.Textbox(label='refresh_box',
@@ -152,17 +195,27 @@ def home_ui_block():
                                  visible=False,
                                  interactive=False)
 
-        state_box = gr.Textbox(value=initial_state_json,
+        state_box = gr.Textbox(value='',
                                label='state_box',
                                elem_classes='mo-alert-warning',
+                               elem_id='mo-home-state-box',
                                visible=False,
                                interactive=False)
 
+        gr.Textbox(value=initial_state_json,
+                   label='initial_state_box',
+                   elem_classes='mo-alert-warning',
+                   elem_id='mo-initial-state-box',
+                   visible=False,
+                   interactive=False)
+
         with gr.Row():
             gr.Markdown('## Records list')
-            gr.Markdown('')
+            if not env.is_debug_mode_enabled():
+                gr.Markdown('')
+            debug_button = gr.Button('Debug', visible=env.is_debug_mode_enabled())
             reload_button = gr.Button('Reload')
-            download_all_button = gr.Button('Download All', visible=download_all_update['visible'])
+            download_all_button = gr.Button('Download All', visible=False)
             import_export_button = gr.Button('Import/Export')
             add_button = gr.Button('Add')
 
@@ -192,8 +245,8 @@ def home_ui_block():
                 show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                            value=initial_state['show_not_downloaded'])
 
-        html_content_widget = gr.HTML(initial_html)
-        record_ids_box = gr.Textbox(value=initial_record_ids,
+        html_content_widget = gr.HTML()
+        record_ids_box = gr.Textbox(value='',
                                     label='record_ids_box',
                                     elem_classes='mo-alert-warning',
                                     visible=False,
@@ -206,6 +259,7 @@ def home_ui_block():
         state_box.change(_prepare_data, inputs=state_box,
                          outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
 
+        debug_button.click(fn=None, _js='navigateDebug')
         download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
         import_export_button.click(fn=None, _js='navigateImportExport')
         add_button.click(fn=None, _js='navigateAdd')

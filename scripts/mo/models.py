@@ -1,3 +1,4 @@
+import os.path
 from enum import Enum
 
 
@@ -36,7 +37,7 @@ class Record:
     def __init__(self, id_,
                  name: str,
                  model_type: ModelType,
-                 download_url: str,
+                 download_url: str = '',
                  url: str = '',
                  download_path: str = '',
                  download_filename: str = '',
@@ -70,6 +71,18 @@ class Record:
         self.created_at = created_at
         self.groups = groups
         self.subdir = subdir
+
+    def is_file_exists(self) -> bool:
+        return bool(self.location) and os.path.isfile(self.location)
+
+    def is_downloadable(self) -> bool:
+        return bool(self.download_url)
+
+    def is_download_possible(self) -> bool:
+        return self.is_downloadable() and not self.is_file_exists()
+
+    def is_local_file_record(self):
+        return self.id_ is None and self.is_file_exists() and not self.is_downloadable()
 
     def __str__(self):
         return f'id="{self.id_}", ' \

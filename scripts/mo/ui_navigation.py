@@ -8,6 +8,7 @@ _EDIT = 'edit'
 _REMOVE = 'remove'
 _DOWNLOAD = 'download'
 _IMPORT_EXPORT = 'import_export'
+_DEBUG = 'debug'
 
 _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
@@ -76,6 +77,7 @@ def get_nav_state(json_nav) -> dict:
         'is_remove_visible': False,
         'is_download_visible': False,
         'is_import_export_visible': False,
+        'is_debug_visible': False,
         'details_record_id': '',
         'edit_data': {},
         'remove_record_id': '',
@@ -119,6 +121,8 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _IMPORT_EXPORT:
             state['is_import_export_visible'] = True
+        elif nav_dict[_NODE_SCREEN] == _DEBUG:
+            state['is_debug_visible'] = True
 
     return state
 

@@ -12,6 +12,9 @@ STORAGE_FIREBASE = 'Firebase'
 LAYOUT_CARDS = 'Cards'
 LAYOUT_TABLE = 'Table'
 
+DEFAULT_CARD_WIDTH = 250
+DEFAULT_CARD_HEIGHT = 350
+
 _SETTINGS_FILE = 'settings.txt'
 
 
@@ -67,6 +70,7 @@ class Environment:
     layout: Callable[[], str]
     card_width: Callable[[], str]
     card_height: Callable[[], str]
+    is_debug_mode_enabled: Callable[[], bool]
 
     def is_storage_initialized(self) -> bool:
         return hasattr(self, 'storage')
@@ -128,14 +132,6 @@ def calculate_md5(file_path):
                 break
             md5.update(data)
     return md5.hexdigest()
-
-
-def calculate_sha256(file_path):
-    with open(file_path, 'rb') as file:
-        sha256_hash = hashlib.sha256()
-        while chunk := file.read(4096):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
 
 
 def find_preview_file(record: Record):

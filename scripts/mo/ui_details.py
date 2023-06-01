@@ -21,7 +21,7 @@ def on_id_changed(record_id):
                 gr.HTML.update(visible=bool(record.description)),
                 gr.Textbox.update(value=record.description),
                 gr.Button.update(visible=True),
-                gr.Button.update(visible=not record.location)
+                gr.Button.update(visible=record.is_download_possible())
             ]
 
     return [
@@ -36,8 +36,6 @@ def on_id_changed(record_id):
 def details_ui_block():
     with gr.Blocks():
         details_id_box = gr.Textbox(label='details_id_box', elem_classes='mo-alert-warning', visible=False)
-        theme_box = gr.Textbox(label='theme_box', elem_classes='mo-alert-warning', visible=False, value=env.theme())
-
         with gr.Row():
             back_button = gr.Button("Back")
             remove_button = gr.Button("Remove")
@@ -57,7 +55,7 @@ def details_ui_block():
                               outputs=[content_widget, description_html_widget, description_input_widget, edit_button,
                                        download_button])
 
-        description_input_widget.change(fn=None, inputs=[description_input_widget, theme_box],
+        description_input_widget.change(fn=None, inputs=description_input_widget,
                                         _js='handleDescriptionPreviewContentChange')
 
         back_button.click(fn=None, _js='navigateBack')
