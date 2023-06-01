@@ -16,29 +16,30 @@ from scripts.mo.ui_remove import remove_ui_block
 
 
 def _load_mo_css() -> str:
-    if env.theme() == 'dark':
-        colors_css_path = os.path.join(env.script_dir, 'colors-dark.css')
-    else:
-        colors_css_path = os.path.join(env.script_dir, 'colors-light.css')
-
-    with open(colors_css_path, 'r') as colors_file:
-        colors_css = colors_file.read()
-
-    styles_css_path = os.path.join(env.script_dir, 'styles.css')
-    with open(styles_css_path, 'r') as styles_file:
-        styles_css = styles_file.read()
-
-    card_width = env.card_width()
-    card_height = env.card_height()
-    if card_width:
-        styles_css = re.sub(r'--mo-card-width:\s*\d+px;', f'--mo-card-width: {card_width}px;', styles_css)
-    if card_height:
-        styles_css = re.sub(r'--mo-card-height:\s*\d+px;', f'--mo-card-height: {card_height}px;', styles_css)
-
-    return f"""
-            {colors_css}
-            {styles_css}
-    """
+    # if env.theme() == 'dark':
+    #     colors_css_path = os.path.join(env.script_dir, 'colors-dark.css')
+    # else:
+    #     colors_css_path = os.path.join(env.script_dir, 'colors-light.css')
+    #
+    # with open(colors_css_path, 'r') as colors_file:
+    #     colors_css = colors_file.read()
+    #
+    # styles_css_path = os.path.join(env.script_dir, 'styles.css')
+    # with open(styles_css_path, 'r') as styles_file:
+    #     styles_css = styles_file.read()
+    #
+    # card_width = env.card_width()
+    # card_height = env.card_height()
+    # if card_width:
+    #     styles_css = re.sub(r'--mo-card-width:\s*\d+px;', f'--mo-card-width: {card_width}px;', styles_css)
+    # if card_height:
+    #     styles_css = re.sub(r'--mo-card-height:\s*\d+px;', f'--mo-card-height: {card_height}px;', styles_css)
+    #
+    # return f"""
+    #         {colors_css}
+    #         {styles_css}
+    # """
+    return ''
 
 
 def on_json_box_change(json_state, home_refresh_token):

@@ -445,6 +445,79 @@ function invokeHomeInitialStateLoad(){
     return []
 }
 
+function testGET(){
+    log('testGET')
+    const origin = window.location.origin;
+    fetch(origin + '/gg/model?id_=6')
+        .then(response => response.json())
+        .then(data => {
+        // Handle the parsed JSON data here
+        log(data);
+     })
+    .catch(error => {
+        // Handle any errors that occurred during the request
+        log(error);
+    });
+}
+
+function handleDarkMode(){
+    log('handleDarkMode')
+    var parsedUrl = new URL(window.location.href);
+    var theme = parsedUrl.searchParams.get('__theme');
+    log('theme=' + theme)
+
+
+}
+
+function handleLightMode(){
+    log('handleDarkMode')
+    var parsedUrl = new URL(window.location.href);
+    var theme = parsedUrl.searchParams.get('__theme');
+    log('theme=' + theme)
+
+
+}
+
+function getTheme(){
+    return new Promise((resolve, reject) => {
+        var parsedUrl = new URL(window.location.href)
+        var theme = parsedUrl.searchParams.get('__theme')
+        if (theme != null){
+            resolve(theme)
+        } else{
+             fetch(origin + '/mo/display-options')
+            .then(response => response.json())
+            .then(data => {
+                log('card width: ' + data.card_width)
+                log('card height: ' + data.card_height)
+                log('theme: ' + data.theme)
+                resolve(data.theme)
+            })
+            .catch(error => {
+                reject(error)
+            });
+        }
+    });
+}
+
+function installStyles(theme){
+    var linkElementColors = document.createElement('link');
+    linkElementColors.rel = 'stylesheet';
+
+    if (theme === 'dark'){
+        linkElementColors.href = 'file=extensions/sd-model-organizer/colors-dark.css';
+    } else {
+        linkElementColors.href = 'file=extensions/sd-model-organizer/colors-light.css';
+    }
+
+    document.head.appendChild(linkElementColors);
+
+    var linkElementStyles = document.createElement('link');
+    linkElementStyles.rel = 'stylesheet';
+    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles.css';
+    document.head.appendChild(linkElementStyles);
+}
+
 onUiLoaded(function () {
     log("UI loaded")
     homeTab = findElem('mo_home_tab')
@@ -452,4 +525,12 @@ onUiLoaded(function () {
         if (entries[0].intersectionRatio > 0) invokeHomeInitialStateLoad();
     });
     intersectionObserver.observe(homeTab);
+
+    getTheme()
+    .then(data => {
+        resolve(data.theme)
+    })
+    .catch(error => {
+        print(error)
+    });
 })

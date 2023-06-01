@@ -1,9 +1,14 @@
+from typing import Optional
+
 import gradio as gr
 import modules.scripts as scripts
+from fastapi import FastAPI
+from gradio import Blocks
 from modules import script_callbacks
 from modules import shared, sd_models, sd_vae, paths, ui_extra_networks
 from modules.shared import OptionInfo
 
+from scripts.mo.api import init_extension_api
 from scripts.mo.data.init_storage import initialize_storage
 from scripts.mo.environment import *
 from scripts.mo.ui_main import main_ui_block
@@ -132,8 +137,7 @@ def on_ui_settings():
 
 
 def on_ui_tabs():
-
-    if env.is_debug_mode_enabled(): # TODO Remove these lines
+    if env.is_debug_mode_enabled():  # TODO Remove these lines
         ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/ckpt')
         ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/vae')
         ui_extra_networks.allowed_dirs.add('/Users/alexander/Downloads/sd-downloads/embeddings')
@@ -144,5 +148,10 @@ def on_ui_tabs():
     return (main_ui_block(), "Model Organizer", "model_organizer"),
 
 
+def on_app_started(demo: Optional[Blocks], app: FastAPI):
+    init_extension_api(app)
+
+
 script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_ui_tabs(on_ui_tabs)
+script_callbacks.on_app_started(on_app_started)

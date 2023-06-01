@@ -27,6 +27,7 @@ def map_dict_to_record(id_, raw: dict) -> Record:
 
 def map_record_to_dict(record: Record) -> dict:
     return {
+        'id': record.id_,
         'name': record.name,
         'model_type': record.model_type.value,
         'download_url': record.download_url,
