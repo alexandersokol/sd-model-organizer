@@ -335,7 +335,7 @@ def records_cards(records: List[Record]) -> str:
                        f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
 
             content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                       f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+                       f'onclick="navigateRemove(\'{record.location}\')">Remove</button><br>'
         else:
             content += '<button type="button" class="mo-btn mo-btn-success" ' \
                        f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
