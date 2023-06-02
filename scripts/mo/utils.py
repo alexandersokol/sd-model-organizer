@@ -12,8 +12,8 @@ from scripts.mo.environment import env
 
 _HASH_CACHE_FILENAME = 'hash_cache.json'
 
-model_extensions = ['.bin', '.ckpt', '.safetensors', '.pt']
-preview_extensions = [".png", ".jpg", ".webp"]
+MODEL_EXTENSIONS = ['.bin', '.ckpt', '.safetensors', '.pt']
+PREVIEW_EXTENSIONS = [".png", ".jpg", ".webp"]
 
 
 def is_blank(s: str) -> bool:
@@ -26,16 +26,31 @@ def is_blank(s: str) -> bool:
 
 
 def is_valid_url(url: str) -> bool:
-    pattern = re.compile(r'^https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+')
-    return bool(pattern.match(url))
+    """
+    Checks url is valid.
+    :param url: url string to validate.
+    :return: True if url is valid.
+    """
+    parsed_url = urllib.urlparse.urlparse(url)
+    return parsed_url.scheme in ['http', 'https']
 
 
 def is_valid_filename(filename: str) -> bool:
+    """
+    Checks filename is valid.
+    :param filename: string to validate.
+    :return: True if filename is valid.
+    """
     pattern = re.compile(r'^[^\x00-\x1f\\/?*:|"<>]+$')
     return bool(pattern.match(filename))
 
 
 def get_model_files_in_dir(lookup_dir: str) -> List:
+    """
+    Scans for model files in the lookup_dir, and it's child directories.
+    :param lookup_dir: directory path to scan.
+    :return: List of models in the directory and subdirectories.
+    """
     root_dir = os.path.join(lookup_dir, '')
     extensions = ('.bin', '.ckpt', '.safetensors', '.pt')
     result = []
@@ -51,19 +66,29 @@ def get_model_files_in_dir(lookup_dir: str) -> List:
 
 
 def get_model_filename_without_extension(model_file):
+    """
+    Extracts filename without extension for models.
+    :param model_file: model filename string.
+    :return: model filename without extension.
+    """
     filename = os.path.basename(model_file)
-    for ext in model_extensions:
+    for ext in MODEL_EXTENSIONS:
         if filename.endswith(ext):
             return filename[:-len(ext)]
     return filename
 
 
 def find_preview_file(model_file):
+    """
+    Looks for model image preview.
+    :param model_file: path to model file.
+    :return: path to model image preview if it exists, None otherwise.
+    """
     if model_file:
         filename_no_ext = get_model_filename_without_extension(model_file)
         path = os.path.join(os.path.dirname(model_file), filename_no_ext)
 
-        potential_files = sum([[path + ext, path + ".preview" + ext] for ext in preview_extensions], [])
+        potential_files = sum([[path + ext, path + ".preview" + ext] for ext in PREVIEW_EXTENSIONS], [])
 
         for file in potential_files:
             if os.path.isfile(file):
@@ -72,12 +97,23 @@ def find_preview_file(model_file):
     return None
 
 
-def link_preview(filename):
-    return "./sd_extra_networks/thumb?filename=" + urllib.parse.quote(filename.replace('\\', '/')) + "&mtime=" + \
-        str(os.path.getmtime(filename))
+def link_preview(preview_path):
+    """
+    Creates link for model image preview file. File should be in one of the model supported directories.
+    :param preview_path: path to model preview.
+    :return: link to model preview image.
+    """
+    return "./sd_extra_networks/thumb?filename=" + urllib.parse.quote(preview_path.replace('\\', '/')) + "&mtime=" + \
+        str(os.path.getmtime(preview_path))
 
 
 def resize_preview_image(input_file, output_file):
+    """
+    Resizes input image to fit model card size.
+    :param input_file: input image file path.
+    :param output_file: output image file path.
+    :return: None
+    """
     image = Image.open(input_file)
 
     desired_width = int(env.card_width() * 1.5)
@@ -107,13 +143,21 @@ def resize_preview_image(input_file, output_file):
 
 
 def calculate_file_temp_hash(file_path):
+    """
+    Calculates file "temp" hash. This has is based on file creation and modification timestamps and file size.
+    This is using to determinate file was changed or not.
+    :param file_path: path to target file.
+    :return: md5 hex digest string.
+    """
     creation_timestamp = os.path.getctime(file_path)
     creation_datetime = datetime.datetime.fromtimestamp(creation_timestamp)
 
     modification_timestamp = os.path.getmtime(file_path)
     modification_datetime = datetime.datetime.fromtimestamp(modification_timestamp)
 
-    input_string = f'{creation_datetime} {modification_datetime}'
+    size = os.path.getsize(file_path)
+
+    input_string = f'{creation_datetime} {modification_datetime} {size}'
 
     md5_hash = hashlib.md5()
     md5_hash.update(input_string.encode('utf-8'))
@@ -121,6 +165,11 @@ def calculate_file_temp_hash(file_path):
 
 
 def calculate_sha256(file_path):
+    """
+    Calculates SHA256 file hash.
+    :param file_path: target file path.
+    :return: SHA256 hex digest string.
+    """
     with open(file_path, 'rb') as file:
         sha256_hash = hashlib.sha256()
         while chunk := file.read(4096):
@@ -129,10 +178,18 @@ def calculate_sha256(file_path):
 
 
 def get_hash_cache_file():
+    """
+    Returns hash cache file path.
+    :return: string file path.
+    """
     return os.path.join(env.script_dir, _HASH_CACHE_FILENAME)
 
 
-def read_hash_cache() -> list:
+def read_hash_cache() -> List:
+    """
+    Reads hash cache file data.
+    :return: hash cache data as a list of dictionaries.
+    """
     file_path = get_hash_cache_file()
     if os.path.isfile(file_path):
         with open(file_path) as file:
@@ -140,6 +197,11 @@ def read_hash_cache() -> list:
     return []
 
 
-def write_hash_cache(hash_cache: list):
+def write_hash_cache(hash_cache: List):
+    """
+    Writes hash cache data to file.
+    :param hash_cache: list of dictionaries to save.
+    :return: None.
+    """
     with open(get_hash_cache_file(), 'w') as file:
         json.dump(hash_cache, file, indent=4)

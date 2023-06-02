@@ -1,6 +1,3 @@
-import os
-import re
-
 import gradio as gr
 
 import scripts.mo.ui_navigation as nav
@@ -13,33 +10,6 @@ from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_home import home_ui_block
 from scripts.mo.ui_import_export import import_export_ui_block
 from scripts.mo.ui_remove import remove_ui_block
-
-
-def _load_mo_css() -> str:
-    # if env.theme() == 'dark':
-    #     colors_css_path = os.path.join(env.script_dir, 'colors-dark.css')
-    # else:
-    #     colors_css_path = os.path.join(env.script_dir, 'colors-light.css')
-    #
-    # with open(colors_css_path, 'r') as colors_file:
-    #     colors_css = colors_file.read()
-    #
-    # styles_css_path = os.path.join(env.script_dir, 'styles.css')
-    # with open(styles_css_path, 'r') as styles_file:
-    #     styles_css = styles_file.read()
-    #
-    # card_width = env.card_width()
-    # card_height = env.card_height()
-    # if card_width:
-    #     styles_css = re.sub(r'--mo-card-width:\s*\d+px;', f'--mo-card-width: {card_width}px;', styles_css)
-    # if card_height:
-    #     styles_css = re.sub(r'--mo-card-height:\s*\d+px;', f'--mo-card-height: {card_height}px;', styles_css)
-    #
-    # return f"""
-    #         {colors_css}
-    #         {styles_css}
-    # """
-    return ''
 
 
 def on_json_box_change(json_state, home_refresh_token):
@@ -67,7 +37,6 @@ def on_json_box_change(json_state, home_refresh_token):
 
 
 def main_ui_block():
-    css_styles = _load_mo_css()
     with gr.Blocks(elem_id='model_organizer_tab') as main_block:
         if env.is_storage_has_errors():
             gr.HTML(styled.alert_danger(env.storage_error))
