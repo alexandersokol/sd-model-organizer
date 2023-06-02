@@ -78,21 +78,36 @@ def get_model_filename_without_extension(model_file):
     return filename
 
 
-def find_preview_file(model_file):
+def find_preview_file(model_file_path):
     """
     Looks for model image preview.
-    :param model_file: path to model file.
+    :param model_file_path: path to model file.
     :return: path to model image preview if it exists, None otherwise.
     """
-    if model_file:
-        filename_no_ext = get_model_filename_without_extension(model_file)
-        path = os.path.join(os.path.dirname(model_file), filename_no_ext)
+    if model_file_path:
+        filename_no_ext = get_model_filename_without_extension(model_file_path)
+        path = os.path.join(os.path.dirname(model_file_path), filename_no_ext)
 
         potential_files = sum([[path + ext, path + ".preview" + ext] for ext in PREVIEW_EXTENSIONS], [])
 
         for file in potential_files:
             if os.path.isfile(file):
                 return file
+
+    return None
+
+
+def find_info_file(model_file_path):
+    """
+    Looks for model info file.
+    :param model_file_path: path to model file.
+    :return: path to model info file if exists, None otherwise.
+    """
+    if model_file_path:
+        filename_no_ext = get_model_filename_without_extension(model_file_path)
+        potential_file = os.path.join(os.path.dirname(model_file_path), filename_no_ext, '.info')
+
+        return potential_file if os.path.exists(potential_file) else None
 
     return None
 
