@@ -9,11 +9,13 @@ from typing import List
 from PIL import Image
 
 from scripts.mo.environment import env
+from scripts.mo.models import Record
 
 _HASH_CACHE_FILENAME = 'hash_cache.json'
 
 MODEL_EXTENSIONS = ['.bin', '.ckpt', '.safetensors', '.pt']
 PREVIEW_EXTENSIONS = [".png", ".jpg", ".webp"]
+INFO_EXTENSIONS = [".info", ".civitai.info"]
 
 
 def is_blank(s: str) -> bool:
@@ -105,9 +107,13 @@ def find_info_file(model_file_path):
     """
     if model_file_path:
         filename_no_ext = get_model_filename_without_extension(model_file_path)
-        potential_file = os.path.join(os.path.dirname(model_file_path), filename_no_ext, '.info')
+        path = os.path.join(os.path.dirname(model_file_path), filename_no_ext)
 
-        return potential_file if os.path.exists(potential_file) else None
+        potential_files = sum([[path + ext] for ext in INFO_EXTENSIONS], [])
+
+        for file in potential_files:
+            if os.path.isfile(file):
+                return file
 
     return None
 
@@ -220,3 +226,18 @@ def write_hash_cache(hash_cache: List):
     """
     with open(get_hash_cache_file(), 'w') as file:
         json.dump(hash_cache, file, indent=4)
+
+
+def get_best_preview_url(record: Record) -> str:
+    """
+    Returns url to local preview file if it available otherwise returns record.preview_url
+    :param record: record to get preview.
+    :return: url to image preview.
+    """
+    if record.location:
+        preview_path = find_preview_file(record.location)
+        if preview_path is None:
+            return record.preview_url
+        else:
+            return link_preview(preview_path)
+    return record.preview_url

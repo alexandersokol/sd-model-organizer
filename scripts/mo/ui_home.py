@@ -1,6 +1,5 @@
 import json
 import os.path
-import time
 from typing import List
 
 import gradio as gr
@@ -8,7 +7,8 @@ import gradio as gr
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.environment import env, LAYOUT_CARDS
 from scripts.mo.models import Record, ModelType, ModelSort
-from scripts.mo.utils import get_model_files_in_dir, find_preview_file, link_preview
+from scripts.mo.ui_civitai_import import create_version_dict
+from scripts.mo.utils import get_model_files_in_dir, find_info_file
 
 
 def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: bool) -> List:
@@ -42,28 +42,80 @@ def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: b
     return sorted_records
 
 
-def _get_local_model_files() -> List:
+def _get_model_type_from_file(path):
+    if env.get_model_path(ModelType.CHECKPOINT) in path:
+        return ModelType.CHECKPOINT
+    elif env.get_model_path(ModelType.VAE) in path:
+        return ModelType.VAE
+    elif env.get_model_path(ModelType.LORA) in path:
+        return ModelType.LORA
+    elif env.get_model_path(ModelType.HYPER_NETWORK) in path:
+        return ModelType.HYPER_NETWORK
+    elif env.get_model_path(ModelType.EMBEDDING) in path:
+        return ModelType.EMBEDDING
+    elif env.get_model_path(ModelType.LYCORIS) in path:
+        return ModelType.LYCORIS
+    return None
+
+
+def _create_model_from_local_file(path, model_type):
+    filename = os.path.basename(path)
+    return Record(
+        id_=None,
+        name=filename,
+        model_type=model_type,
+        location=path,
+        created_at=os.path.getctime(path),
+        download_filename=filename,
+        download_path=os.path.dirname(path)
+    )
+
+
+def _create_model_from_info_file(path, info_file_path, model_type):
+    with open(info_file_path) as file:
+        json_data = json.load(file)
+    version_dict = create_version_dict(json_data)
+    filename = os.path.basename(path)
+    return Record(
+        id_=None,
+        name=filename,
+        model_type=model_type,
+        location=path,
+        created_at=os.path.getctime(path),
+        download_filename=filename,
+        download_path=os.path.dirname(path),
+        preview_url=version_dict['images'][0][0],
+        download_url=version_dict['files'][0]['download_url'],
+        sha256_hash=version_dict['files'][0]['sha256'],
+        positive_prompts=version_dict['trained_words']
+    )
+
+
+def _create_record_from_file(model_file_path):
+    model_type = _get_model_type_from_file(model_file_path)
+
+    info_file = find_info_file(model_file_path)
+
+    if info_file is None:
+        return _create_model_from_local_file(model_file_path, model_type)
+    return _create_model_from_info_file(model_file_path, info_file, model_type)
+
+
+def _create_record_from_files(model_file_list):
+    result = []
+    for file in model_file_list:
+        rec = _create_record_from_file(file)
+        if rec is not None:
+            result.append(rec)
+    return result
+
+
+def _find_local_model_files() -> List:
     result = []
 
     def search_in_dir(model_type) -> List:
         dir_path = env.get_model_path(model_type)
-        local = []
-        files = get_model_files_in_dir(dir_path)
-        for file in files:
-            preview_file = find_preview_file(file)
-            filename = os.path.basename(file)
-            rec = Record(
-                id_=None,
-                name=filename,
-                model_type=model_type,
-                location=file,
-                created_at=time.time(),
-                preview_url=link_preview(preview_file) if preview_file is not None and preview_file else '',
-                download_filename=filename,
-                download_path=os.path.dirname(file)
-            )
-            local.append(rec)
-        return local
+        return get_model_files_in_dir(dir_path)
 
     result.extend(search_in_dir(ModelType.CHECKPOINT))
     result.extend(search_in_dir(ModelType.VAE))
@@ -86,13 +138,14 @@ def _prepare_data(state_json: str):
         show_not_downloaded=state['show_not_downloaded']
     )
 
-    local_records = _get_local_model_files()
+    model_files_list = _find_local_model_files()
 
-    if len(local_records) > 0:
-        bound_locations = list(map(lambda r: r.location, records))
-        bound_locations = list(filter(lambda r: bool(r), bound_locations))
-        local_records = list(filter(lambda r: r.location not in bound_locations, local_records))
-        records.extend(local_records)
+    if len(model_files_list) > 0:
+        bound_files = list(map(lambda r: r.location, records))
+        bound_files = list(filter(lambda r: bool(r), bound_files))
+        not_bound_files = list(filter(lambda r: r not in bound_files, model_files_list))
+        if len(not_bound_files) > 0:
+            records.extend(_create_record_from_files(not_bound_files))
 
     records = _sort_records(
         records=records,

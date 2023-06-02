@@ -7,6 +7,7 @@ import scripts.mo.ui_format as ui_format
 from scripts.mo.data.storage import map_record_to_dict
 from scripts.mo.environment import env
 from scripts.mo.models import Record, ModelType
+from scripts.mo.utils import get_best_preview_url
 
 _NO_PREVIEW_DARK = 'file=extensions/sd-model-organizer/pic/no-preview-dark-blue.png'
 _NO_PREVIEW_LIGHT = 'file=extensions/sd-model-organizer/pic/no-preview-light.png'
@@ -17,7 +18,7 @@ def alert_danger(value) -> str:
         text = "<br>".join(value)
     else:
         text = value
-    return f'<div class="mo-alert mo-alert-danger">{text}</div>'
+    return f'<div class="mo-alert mo-alert-danger">{html.escape(text)}</div>'
 
 
 def alert_primary(value) -> str:
@@ -25,7 +26,7 @@ def alert_primary(value) -> str:
         text = "<br>".join(value)
     else:
         text = value
-    return f'<div class="mo-alert mo-alert-primary">{text}</div>'
+    return f'<div class="mo-alert mo-alert-primary">{html.escape(text)}</div>'
 
 
 def alert_success(value) -> str:
@@ -33,7 +34,7 @@ def alert_success(value) -> str:
         text = "<br>".join(value)
     else:
         text = value
-    return f'<div class="mo-alert mo-alert-success">{text}</div>'
+    return f'<div class="mo-alert mo-alert-success">{html.escape(text)}</div>'
 
 
 def alert_warning(value) -> str:
@@ -41,7 +42,7 @@ def alert_warning(value) -> str:
         text = "<br>".join(value)
     else:
         text = value
-    return f'<div class="mo-alert mo-alert-warning">{text}</div>'
+    return f'<div class="mo-alert mo-alert-warning">{html.escape(text)}</div>'
 
 
 def _limit_description(text):
@@ -97,7 +98,7 @@ def records_table(records: List) -> str:
     for record in records:
         name = html.escape(record.name)
         type_ = record.model_type.value
-        preview_url = record.preview_url
+        preview_url = get_best_preview_url(record)
         description = _limit_description(record.description)
 
         # Add row
@@ -225,7 +226,7 @@ def _details_field_row(title: str, field: str, is_even: bool) -> str:
 
 
 def _details_top(record: Record) -> str:
-    preview_url = record.preview_url
+    preview_url = get_best_preview_url(record)
 
     content = '<div class="mo-details-row">'
 
@@ -306,7 +307,8 @@ def records_cards(records: List) -> str:
     for record in records:
         content += '<div class="mo-card">'
 
-        content += f'<img src="{record.preview_url}" alt="Preview Image" ' \
+        preview_url = get_best_preview_url(record)
+        content += f'<img src="{preview_url}" alt="Preview Image" ' \
                    f'onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';"/>'
 
         content += f'<div class="mo-card-blur-overlay-bottom">{html.escape(_limit_card_name(record.name))}</div>'
@@ -320,16 +322,7 @@ def records_cards(records: List) -> str:
         content += '<div class="mo-card-hover-buttons">'
 
         if record.is_local_file_record():
-
-            temp_record = Record(
-                id_=record.id_,
-                location=record.location,
-                model_type=record.model_type,
-                name=record.name,
-                download_path=record.download_path,
-                download_filename=record.download_filename
-            )
-            json_record = html.escape(json.dumps(map_record_to_dict(temp_record)))
+            json_record = html.escape(json.dumps(map_record_to_dict(record)))
 
             content += '<button type="button" class="mo-btn mo-btn-success" ' \
                        f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
