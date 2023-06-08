@@ -1,6 +1,6 @@
 import json
 import os.path
-from typing import List
+from typing import List, Dict
 
 import gradio as gr
 
@@ -127,6 +127,21 @@ def _find_local_model_files() -> List:
     return result
 
 
+def _filter_records_by_state(records: List, state: Dict):
+    if state['query']:
+        records = list(filter(lambda r: state['query'] in r.name, records))
+
+    groups = state['groups']
+    if len(groups) > 0:
+        records = list(filter(lambda r: all(group in r.groups for group in groups), records))
+
+    model_types = state['model_types']
+    if len(model_types) > 0:
+        records = list(filter(lambda r: r.model_type.value in model_types, records))
+
+    return records
+
+
 def _prepare_data(state_json: str):
     state = json.loads(state_json)
 
@@ -138,14 +153,18 @@ def _prepare_data(state_json: str):
         show_not_downloaded=state['show_not_downloaded']
     )
 
-    model_files_list = _find_local_model_files()
+    if state['show_local_files']:
+        model_files_list = _find_local_model_files()
 
-    if len(model_files_list) > 0:
-        bound_files = list(map(lambda r: r.location, records))
-        bound_files = list(filter(lambda r: bool(r), bound_files))
-        not_bound_files = list(filter(lambda r: r not in bound_files, model_files_list))
-        if len(not_bound_files) > 0:
-            records.extend(_create_record_from_files(not_bound_files))
+        if len(model_files_list) > 0:
+            bound_files = list(map(lambda r: r.location, records))
+            bound_files = list(filter(lambda r: bool(r), bound_files))
+            not_bound_files = list(filter(lambda r: r not in bound_files, model_files_list))
+            if len(not_bound_files) > 0:
+                local_records = _create_record_from_files(not_bound_files)
+                local_records = _filter_records_by_state(local_records, state)
+                if len(local_records) > 0:
+                    records.extend(local_records)
 
     records = _sort_records(
         records=records,
@@ -219,6 +238,12 @@ def _on_show_not_downloaded_changed(show_not_downloaded, state_json):
     return json.dumps(state)
 
 
+def _on_show_local_files_changed(show_not_downloaded, state_json):
+    state = json.loads(state_json)
+    state['show_local_files'] = show_not_downloaded
+    return json.dumps(state)
+
+
 def home_ui_block():
     settings = env.read_settings()
 
@@ -238,6 +263,7 @@ def home_ui_block():
         'groups': [],
         'show_downloaded': True,
         'show_not_downloaded': True,
+        'show_local_files': True,
         'sort_order': sort_order,
         'sort_downloaded_first': sort_downloaded_first
     }
@@ -298,6 +324,8 @@ def home_ui_block():
                                                        value=initial_state['show_downloaded'])
                 show_not_downloaded_checkbox = gr.Checkbox(label='Show not downloaded',
                                                            value=initial_state['show_not_downloaded'])
+                show_local_files_checkbox = gr.Checkbox(label='Show local files',
+                                                        value=initial_state['show_local_files'])
 
         html_content_widget = gr.HTML()
         record_ids_box = gr.Textbox(value='',
@@ -337,5 +365,8 @@ def home_ui_block():
         show_not_downloaded_checkbox.change(_on_show_not_downloaded_changed,
                                             inputs=[show_not_downloaded_checkbox, state_box],
                                             outputs=state_box)
+        show_local_files_checkbox.change(_on_show_local_files_changed,
+                                         inputs=[show_local_files_checkbox, state_box],
+                                         outputs=state_box)
 
     return refresh_box

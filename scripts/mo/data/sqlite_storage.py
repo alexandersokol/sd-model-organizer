@@ -1,12 +1,11 @@
 import os
 import sqlite3
 import threading
-import time
 from typing import List
 
+from scripts.mo.data.storage import Storage
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
-from scripts.mo.data.storage import Storage
 
 _DB_FILE = 'database.sqlite'
 _DB_VERSION = 5
