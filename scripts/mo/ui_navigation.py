@@ -81,7 +81,8 @@ def get_nav_state(json_nav) -> dict:
         'details_record_id': '',
         'edit_data': {},
         'remove_record_id': '',
-        'download_info': ''
+        'download_info': '',
+        'filter_state': {}
     }
 
     if nav_dict.get(_NODE_SCREEN) is None:
@@ -121,6 +122,7 @@ def get_nav_state(json_nav) -> dict:
 
         elif nav_dict[_NODE_SCREEN] == _IMPORT_EXPORT:
             state['is_import_export_visible'] = True
+            state['filter_state'] = nav_dict['filter_state']
         elif nav_dict[_NODE_SCREEN] == _DEBUG:
             state['is_debug_visible'] = True
 

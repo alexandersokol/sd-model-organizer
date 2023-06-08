@@ -368,12 +368,13 @@ function navigateAdd() {
     return []
 }
 
-function navigateImportExport() {
+function navigateImportExport(filter_state) {
     log('Navigate import_export screen')
     const navObj = {
         screen: "import_export",
         token: generateUUID(),
-        backstack: populateBackstack()
+        backstack: populateBackstack(),
+        filter_state: filter_state
     };
     deliverNavObject(navObj)
     return []

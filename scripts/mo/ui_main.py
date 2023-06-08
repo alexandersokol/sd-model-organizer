@@ -32,7 +32,8 @@ def on_json_box_change(json_state, home_refresh_token):
         gr.Textbox.update(value=state['details_record_id']),
         gr.Textbox.update(value=state['edit_data']),
         gr.Textbox.update(value=state['remove_record_id']),
-        gr.Textbox.update(value=state['download_info'])
+        gr.Textbox.update(value=state['download_info']),
+        gr.Textbox.update(value=state['filter_state'])
     ]
 
 
@@ -64,7 +65,7 @@ def main_ui_block():
             download_id_box = download_ui_block()
 
         with gr.Column(visible=False) as import_export_block:
-            import_export_ui_block()
+            filter_state_box = import_export_ui_block()
 
         with gr.Column(visible=False) as debug_block:
             if env.is_debug_mode_enabled():
@@ -86,6 +87,8 @@ def main_ui_block():
                                       details_id_box,
                                       edit_id_box,
                                       remove_id_box,
-                                      download_id_box])
+                                      download_id_box,
+                                      filter_state_box
+                                      ])
 
     return main_block

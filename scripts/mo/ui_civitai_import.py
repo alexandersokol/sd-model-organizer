@@ -9,9 +9,9 @@ import requests
 from scripts.mo.data.storage import map_record_to_dict
 from scripts.mo.environment import env
 from scripts.mo.models import ModelType, Record
-from scripts.mo.ui_format import format_kilobytes
 from scripts.mo.ui_styled_html import alert_danger
 from scripts.mo.utils import is_blank
+from scripts.mo.data.mapping_utils import create_version_dict
 
 
 def _get_model_images(model_version_dict):
@@ -32,83 +32,6 @@ def _list_contains_string_ignore_case(string_list, substring):
         if substring.lower() in string.lower():
             return True
     return False
-
-
-def create_version_dict(version_data):
-    version = {
-        'id': version_data['id'],
-        'name': version_data['name'],
-        'updated_at': version_data['updatedAt'],
-    }
-
-    trained_words = []
-    if version_data.get('trainedWords') is not None:
-        words = version_data['trainedWords']
-        for word in words:
-            trained_words.append(word)
-
-    version['trained_words'] = ', '.join(trained_words) if len(trained_words) > 0 else ''
-
-    if version_data.get('images') is not None:
-        images_data = version_data['images']
-        images = []
-        for image_data in images_data:
-            url = image_data['url']
-            images.append((url, url))
-        version['images'] = images
-
-    if version_data.get('files') is not None:
-        files_data = version_data['files']
-        files = []
-
-        for file_data in files_data:
-            file_name = file_data['name'] if file_data.get('name') is not None else ''
-            file_type = file_data['type'] if file_data.get('type') is not None else ''
-            fp = file_data['metadata']['fp'] if file_data['metadata'].get('fp') is not None else ''
-            file_size = file_data['metadata']['size'] if file_data['metadata'].get('size') is not None else ''
-            file_format = file_data['metadata']['format'] if file_data['metadata'].get(
-                'format') is not None else ''
-            file_size_formatted = format_kilobytes(file_data['sizeKB']) if file_data.get(
-                'sizeKB') is not None else ''
-
-            display_name = ''
-
-            if file_name:
-                display_name += file_name
-
-            if file_type:
-                display_name += ' | '
-                display_name += file_type
-
-            if fp:
-                display_name += ' | '
-                display_name += fp
-
-            if file_size:
-                display_name += ' | '
-                display_name += file_size
-
-            if file_format:
-                display_name += ' | '
-                display_name += file_format
-
-            if file_size_formatted:
-                display_name += ' | '
-                display_name += file_size_formatted
-
-            sha256 = file_data['hashes']['SHA256'] if file_data.get('hashes') is not None and file_data.get(
-                'hashes').get('SHA256') is not None else ''
-            file = {
-                'id': file_data['id'],
-                'file_name': file_data['name'],
-                'display_name': display_name,
-                'download_url': file_data['downloadUrl'],
-                'is_primary': file_data['primary'] if file_data.get('primary') else False,
-                'sha256': sha256
-            }
-            files.append(file)
-        version['files'] = files
-    return version
 
 
 def create_model_dict(json_data):
@@ -173,6 +96,7 @@ def _on_fetch_url_clicked(url):
         model_id = parsed_url.path.split('/')[2]
 
         query_params = parse_qs(parsed_url.query)
+        # noinspection PyTypeChecker
         version_id = query_params.get('modelVersionId', [None])[0]
         if version_id is not None and version_id.isdigit():
             selected_model_version_id = int(version_id)
