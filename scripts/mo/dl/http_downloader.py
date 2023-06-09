@@ -18,7 +18,9 @@ class HttpDownloader(Downloader):
         if response.status_code == 200 or response.status_code == 206:
             if 'Content-Disposition' in response.headers:
                 content_disp = response.headers['Content-Disposition']
-                return content_disp.split(';')[1].split('=')[1].strip('\"')
+                filename = content_disp.split(';')[1].split('=')[1].strip('\"')
+                return filename.encode('utf-8').decode('GBK').encode('utf-8').decode(
+                    'utf-8')  # Needed to properly encode/decode chinese symbols, have fun.
         else:
             return None
 
