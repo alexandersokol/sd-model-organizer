@@ -18,11 +18,9 @@ def _prepare_data(state_json: str):
     else:
         html = styled.records_table(records)
 
-    record_ids = list(map(lambda r: r.id_, records))
     return [
         html,
-        json.dumps(json.dumps(record_ids)),
-        gr.Button.update(visible=len(record_ids) > 0),
+        gr.Button.update(visible=len(records) > 0),
         gr.Dropdown.update(value=state['groups'], choices=_get_available_groups())
     ]
 
@@ -169,21 +167,16 @@ def home_ui_block():
                                                         value=initial_state['show_local_files'])
 
         html_content_widget = gr.HTML()
-        record_ids_box = gr.Textbox(value='',
-                                    label='record_ids_box',
-                                    elem_classes='mo-alert-warning',
-                                    visible=False,
-                                    interactive=False)
 
         reload_button.click(_prepare_data, inputs=state_box,
-                            outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
+                            outputs=[html_content_widget, download_all_button, groups_dropdown])
         refresh_box.change(_prepare_data, inputs=state_box,
-                           outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
+                           outputs=[html_content_widget, download_all_button, groups_dropdown])
         state_box.change(_prepare_data, inputs=state_box,
-                         outputs=[html_content_widget, record_ids_box, download_all_button, groups_dropdown])
+                         outputs=[html_content_widget, download_all_button, groups_dropdown])
 
         debug_button.click(fn=None, _js='navigateDebug')
-        download_all_button.click(fn=None, inputs=record_ids_box, _js='navigateDownloadRecordList')
+        download_all_button.click(fn=None, inputs=state_box, _js='navigateDownloadRecordList')
         import_export_button.click(fn=None, inputs=state_box, _js='navigateImportExport')
         add_button.click(fn=None, _js='navigateAdd')
 

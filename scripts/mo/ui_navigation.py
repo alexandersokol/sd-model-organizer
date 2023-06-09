@@ -14,7 +14,6 @@ _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
 _NODE_PREFILLED_JSON = 'prefilled_json'
 _NODE_GROUP = 'group'
-_NODE_RECORD_IDS = 'record_ids'
 
 
 def navigate_home() -> str:
@@ -115,8 +114,8 @@ def get_nav_state(json_nav) -> dict:
             if nav_dict.get(_NODE_GROUP) is not None:
                 download_dict[_NODE_GROUP] = nav_dict[_NODE_GROUP]
 
-            if nav_dict.get(_NODE_RECORD_IDS) is not None:
-                download_dict[_NODE_RECORD_IDS] = nav_dict[_NODE_RECORD_IDS]
+            if nav_dict.get('filter_state') is not None:
+                download_dict['filter_state'] = nav_dict['filter_state']
 
             state['download_info'] = json.dumps(download_dict)
 
@@ -145,12 +144,12 @@ def get_download_group(data):
         return download_dict[_NODE_GROUP]
 
 
-def get_download_record_ids(data):
+def get_download_filter_state(data):
     download_dict = json.loads(data)
-    if download_dict.get(_NODE_RECORD_IDS) is None:
+    if download_dict.get('filter_state') is None:
         return None
     else:
-        return download_dict[_NODE_RECORD_IDS]
+        return download_dict['filter_state']
 
 
 def generate_ui_token() -> str:

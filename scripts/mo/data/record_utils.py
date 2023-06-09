@@ -126,7 +126,7 @@ def _create_record_from_files(model_file_list):
 
 def _filter_records_by_state(records: List, state: Dict):
     if state['query']:
-        records = list(filter(lambda r: state['query'] in r.name, records))
+        records = list(filter(lambda r: state['query'].lower() in r.name.lower(), records))
 
     groups = state['groups']
     if len(groups) > 0:

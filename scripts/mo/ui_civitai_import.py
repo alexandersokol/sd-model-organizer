@@ -366,7 +366,7 @@ def _on_edit_clicked(state, import_url, name, model_type_value, tags, model_vers
 
 
 def civitai_import_ui_block():
-    import_url_textbox = gr.Textbox('https://civitai.com/models/4468/counterfeit-v30',
+    import_url_textbox = gr.Textbox('',
                                     label='civitai model url or id.',
                                     info='Field accepts urls like: "https://civitai.com/models/0000",'
                                          ' "https://civitai.com/models/0000?modelVersionId=xxxx", or model id "0000",'

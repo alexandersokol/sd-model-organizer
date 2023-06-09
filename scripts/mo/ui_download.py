@@ -8,6 +8,7 @@ import scripts.mo.ui_navigation as nav
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.dl.download_manager import *
 from scripts.mo.environment import env, logger
+from scripts.mo.data.record_utils import load_records_and_filter
 
 _STATE_PENDING = 'Pending'
 _STATE_IN_PROGRESS = 'In Progress'
@@ -206,7 +207,7 @@ def _on_id_change(data):
     records = []
     record_id = nav.get_download_record_id(data)
     group = nav.get_download_group(data)
-    record_ids = nav.get_download_record_ids(data)
+    filter_state = nav.get_download_filter_state(data)
 
     if record_id is not None:
         records.append(env.storage.get_record_by_id(record_id))
@@ -214,9 +215,9 @@ def _on_id_change(data):
     if group is not None:
         records.extend(env.storage.get_records_by_group(group))
 
-    if record_ids is not None:
-        for record_id in record_ids:
-            records.append(env.storage.get_record_by_id(record_id))
+    if filter_state is not None:
+        state = json.loads(filter_state)
+        records.extend(load_records_and_filter(state, False))
 
     return [
         gr.HTML.update(value=styled.download_cards(records, nav.generate_ui_token())),

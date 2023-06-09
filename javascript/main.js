@@ -427,12 +427,11 @@ function navigateDownloadRecord(id) {
     return []
 }
 
-function navigateDownloadRecordList(ids_json) {
-    const ids = JSON.parse(JSON.parse(ids_json))
-    log('Navigate download screen for records: ' + ids)
+function navigateDownloadRecordList(filter_state) {
+    log('Navigate download screen for records with filter state: ' + filter_state)
     const navObj = {
         screen: "download",
-        record_ids: ids,
+        filter_state: filter_state,
         token: generateUUID(),
         backstack: populateBackstack()
     };
