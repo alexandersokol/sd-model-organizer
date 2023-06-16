@@ -179,9 +179,6 @@ def _create_top_fields_dict(record: Record) -> dict:
         size = os.path.getsize(record.location)
         result['Size'] = _create_content_hash(ui_format.format_bytes(size))
 
-    if record.md5_hash:
-        result['MD5'] = _create_content_hash(record.md5_hash)
-
     if record.sha256_hash:
         result['SHA256'] = _create_content_hash(record.sha256_hash)
 

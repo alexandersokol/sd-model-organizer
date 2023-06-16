@@ -33,7 +33,7 @@ def is_valid_url(url: str) -> bool:
     :param url: url string to validate.
     :return: True if url is valid.
     """
-    parsed_url = urllib.urlparse.urlparse(url)
+    parsed_url = urllib.parse.urlparse(url)
     return parsed_url.scheme in ['http', 'https']
 
 

@@ -551,7 +551,7 @@ function installStyles(theme) {
 
     const linkElementStyles = document.createElement('link');
     linkElementStyles.rel = 'stylesheet';
-    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles/styles.css';
+    linkElementStyles.href = 'file=extensions/sd-model-organizer/styles/styles.css' + timestamp;
     document.head.appendChild(linkElementStyles);
 }
 

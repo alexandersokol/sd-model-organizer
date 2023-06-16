@@ -132,25 +132,3 @@ def calculate_md5(file_path):
                 break
             md5.update(data)
     return md5.hexdigest()
-
-
-def find_preview_file(record: Record):
-    preview_file_path = None
-
-    if record.location:
-        if record.download_path:
-            model_path = record.download_path
-        else:
-            model_path = env.get_model_path(record.model_type)
-
-        lookup_dir = os.path.join(model_path, record.subdir)
-
-        filename = os.path.basename(record.location)
-        filename = os.path.splitext(filename)[0]
-        extensions = ('.jpeg', '.jpg', '.png', '.webp', '.gif', '.bmp')
-        for file in os.listdir(lookup_dir):
-            if file.startswith(filename) and file.endswith(extensions):
-                preview_file_path = os.path.join(lookup_dir, file)
-                break
-
-    return preview_file_path

@@ -6,7 +6,7 @@ import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
 from scripts.mo.data.storage import map_dict_to_record
-from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256, calculate_md5
+from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
@@ -28,7 +28,7 @@ def is_directory_path_valid(path):
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
                                    download_path: str, download_filename: str, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
-                                   groups, back_token: str, bind_existing: str, sha256_state):
+                                   groups, back_token: str, sha256_state, location):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -86,8 +86,6 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
 
         download_url = download_url.strip()
         sha256_hash = ''
-        md5_hash = ''
-        location = ''
 
         old_record = None
         if record_id:
@@ -96,17 +94,15 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         else:
             created_at = time.time()
 
-        if old_record is not None and not bind_existing:
-            if old_record.download_url == download_url:
+        if old_record is not None:
+            if old_record.location == location:
                 sha256_hash = old_record.sha256_hash
-                md5_hash = old_record.md5_hash
-                location = old_record.location
-        elif old_record is None and sha256_state is not None:
+            elif os.path.isfile(location):
+                sha256_hash = calculate_sha256(location)
+        elif sha256_state is not None:
             sha256_hash = sha256_state
-        elif bind_existing:
-            location = os.path.join(env.get_model_path(model_type), download_subdir, download_filename)
+        elif os.path.isfile(location):
             sha256_hash = calculate_sha256(location)
-            md5_hash = calculate_md5(location)
 
         record = Record(
             id_=record_id,
@@ -123,7 +119,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
             negative_prompts=negative_prompts.strip(),
             groups=groups,
             sha256_hash=sha256_hash,
-            md5_hash=md5_hash,
+            md5_hash='',
             location=location,
             created_at=created_at
         )
@@ -178,6 +174,7 @@ def _on_id_changed(record_data):
     negative_prompts = '' if record is None else record.negative_prompts
     record_groups = [] if record is None else record.groups
     sha256 = None if record is None or not bool(record.sha256_hash) else record.sha256_hash
+    location = '' if record is None else (record.location if os.path.isfile(record.location) else '')
 
     available_groups = env.storage.get_available_groups()
     logger.info('Groups loaded: %s', available_groups)
@@ -190,23 +187,17 @@ def _on_id_changed(record_data):
     else:
         description = f'<[[token="{generate_ui_token()}"]]>{description}'
 
-    location_state = None if record is None else record.location
-    bind_with_existing = _get_bind_existing_update(
-        model_type_value=model_type,
-        location_state=location_state
-    )
-
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False),
-            bind_with_existing, location_state, sha256]
+            sha256, location, _get_bind_location_dropdown_update(model_type, location)]
 
 
-def _get_bind_existing_update(model_type_value, location_state):
+def _get_bind_location_dropdown_update(model_type_value, current_location: str):
     if not model_type_value:
         return gr.Dropdown.update(
             visible=False,
-            value='',
-            choices=['']
+            value='None',
+            choices=['None']
         )
 
     model_type = ModelType.by_value(model_type_value)
@@ -214,59 +205,35 @@ def _get_bind_existing_update(model_type_value, location_state):
     if model_type == ModelType.OTHER:
         return gr.Dropdown.update(
             visible=False,
-            value='',
-            choices=['']
+            value='None',
+            choices=['None']
         )
 
-    if location_state is None or not location_state or not os.path.exists(location_state):
-        lookup_dir = os.path.join(env.get_model_path(model_type), '')
+    lookup_dir = os.path.join(env.get_model_path(model_type), '')
 
-        files_found = get_model_files_in_dir(lookup_dir)
-        files_exclude = env.storage.get_all_records_locations()
-        files_unbounded = [x for x in files_found if x not in files_exclude]
+    files_found = get_model_files_in_dir(lookup_dir)
+    # files_exclude = env.storage.get_all_records_locations()
+    # files_unbounded = [x for x in files_found if x not in files_exclude]
 
-        choices = ['']
-        choices.extend(list(map(lambda l: l.replace(lookup_dir, ''), files_unbounded)))
+    choices = ['None']
+    choices.extend(list(map(lambda l: l.replace(lookup_dir, ''), files_found)))
 
-        bind_with_existing = gr.Dropdown.update(
-            visible=len(files_unbounded) > 0,
-            choices=choices,
-            value='',
-            label=f'Bind with existing model (in {lookup_dir})'
-        )
-    else:
-        bind_with_existing = gr.Dropdown.update(
-            visible=False,
-            value='',
-            choices=['']
-        )
-    return bind_with_existing
+    chosen = 'None'
+    if current_location:
+        model_local_path = current_location.replace(env.get_model_path(model_type) + '/', '')
+        if model_local_path in choices:
+            chosen = model_local_path
+
+    return gr.Dropdown.update(
+        visible=True,
+        choices=choices,
+        value=chosen,
+        label=f'Bind with local file (in {lookup_dir})'
+    )
 
 
-def _on_model_type_changed(model_type_value, location_state):
-    return _get_bind_existing_update(model_type_value, location_state)
-
-
-def _on_bind_with_existing_change(selected_file, model_type_value, download_path, download_filename,
-                                  download_subdir):
-    if not model_type_value:
-        return [download_path, download_filename, download_subdir]
-
-    model_type = ModelType.by_value(model_type_value)
-    if model_type == ModelType.OTHER:
-        return [download_path, download_filename, download_subdir]
-
-    if selected_file:
-
-        dir_name, file_name = os.path.split(selected_file)
-        if dir_name:
-            dir_name = dir_name.strip(os.path.sep)
-        else:
-            dir_name = ''
-
-        return ['', file_name, dir_name]
-    else:
-        return [download_path, download_filename, download_subdir]
+def _on_model_type_changed(model_type_value, current_location):
+    return _get_bind_location_dropdown_update(model_type_value, current_location)
 
 
 def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_groups):
@@ -292,6 +259,25 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
     ]
 
 
+def _on_local_bind_change(model_file_name, model_type_value):
+    if not model_type_value:
+        return gr.Textbox.update(
+            value='',
+        )
+
+    model_type = ModelType.by_value(model_type_value)
+    if model_type == ModelType.OTHER:
+        return gr.Textbox.update(
+            value='',
+        )
+    model_dir_path = env.get_model_path(model_type)
+    full_path = os.path.join(model_dir_path, model_file_name)
+    if os.path.isfile(full_path):
+        return gr.Textbox.update(full_path)
+    else:
+        return gr.Textbox.update('')
+
+
 def edit_ui_block():
     edit_id_box = gr.Textbox(label='edit_id_box',
                              elem_classes='mo-alert-warning',
@@ -306,7 +292,6 @@ def edit_ui_block():
 
     title_widget = gr.Markdown()
     available_groups_state = gr.State()
-    location_state = gr.State({})
 
     with gr.Row():
         with gr.Column():
@@ -353,11 +338,13 @@ def edit_ui_block():
                                                 elem_id='mo-add-groups-box')
                     add_groups_button = gr.Button('Add Group')
 
-            bind_with_existing_widget = gr.Dropdown(label='Bind with existing model',
-                                                    multiselect=False,
-                                                    interactive=True,
-                                                    choices=[''],
-                                                    value='')
+            location_widget = gr.Textbox(label="File location",
+                                         info="Local file location path. Not editable.",
+                                         interactive=False)
+
+            location_bind_widget = gr.Dropdown(label='Bind with local file',
+                                               info='Choose a local file to associate this record with.',
+                                               interactive=True)
 
             with gr.Accordion(label='Download options', open=False):
                 download_path_widget = gr.Textbox(label='Download Path:',
@@ -407,7 +394,7 @@ def edit_ui_block():
                                              download_path_widget, download_filename_widget, download_subdir_widget,
                                              preview_url_widget, description_output_widget, positive_prompts_widget,
                                              negative_prompts_widget, groups_widget, edit_back_box,
-                                             bind_with_existing_widget, sha256_preload_state],
+                                             sha256_preload_state, location_widget],
                                      outputs=[error_widget, edit_back_box])
 
     edit_id_box.change(_on_id_changed,
@@ -416,8 +403,16 @@ def edit_ui_block():
                                 preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget,
-                                bind_with_existing_widget, location_state, sha256_preload_state]
+                                sha256_preload_state, location_widget, location_bind_widget]
                        )
+
+    model_type_widget.change(_on_model_type_changed,
+                             inputs=[model_type_widget, location_widget],
+                             outputs=[location_bind_widget])
+
+    location_bind_widget.change(_on_local_bind_change,
+                                inputs=[location_bind_widget, model_type_widget],
+                                outputs=location_widget)
 
     save_widget.click(fn=None, _js='handleRecordSave')
 
@@ -427,14 +422,5 @@ def edit_ui_block():
 
     cancel_button.click(fn=None, _js='navigateBack')
     edit_back_box.change(fn=None, _js='navigateBack')
-
-    bind_with_existing_widget.change(_on_bind_with_existing_change,
-                                     inputs=[bind_with_existing_widget, model_type_widget,
-                                             download_path_widget, download_filename_widget, download_subdir_widget],
-                                     outputs=[download_path_widget, download_filename_widget, download_subdir_widget])
-
-    model_type_widget.change(_on_model_type_changed,
-                             inputs=[model_type_widget, location_state],
-                             outputs=bind_with_existing_widget)
 
     return edit_id_box

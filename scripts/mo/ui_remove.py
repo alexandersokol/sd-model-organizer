@@ -3,9 +3,9 @@ import os
 import gradio as gr
 
 import scripts.mo.ui_styled_html as styled
-from scripts.mo.environment import env, logger, find_preview_file
+from scripts.mo.environment import env, logger
 from scripts.mo.ui_navigation import generate_ui_token
-from scripts.mo.utils import find_preview_file
+from scripts.mo.utils import find_preview_file, find_info_file
 
 
 def _on_id_change(record_id):
@@ -53,8 +53,14 @@ def _on_remove_click(record_id, remove_record, remove_files):
     logger.info(f'_on_remove_click record_id: {record_id} remove_record: {remove_record} remove_files: {remove_files}')
     if os.path.isfile(record_id):
         preview_file = find_preview_file(record_id)
-        if os.path.isfile(preview_file):
+
+        if preview_file is not None and os.path.isfile(preview_file):
             os.remove(preview_file)
+
+        info_file = find_info_file(record_id)
+        if info_file is not None and os.path.isfile(info_file):
+            os.remove(info_file)
+
         os.remove(record_id)
     else:
         record = env.storage.get_record_by_id(record_id)
@@ -66,9 +72,13 @@ def _on_remove_click(record_id, remove_record, remove_files):
             if record.location and os.path.exists(record.location):
                 os.remove(record.location)
 
-            preview_path = find_preview_file(record)
+            preview_path = find_preview_file(record.location)
             if preview_path and os.path.exists(preview_path):
                 os.remove(preview_path)
+
+            info_file = find_info_file(record.location)
+            if info_file is not None and os.path.isfile(info_file):
+                os.remove(info_file)
 
     return generate_ui_token()
 
