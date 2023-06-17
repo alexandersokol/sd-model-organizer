@@ -31,6 +31,10 @@ remote Firestore database to make it available and synced on several devices.
 - Dark/Light theme support.
 
 <br></br>
+**Readme file will be updated soon regarding to 1.1 updates.**
+
+**Use `--mo-show-dir-settings` param to show models path parameters in seettings menu**
+<br></br>
 
 ## 1. Home Screen
 

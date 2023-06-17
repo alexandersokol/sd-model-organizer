@@ -122,22 +122,34 @@ def records_table(records: List) -> str:
 
         # Add description column
         table_html += f'<div class="mo-col mo-col-description">'
-        table_html += f'<span class="mo-text-description">{description}</span>'
+        table_html += f'<span class="mo-text-description">{html.escape(description)}</span>'
         table_html += '</div>'
 
         # Add actions column
         table_html += '<div class="mo-col mo-col-actions ">'
 
-        if record.is_download_possible():
-            table_html += '<button class="mo-btn mo-btn-primary" ' \
-                          f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button>'
-            table_html += '<br>'
+        if record.is_local_file_record():
+            json_record = html.escape(json.dumps(map_record_to_dict(record)))
 
-        table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
-                      f'onclick="navigateEdit(\'{record.id_}\')">Edit</button>'
-        table_html += '<br>'
-        table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                      f'onclick="navigateRemove(\'{record.id_}\')">Remove</button>'
+            table_html += '<button type="button" class="mo-btn mo-btn-success" ' \
+                          f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
+
+            table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                          f'onclick="navigateRemove(\'{record.location}\')">Remove</button><br>'
+        else:
+            table_html += '<button type="button" class="mo-btn mo-btn-success" ' \
+                          f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
+
+            if record.is_download_possible():
+                table_html += '<button type="button" class="mo-btn mo-btn-primary" ' \
+                              f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+
+            table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
+                          f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
+
+            table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
+                          f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+
         table_html += '</div>'
         # Close row
         table_html += '</div>'
