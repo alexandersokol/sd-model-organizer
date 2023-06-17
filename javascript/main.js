@@ -20,7 +20,7 @@ function findElem(elementId) {
  * @param text
  */
 function log(text) {
-    console.log(text)
+    // console.log(text)
 }
 
 /**

@@ -24,6 +24,9 @@ remote Firestore database to make it available and synced on several devices.
 - Stores model records in local SQLite database.
 - Stores model records in remote Firebase Firestore.
 - Export/import existing model as json files.
+- Import models from civitai.com url or model id.
+- Import models info from .info file.
+- List local model files.
 - Remove local files related to model.
 - Dark/Light theme support.
 
