@@ -355,7 +355,8 @@ def edit_ui_block():
                 download_filename_widget = gr.Textbox(label='Download File Name:',
                                                       value='',
                                                       max_lines=1,
-                                                      info='Downloaded file name. Default if empty (Optional)')
+                                                      info='Downloaded file name with extension. Default if empty ('
+                                                           'Optional)')
                 download_subdir_widget = gr.Textbox(label='Subdir',
                                                     value='',
                                                     max_lines=1,
