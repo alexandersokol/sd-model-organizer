@@ -152,7 +152,7 @@ def load_records_and_filter(state: Dict, include_local_files: bool):
         model_files_list = _find_local_model_files()
 
         if len(model_files_list) > 0:
-            bound_files = list(map(lambda r: r.location, records))
+            bound_files = env.storage.get_all_records_locations()
             bound_files = list(filter(lambda r: bool(r), bound_files))
             not_bound_files = list(filter(lambda r: r not in bound_files, model_files_list))
             if len(not_bound_files) > 0:
