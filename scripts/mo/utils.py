@@ -124,7 +124,7 @@ def link_preview(preview_path):
     :param preview_path: path to model preview.
     :return: link to model preview image.
     """
-    return "./sd_extra_networks/thumb?filename=" + urllib.parse.quote(preview_path.replace('\\', '/')) + "&mtime=" + \
+    return "./mo/thumbnail?filename=" + urllib.parse.quote(preview_path.replace('\\', '/')) + "&mtime=" + \
         str(os.path.getmtime(preview_path))
 
 
