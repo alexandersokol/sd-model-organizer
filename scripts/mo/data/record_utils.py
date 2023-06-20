@@ -112,7 +112,10 @@ def _create_record_from_file(model_file_path):
 
     if info_file is None:
         return _create_model_from_local_file(model_file_path, model_type)
-    return _create_model_from_info_file(model_file_path, info_file, model_type)
+    try:
+        return _create_model_from_info_file(model_file_path, info_file, model_type)
+    except Exception as ex:
+        return _create_model_from_local_file(model_file_path, model_type)
 
 
 def _create_record_from_files(model_file_list):
