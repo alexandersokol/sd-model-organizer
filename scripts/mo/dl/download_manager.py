@@ -280,7 +280,7 @@ class DownloadManager:
 
                 preview_downloader = self._get_downloader(record.preview_url)
 
-                with tempfile.NamedTemporaryFile() as temp:
+                with tempfile.NamedTemporaryFile(dir=destination_dir) as temp:
                     logger.debug('Downloading preview into tmp file: %s', temp.name)
                     for upd in preview_downloader.download(record.preview_url, temp.name, preview_filename,
                                                            self._stop_event):
