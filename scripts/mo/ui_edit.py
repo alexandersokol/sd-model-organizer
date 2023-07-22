@@ -1,4 +1,3 @@
-import html
 import json
 import os.path
 import time
