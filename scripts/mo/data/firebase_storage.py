@@ -10,6 +10,8 @@ from scripts.mo.data.storage import Storage, map_dict_to_record, map_record_to_d
 from scripts.mo.environment import env
 from scripts.mo.models import Record
 
+FIREBASE_APP_NAME = "sd-model-organizer-app"
+
 
 def _filter_download(record: Record, show_downloaded, show_not_downloaded):
     is_downloaded = bool(record.location) and os.path.exists(record.location)
@@ -19,9 +21,12 @@ def _filter_download(record: Record, show_downloaded, show_not_downloaded):
 class FirebaseStorage(Storage):
 
     def __init__(self):
-        cred = credentials.Certificate(os.path.join(env.script_dir, "service-account-file.json"))
-        self.app = firebase_admin.initialize_app(cred)
-        self.firestore_client = firestore.client()
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(os.path.join(env.script_dir, "service-account-file.json"))
+            self.app = firebase_admin.initialize_app(cred, name=FIREBASE_APP_NAME)
+        else:
+            self.app = firebase_admin.get_app(name=FIREBASE_APP_NAME)
+        self.firestore_client = firestore.client(app=self.app)
 
     def _records(self) -> CollectionReference:
         return self.firestore_client.collection('records')
