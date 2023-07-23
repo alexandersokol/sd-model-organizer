@@ -1,3 +1,4 @@
+import html
 import json
 import os.path
 import time
@@ -143,9 +144,16 @@ def _on_id_changed(record_data):
     if record_data.get('record_id') is not None and record_data['record_id']:
         record = env.storage.get_record_by_id(record_data['record_id'])
     elif record_data.get('prefilled_json') is not None and record_data['prefilled_json']:
-        prefilled_json = record_data['prefilled_json']
-        prefilled = json.loads(r"" + prefilled_json)
-        record = map_dict_to_record(prefilled.get('id_'), prefilled)
+        try:
+            prefilled_json = record_data['prefilled_json']
+            prefilled = json.loads(r"" + prefilled_json)
+            record = map_dict_to_record(prefilled.get('id_'), prefilled)
+        except json.decoder.JSONDecodeError:
+            prefilled_json = record_data['prefilled_json']
+            prefilled_unescaped = html.unescape(prefilled_json)
+            prefilled_slash_escaped = prefilled_unescaped.replace('\\', '\\\\')
+            prefilled = json.loads(prefilled_slash_escaped)
+            record = map_dict_to_record(prefilled.get('id_'), prefilled)
     else:
         record = None
 
