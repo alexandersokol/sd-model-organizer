@@ -157,6 +157,44 @@ def _ui_hash_cache():
     save_hash_button.click(fn=_on_hash_cache_save_click, inputs=hash_cache_json)
 
 
+def _on_remove_duplicates_click():
+    records = env.storage.get_all_records()
+    counter_set = set()
+    duplicates_list = []
+
+    for record in records:
+        key = f'{record.name}-{record.url}'
+        if key in counter_set:
+            duplicates_list.append(record)
+        else:
+            counter_set.add(key)
+
+    for record in duplicates_list:
+        env.storage.remove_record(record.id_)
+
+    return f'{len(duplicates_list)} duplicates has been removed.'
+
+
+def _on_remove_all_records_click():
+    records = env.storage.get_all_records()
+    for record in records:
+        env.storage.remove_record(record.id_)
+        
+    return "All records has been removed."
+
+
+def _ui_debug_utils():
+    with gr.Row():
+        with gr.Column():
+            remove_duplicates_button = gr.Button("Remove Records duplicate")
+            remove_all_records = gr.Button("Remove all Records")
+        with gr.Column():
+            debug_html_output = gr.HTML()
+
+    remove_duplicates_button.click(fn=_on_remove_duplicates_click, outputs=[debug_html_output])
+    remove_all_records.click(fn=_on_remove_all_records_click, outputs=[debug_html_output])
+
+
 def debug_ui_block():
     with gr.Column():
         with gr.Row():
@@ -174,5 +212,8 @@ def debug_ui_block():
 
         with gr.Tab('Hash cache'):
             _ui_hash_cache()
+
+        with gr.Tab('Utils'):
+            _ui_debug_utils()
 
     back_button.click(fn=None, _js='navigateBack')
