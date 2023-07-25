@@ -464,6 +464,7 @@
     border-radius: 8px;
     /*justify-self: start;*/
     position: relative;
+    overflow: hidden;
 }
 
 .mo-card img {
@@ -472,6 +473,10 @@
     border-radius: 8px;
     object-fit: cover;
     object-position: center;
+}
+
+.blur img {
+    filter: blur(10px);
 }
 
 .mo-card-blur-overlay-bottom {
