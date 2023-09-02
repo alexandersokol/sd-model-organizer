@@ -19,7 +19,7 @@ function findElem(elementId) {
  * Prints log into console. Must be disabled before merging into main branch.
  * @param text
  */
-function log(text) {
+function logMo(text) {
     // console.log(text)
 }
 
@@ -58,7 +58,7 @@ function setupDescriptionPreview(content, theme) {
  * @returns {*[]} Gradio wants an array returned.
  */
 function handleDescriptionPreviewContentChange(content) {
-    log('handleDescriptionPreviewContentChange')
+    logMo('handleDescriptionPreviewContentChange')
 
     getTheme()
         .then(theme => {
@@ -102,7 +102,7 @@ function setupDescriptionEdit(content, theme) {
  * @returns {*[]} Gradio wants an array returned.
  */
 function handleDescriptionEditorContentChange(content) {
-    log('handleDescriptionEditorContentChange')
+    logMo('handleDescriptionEditorContentChange')
 
     getTheme()
         .then(theme => {
@@ -113,7 +113,7 @@ function handleDescriptionEditorContentChange(content) {
 }
 
 function handleRecordSave() {
-    log('Handling record save')
+    logMo('Handling record save')
 
     // This random token required to trigger change event in gradio in the textbox widget :/
     const token = '<[[token="' + generateUUID() + '"]]>'
@@ -129,7 +129,7 @@ function handleRecordSave() {
     const event = new Event('input', {'bubbles': true, "composed": true});
     textArea.value = output
     findElem('mo-description-output-widget').querySelector('textarea').dispatchEvent(event);
-    console.log('Description content dispatched: ' + output)
+    logMo('Description content dispatched: ' + output)
     return []
 }
 
@@ -139,12 +139,12 @@ function updateDownloadBlockVisibility(id, tag, isVisible, visibleUnit) {
 
     if (block) {
         block.style.display = isVisible ? visibleUnit : 'none'
-        log(block.id + " display =" + block.style.display)
+        logMo(block.id + " display =" + block.style.display)
     }
 
     if (previewBlock) {
         previewBlock.style.display = isVisible ? visibleUnit : 'none'
-        log(previewBlock.id + " display =" + previewBlock.style.display)
+        logMo(previewBlock.id + " display =" + previewBlock.style.display)
     }
 }
 
@@ -175,9 +175,9 @@ function updateDownloadCardState(id, state) {
     } else {
         return
     }
-    log(cardClass)
+    logMo(cardClass)
     const className = 'mo-downloads-card ' + cardClass
-    log(className)
+    logMo(className)
     const cardElement = findElem('download-card-' + id)
     cardElement.className = className
     findElem('status-' + id).textContent = state
@@ -298,7 +298,7 @@ function populateBackstack() {
     if (Boolean(currentNavigationJson)) {
 
         const currentNavigation = JSON.parse(currentNavigationJson);
-        log('Current Navigation: ' + currentNavigation)
+        logMo('Current Navigation: ' + currentNavigation)
 
         if (currentNavigation.hasOwnProperty('backstack')) {
             currentNavigation.backstack.forEach(function (item, index) {
@@ -310,16 +310,16 @@ function populateBackstack() {
         if (currentNavigation.hasOwnProperty('token')) {
             delete currentNavigation.token;
         }
-        log('previous backstack: ' + backstack)
+        logMo('previous backstack: ' + backstack)
 
         backstack.unshift(currentNavigation);
-        log('new backstack: ' + backstack)
+        logMo('new backstack: ' + backstack)
     }
     return backstack
 }
 
 function navigateHome() {
-    log('Navigate home screen')
+    logMo('Navigate home screen')
     const navObj = {};
     deliverNavObject(navObj)
     return []
@@ -331,7 +331,7 @@ function navigateBack() {
     let backNav = {}
     if (Boolean(currentNavigationJson)) {
         const currentNavigation = JSON.parse(currentNavigationJson);
-        log('Current Navigation: ' + currentNavigation)
+        logMo('Current Navigation: ' + currentNavigation)
 
         if (currentNavigation.hasOwnProperty('backstack') && currentNavigation.backstack.length !== 0) {
             backNav = currentNavigation.backstack.shift()
@@ -346,7 +346,7 @@ function navigateBack() {
 }
 
 function navigateDetails(id) {
-    log('Navigate details screen for id: ' + id)
+    logMo('Navigate details screen for id: ' + id)
     const navObj = {
         screen: "details",
         record_id: id,
@@ -358,7 +358,7 @@ function navigateDetails(id) {
 }
 
 function navigateAdd() {
-    log('Navigate add screen')
+    logMo('Navigate add screen')
     const navObj = {
         screen: "edit",
         token: generateUUID(),
@@ -369,7 +369,7 @@ function navigateAdd() {
 }
 
 function navigateImportExport(filter_state) {
-    log('Navigate import_export screen')
+    logMo('Navigate import_export screen')
     const navObj = {
         screen: "import_export",
         token: generateUUID(),
@@ -381,7 +381,7 @@ function navigateImportExport(filter_state) {
 }
 
 function navigateDebug() {
-    log('Navigate debug screen')
+    logMo('Navigate debug screen')
     const navObj = {
         screen: "debug",
         token: generateUUID(),
@@ -392,7 +392,7 @@ function navigateDebug() {
 }
 
 function navigateEdit(id) {
-    log('Navigate edit screen for id: ' + id)
+    logMo('Navigate edit screen for id: ' + id)
     const navObj = {
         screen: "edit",
         record_id: id,
@@ -404,7 +404,7 @@ function navigateEdit(id) {
 }
 
 function navigateEditPrefilled(json_data) {
-    log('Navigate edit screen for prefilled json: ' + json_data)
+    logMo('Navigate edit screen for prefilled json: ' + json_data)
     const navObj = {
         screen: "edit",
         prefilled_json: json_data,
@@ -416,7 +416,7 @@ function navigateEditPrefilled(json_data) {
 }
 
 function navigateDownloadRecord(id) {
-    log('Navigate download screen for id: ' + id)
+    logMo('Navigate download screen for id: ' + id)
     const navObj = {
         screen: "download",
         record_id: id,
@@ -428,7 +428,7 @@ function navigateDownloadRecord(id) {
 }
 
 function navigateDownloadRecordList(filter_state) {
-    log('Navigate download screen for records with filter state: ' + filter_state)
+    logMo('Navigate download screen for records with filter state: ' + filter_state)
     const navObj = {
         screen: "download",
         filter_state: filter_state,
@@ -440,7 +440,7 @@ function navigateDownloadRecordList(filter_state) {
 }
 
 function navigateDownloadGroup(groupName) {
-    log('Navigate download screen for group: ' + groupName)
+    logMo('Navigate download screen for group: ' + groupName)
     const navObj = {
         screen: "download",
         group: groupName,
@@ -452,7 +452,7 @@ function navigateDownloadGroup(groupName) {
 }
 
 function navigateRemove(id) {
-    log('Navigate removal screen for id: ' + id)
+    logMo('Navigate removal screen for id: ' + id)
     const navObj = {
         screen: "remove",
         record_id: id,
@@ -469,11 +469,11 @@ function deliverNavObject(navObj) {
     const event = new Event('input', {'bubbles': true, "composed": true});
     textArea.value = navJson
     findElem('mo_json_nav_box').querySelector('textarea').dispatchEvent(event);
-    console.log('JSON Nav dispatched: ' + navJson)
+    logMo('JSON Nav dispatched: ' + navJson)
 }
 
 function invokeHomeInitialStateLoad() {
-    log('invokeHomeInitialStateLoad')
+    logMo('invokeHomeInitialStateLoad')
     if (!isHomeInitialStateInvoked) {
         const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
         const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
@@ -481,7 +481,7 @@ function invokeHomeInitialStateLoad() {
         const event = new Event('input', {'bubbles': true, "composed": true});
         findElem('mo-home-state-box').querySelector('textarea').dispatchEvent(event);
         isHomeInitialStateInvoked = true
-        log('initial home state invoked')
+        logMo('initial home state invoked')
     }
     return []
 }
@@ -491,14 +491,14 @@ function getTheme() {
         const parsedUrl = new URL(window.location.href)
         const theme = parsedUrl.searchParams.get('__theme')
         if (theme != null) {
-            log('theme resolved: ' + theme)
+            logMo('theme resolved: ' + theme)
             resolve(theme)
         } else {
             fetch(origin + '/mo/display-options')
                 .then(response => response.json())
                 .then(data => {
-                    log('display options received:')
-                    log(data)
+                    logMo('display options received:')
+                    logMo(data)
                     resolve(data.theme)
                 })
                 .catch(_ => {
@@ -536,14 +536,14 @@ function installStyles(theme) {
     const linkElementColors = document.createElement('link');
     linkElementColors.rel = 'stylesheet';
 
-    log("theme:" + theme)
+    logMo("theme:" + theme)
     const timestamp = '?v=' + new Date().getTime();
 
     if (theme === 'dark') {
-        log('installing dark theme')
+        logMo('installing dark theme')
         linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-dark.css' + timestamp;
     } else {
-        log('installing light theme')
+        logMo('installing light theme')
         linkElementColors.href = 'file=extensions/sd-model-organizer/styles/colors-light.css' + timestamp;
     }
 
@@ -556,7 +556,7 @@ function installStyles(theme) {
 }
 
 onUiLoaded(function () {
-    log("UI loaded")
+    logMo("UI loaded")
     const homeTab = findElem('mo_home_tab')
     const intersectionObserver = new IntersectionObserver((entries) => {
         if (entries[0].intersectionRatio > 0) invokeHomeInitialStateLoad();
