@@ -1,5 +1,8 @@
+import hashlib
 import json
 import os
+import time
+import zlib
 
 import gradio as gr
 
@@ -68,6 +71,81 @@ def _on_read_hash_click():
     ]
 
 
+def calculate_crc32(file_path):
+    # Initialize the CRC32 checksum
+    crc32 = 0
+
+    try:
+        # Open the file in binary mode
+        with open(file_path, "rb") as file:
+            # Read the file in chunks to conserve memory
+            chunk_size = 1024  # You can adjust this according to your needs
+            while True:
+                data = file.read(chunk_size)
+                if not data:
+                    break
+                crc32 = zlib.crc32(data, crc32)
+
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+
+    # Ensure the CRC32 value is a positive integer
+    crc32 = crc32 & 0xFFFFFFFF
+
+    return hex(crc32)[2:]
+
+
+def calculate_md5(file_path):
+    # Create an instance of the MD5 hash object
+    md5_hash = hashlib.md5()
+
+    try:
+        # Open the file in binary mode
+        with open(file_path, "rb") as file:
+            # Read the file in chunks to conserve memory
+            chunk_size = 8192  # You can adjust this according to your needs
+            while True:
+                data = file.read(chunk_size)
+                if not data:
+                    break
+                md5_hash.update(data)
+
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+
+    # Get the MD5 hash value as a hexadecimal string
+    md5_hex = md5_hash.hexdigest()
+
+    return md5_hex
+
+
+def calculate_adler32(file_path):
+    # Initialize the Adler-32 checksum
+    adler32_checksum = zlib.adler32(b'', 0)
+
+    try:
+        # Open the file in binary mode
+        with open(file_path, "rb") as file:
+            # Read the file in chunks to conserve memory
+            chunk_size = 1024  # You can adjust this according to your needs
+            while True:
+                data = file.read(chunk_size)
+                if not data:
+                    break
+                adler32_checksum = zlib.adler32(data, adler32_checksum)
+
+        # Ensure the Adler-32 value is a positive integer
+        adler32_checksum &= 0xFFFFFFFF
+
+        return hex(adler32_checksum)[2:]
+
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+
+
 def _on_calculate_hash_click():
     result = []
 
@@ -76,10 +154,34 @@ def _on_calculate_hash_click():
         local = []
         files = get_model_files_in_dir(dir_path)
         for file in files:
+            start_ms = int(time.time() * 1000)
+            sha256 = calculate_sha256(file)
+            time_spent_sha256 = int(time.time() * 1000) - start_ms
+
+            start_ms = int(time.time() * 1000)
+            crc32 = calculate_crc32(file)
+            time_spent_crc32 = int(time.time() * 1000) - start_ms
+
+            start_ms = int(time.time() * 1000)
+            md5 = calculate_md5(file)
+            time_spent_md5 = int(time.time() * 1000) - start_ms
+
+            start_ms = int(time.time() * 1000)
+            adler32 = calculate_adler32(file)
+            time_spent_adler32 = int(time.time() * 1000) - start_ms
+
             rec = {
                 'path': file,
+                'file_size': os.path.getsize(file),
                 'temp_hash': calculate_file_temp_hash(file),
-                'sha256': calculate_sha256(file)
+                'sha256': sha256,
+                'sha256_time_ms': time_spent_sha256,
+                'crc32': crc32,
+                'crc32_time_ms': time_spent_crc32,
+                'md5': md5,
+                'md5_time_ms': time_spent_md5,
+                'adler32': adler32,
+                'adler32_time_ms': time_spent_adler32
             }
             local.append(rec)
         return local
@@ -179,7 +281,7 @@ def _on_remove_all_records_click():
     records = env.storage.get_all_records()
     for record in records:
         env.storage.remove_record(record.id_)
-        
+
     return "All records has been removed."
 
 
