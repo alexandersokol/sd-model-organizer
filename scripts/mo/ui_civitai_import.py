@@ -365,6 +365,10 @@ def _on_edit_clicked(state, import_url, name, model_type_value, tags, model_vers
         ]
 
 
+def _on_gallery_select(data: gr.SelectData):
+    return data.value
+
+
 def civitai_import_ui_block():
     import_url_textbox = gr.Textbox('',
                                     label='civitai model url or id.',
@@ -402,11 +406,15 @@ def civitai_import_ui_block():
 
         preview_url_textbox = gr.Textbox(label='Preview image URL',
                                          interactive=True,
-                                         info='First image selected by default. You can copy-paste another preview url '
+                                         info='First image selected by default. You can select another preview url '
                                               'from the \"Image Previews\" gallery below.')
 
         with gr.Accordion(label='Image previews', open=False):
-            preview_gallery = gr.Gallery(elem_id='preview_gallery').style(grid=10, height="auto")
+            preview_gallery = gr.Gallery(elem_id='preview_gallery',
+                                         columns=10,
+                                         allow_preview=True)
+            preview_gallery.select(_on_gallery_select,
+                                   None, preview_url_textbox)
 
         description_checkbox = gr.Checkbox(label='Include description',
                                            interactive=True,
