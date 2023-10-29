@@ -181,7 +181,6 @@ def resize_preview_image(input_file, output_file):
             pnginfo.add_text("parameters", image.info["parameters"])
             image.save(output_file, image_format, pnginfo=pnginfo)
         else:
-            print(image.info)
             image.save(output_file, image_format, exif=image.info["exif"])
 
 
