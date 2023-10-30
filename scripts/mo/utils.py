@@ -173,15 +173,19 @@ def resize_preview_image(input_file, output_file):
             pnginfo = PngInfo()
             pnginfo.add_text("parameters", image.info["parameters"])
             canvas.save(output_file, image_format, pnginfo=pnginfo)
+        elif "exif" in image.info:
+            image.save(output_file, image_format, exif=image.info["exif"])
         else:
-            canvas.save(output_file, image_format, exif=image.info["exif"])
+            image.save(output_file, image_format)
     else:
         if "parameters" in image.info:
             pnginfo = PngInfo()
             pnginfo.add_text("parameters", image.info["parameters"])
             image.save(output_file, image_format, pnginfo=pnginfo)
-        else:
+        elif "exif" in image.info:
             image.save(output_file, image_format, exif=image.info["exif"])
+        else:
+            image.save(output_file, image_format)
 
 
 def calculate_file_temp_hash(file_path):
