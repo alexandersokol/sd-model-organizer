@@ -2,12 +2,13 @@ import os
 import sqlite3
 import threading
 from typing import List
+from modules import shared
 
 from scripts.mo.data.storage import Storage
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 
-_DB_FILE = 'database.sqlite'
+_DB_FILE = "database.sqlite"
 _DB_VERSION = 5
 _DB_TIMEOUT = 30
 
@@ -28,28 +29,30 @@ def map_row_to_record(row) -> Record:
         sha256_hash=row[11],
         md5_hash=row[12],
         created_at=row[13],
-        groups=row[14].split(',') if row[14] else [],
+        groups=row[14].split(",") if row[14] else [],
         subdir=row[15],
-        location=row[16]
+        location=row[16],
     )
 
 
 class SQLiteStorage(Storage):
-
     def __init__(self):
         self.local = threading.local()
         self._initialize()
 
     def _connection(self):
         if not hasattr(self.local, "connection"):
-            db_file_path = os.path.join(env.script_dir, _DB_FILE)
+            mo_database_dir = getattr(shared.cmd_opts, "mo_database_dir")
+            database_dir = mo_database_dir if mo_database_dir is not None else env.script_dir
+            db_file_path = os.path.join(database_dir, _DB_FILE)
             self.local.connection = sqlite3.connect(db_file_path, _DB_TIMEOUT)
         return self.local.connection
 
     def _initialize(self):
         cursor = self._connection().cursor()
 
-        cursor.execute('''CREATE TABLE IF NOT EXISTS Record
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS Record
                                     (id INTEGER PRIMARY KEY,
                                     _name TEXT,
                                     model_type TEXT,
@@ -67,20 +70,25 @@ class SQLiteStorage(Storage):
                                     groups TEXT DEFAULT '',
                                     subdir TEXT DEFAULT '',
                                     location TEXT DEFAULT '')
-                                 ''')
+                                 """
+        )
 
-        cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
-                                (version INTEGER DEFAULT {_DB_VERSION})''')
+        cursor.execute(
+            f"""CREATE TABLE IF NOT EXISTS Version
+                                (version INTEGER DEFAULT {_DB_VERSION})"""
+        )
         self._connection().commit()
         self._check_database_version()
 
     def _check_database_version(self):
         cursor = self._connection().cursor()
-        cursor.execute('SELECT * FROM Version ', )
+        cursor.execute(
+            "SELECT * FROM Version ",
+        )
         row = cursor.fetchone()
 
         if row is None:
-            cursor.execute(f'INSERT INTO Version VALUES ({_DB_VERSION})')
+            cursor.execute(f"INSERT INTO Version VALUES ({_DB_VERSION})")
             self._connection().commit()
 
         version = _DB_VERSION if row is None else row[0]
@@ -98,20 +106,20 @@ class SQLiteStorage(Storage):
             elif ver == 4:
                 self._migrate_4_to_5()
             else:
-                raise Exception(f'Missing SQLite migration from {ver} to {_DB_VERSION}')
+                raise Exception(f"Missing SQLite migration from {ver} to {_DB_VERSION}")
 
     def _migrate_1_to_2(self):
         cursor = self._connection().cursor()
-        cursor.execute('ALTER TABLE Record ADD COLUMN created_at INTEGER DEFAULT 0;')
+        cursor.execute("ALTER TABLE Record ADD COLUMN created_at INTEGER DEFAULT 0;")
         cursor.execute("DELETE FROM Version")
-        cursor.execute('INSERT INTO Version VALUES (2)')
+        cursor.execute("INSERT INTO Version VALUES (2)")
         self._connection().commit()
 
     def _migrate_2_to_3(self):
         cursor = self._connection().cursor()
         cursor.execute("ALTER TABLE Record ADD COLUMN groups TEXT DEFAULT '';")
         cursor.execute("DELETE FROM Version")
-        cursor.execute('INSERT INTO Version VALUES (3)')
+        cursor.execute("INSERT INTO Version VALUES (3)")
         self._connection().commit()
 
     def _migrate_3_to_4(self):
@@ -119,36 +127,41 @@ class SQLiteStorage(Storage):
         cursor.execute("ALTER TABLE Record RENAME COLUMN model_hash TO sha256_hash;")
         cursor.execute("ALTER TABLE Record ADD COLUMN subdir TEXT DEFAULT '';")
         cursor.execute("DELETE FROM Version")
-        cursor.execute('INSERT INTO Version VALUES (4)')
+        cursor.execute("INSERT INTO Version VALUES (4)")
         self._connection().commit()
 
     def _migrate_4_to_5(self):
         cursor = self._connection().cursor()
         cursor.execute("ALTER TABLE Record ADD COLUMN location TEXT DEFAULT '';")
         cursor.execute("DELETE FROM Version")
-        cursor.execute('INSERT INTO Version VALUES (5)')
+        cursor.execute("INSERT INTO Version VALUES (5)")
         self._connection().commit()
 
     def get_all_records(self) -> List:
         cursor = self._connection().cursor()
-        cursor.execute('SELECT * FROM Record')
+        cursor.execute("SELECT * FROM Record")
         rows = cursor.fetchall()
         result = []
         for row in rows:
             result.append(map_row_to_record(row))
         return result
 
-    def query_records(self, name_query: str = None, groups=None, model_types=None, show_downloaded=True,
-                      show_not_downloaded=True) -> List:
-
-        query = 'SELECT * FROM Record'
+    def query_records(
+        self,
+        name_query: str = None,
+        groups=None,
+        model_types=None,
+        show_downloaded=True,
+        show_not_downloaded=True,
+    ) -> List:
+        query = "SELECT * FROM Record"
 
         is_where_appended = False
         append_and = False
 
         if name_query is not None and name_query:
             if not is_where_appended:
-                query += ' WHERE'
+                query += " WHERE"
                 is_where_appended = True
 
             query += f" LOWER(_name) LIKE '%{name_query}%'"
@@ -156,36 +169,36 @@ class SQLiteStorage(Storage):
 
         if model_types is not None and len(model_types) > 0:
             if not is_where_appended:
-                query += ' WHERE'
+                query += " WHERE"
                 is_where_appended = True
 
             if append_and:
-                query += ' AND'
+                query += " AND"
 
-            query += ' ('
+            query += " ("
             append_or = False
             for model_type in model_types:
                 if append_or:
-                    query += ' OR'
+                    query += " OR"
                 query += f" model_type='{model_type}'"
                 append_or = True
 
-            query += ')'
+            query += ")"
 
             append_and = True
             pass
 
         if groups is not None and len(groups) > 0:
             if not is_where_appended:
-                query += ' WHERE'
+                query += " WHERE"
 
             for group in groups:
                 if append_and:
-                    query += ' AND'
+                    query += " AND"
                 query += f" LOWER(groups) LIKE '%{group}%'"
                 append_and = True
 
-        logger.debug(f'query: {query}')
+        logger.debug(f"query: {query}")
         cursor = self._connection().cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -203,7 +216,7 @@ class SQLiteStorage(Storage):
 
     def get_record_by_id(self, id_) -> Record:
         cursor = self._connection().cursor()
-        cursor.execute('SELECT * FROM Record WHERE id=?', (id_,))
+        cursor.execute("SELECT * FROM Record WHERE id=?", (id_,))
         row = cursor.fetchone()
         return None if row is None else map_row_to_record(row)
 
@@ -234,7 +247,7 @@ class SQLiteStorage(Storage):
             record.created_at,
             ",".join(record.groups),
             record.subdir,
-            record.location
+            record.location,
         )
         cursor.execute(
             """INSERT INTO Record(
@@ -254,7 +267,8 @@ class SQLiteStorage(Storage):
                     groups,
                     subdir,
                     location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            data)
+            data,
+        )
         self._connection().commit()
 
     def update_record(self, record: Record):
@@ -275,7 +289,7 @@ class SQLiteStorage(Storage):
             ",".join(record.groups),
             record.subdir,
             record.location,
-            record.id_
+            record.id_,
         )
         cursor.execute(
             """UPDATE Record SET 
@@ -295,7 +309,8 @@ class SQLiteStorage(Storage):
                     subdir=?,
                     location=?
                 WHERE id=?
-            """, data
+            """,
+            data,
         )
 
         self._connection().commit()
@@ -307,7 +322,7 @@ class SQLiteStorage(Storage):
 
     def get_available_groups(self) -> List:
         cursor = self._connection().cursor()
-        cursor.execute('SELECT groups FROM Record')
+        cursor.execute("SELECT groups FROM Record")
         rows = cursor.fetchall()
         result = []
         for row in rows:
@@ -319,7 +334,7 @@ class SQLiteStorage(Storage):
 
     def get_all_records_locations(self) -> List:
         cursor = self._connection().cursor()
-        cursor.execute('SELECT location FROM Record')
+        cursor.execute("SELECT location FROM Record")
         rows = cursor.fetchall()
         result = []
         for row in rows:
