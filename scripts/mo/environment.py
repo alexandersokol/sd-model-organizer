@@ -6,20 +6,20 @@ from typing import Callable
 from scripts.mo.models import ModelType, Record
 from scripts.mo.data.storage import Storage
 
-STORAGE_SQLITE = "SQLite"
-STORAGE_FIREBASE = "Firebase"
+STORAGE_SQLITE = 'SQLite'
+STORAGE_FIREBASE = 'Firebase'
 
-LAYOUT_CARDS = "Cards"
-LAYOUT_TABLE = "Table"
+LAYOUT_CARDS = 'Cards'
+LAYOUT_TABLE = 'Table'
 
 DEFAULT_CARD_WIDTH = 250
 DEFAULT_CARD_HEIGHT = 350
 
-_SETTINGS_FILE = "settings.txt"
+_SETTINGS_FILE = 'settings.txt'
 
 
 class CustomFormatter(logging.Formatter):
-    light_green = "\033[92m"
+    light_green = '\033[92m'
     grey = "\x1b[38;20m"
     yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"
@@ -32,7 +32,7 @@ class CustomFormatter(logging.Formatter):
         logging.INFO: light_green + format + reset,
         logging.WARNING: yellow + format + reset,
         logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
     }
 
     def format(self, record):
@@ -75,10 +75,10 @@ class Environment:
     is_debug_mode_enabled: Callable[[], bool]
 
     def is_storage_initialized(self) -> bool:
-        return hasattr(self, "storage")
+        return hasattr(self, 'storage')
 
     def is_storage_has_errors(self) -> bool:
-        return hasattr(self, "storage_error")
+        return hasattr(self, 'storage_error')
 
     def get_model_path(self, model_type: ModelType):
         if model_type == ModelType.CHECKPOINT:
@@ -108,25 +108,25 @@ class Environment:
 
         result = {}
         for line in lines:
-            key, value = line.strip().split(": ")
+            key, value = line.strip().split(': ')
             result[key] = value
-            logger.info(f"{key}: {value}")
-        logger.info("Settings loaded.")
+            logger.info(f'{key}: {value}')
+        logger.info('Settings loaded.')
         return result
 
     @staticmethod
     def save_settings(settings: dict):
-        with open(os.path.join(env.script_dir, _SETTINGS_FILE), "w") as f:
+        with open(os.path.join(env.script_dir, _SETTINGS_FILE), 'w') as f:
             for key, value in settings.items():
-                f.write(f"{key}: {value}\n")
-            logger.info("Settings saved")
+                f.write(f'{key}: {value}\n')
+            logger.info('Settings saved')
 
 
 env = Environment()
 
 
 def calculate_md5(file_path):
-    with open(file_path, "rb") as f:
+    with open(file_path, 'rb') as f:
         md5 = hashlib.md5()
         while True:
             data = f.read(1024)

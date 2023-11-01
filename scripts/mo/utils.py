@@ -12,9 +12,9 @@ from PIL.PngImagePlugin import PngInfo
 from scripts.mo.environment import env
 from scripts.mo.models import Record
 
-_HASH_CACHE_FILENAME = "hash_cache.json"
+_HASH_CACHE_FILENAME = 'hash_cache.json'
 
-MODEL_EXTENSIONS = [".bin", ".ckpt", ".safetensors", ".pt"]
+MODEL_EXTENSIONS = ['.bin', '.ckpt', '.safetensors', '.pt']
 PREVIEW_EXTENSIONS = [".png", ".jpg", ".webp"]
 INFO_EXTENSIONS = [".info", ".civitai.info"]
 
@@ -35,7 +35,7 @@ def is_valid_url(url: str) -> bool:
     :return: True if url is valid.
     """
     parsed_url = urllib.parse.urlparse(url)
-    return parsed_url.scheme in ["http", "https"]
+    return parsed_url.scheme in ['http', 'https']
 
 
 def is_valid_filename(filename: str) -> bool:
@@ -54,8 +54,8 @@ def get_model_files_in_dir(lookup_dir: str) -> List:
     :param lookup_dir: directory path to scan.
     :return: List of models in the directory and subdirectories.
     """
-    root_dir = os.path.join(lookup_dir, "")
-    extensions = (".bin", ".ckpt", ".safetensors", ".pt")
+    root_dir = os.path.join(lookup_dir, '')
+    extensions = ('.bin', '.ckpt', '.safetensors', '.pt')
     result = []
 
     if os.path.isdir(root_dir):
@@ -77,7 +77,7 @@ def get_model_filename_without_extension(model_file):
     filename = os.path.basename(model_file)
     for ext in MODEL_EXTENSIONS:
         if filename.endswith(ext):
-            return filename[: -len(ext)]
+            return filename[:-len(ext)]
     return filename
 
 
@@ -91,9 +91,7 @@ def find_preview_file(model_file_path):
         filename_no_ext = get_model_filename_without_extension(model_file_path)
         path = os.path.join(os.path.dirname(model_file_path), filename_no_ext)
 
-        potential_files = sum(
-            [[path + ext, path + ".preview" + ext] for ext in PREVIEW_EXTENSIONS], []
-        )
+        potential_files = sum([[path + ext, path + ".preview" + ext] for ext in PREVIEW_EXTENSIONS], [])
 
         for file in potential_files:
             if os.path.isfile(file):
@@ -127,12 +125,8 @@ def link_preview(preview_path):
     :param preview_path: path to model preview.
     :return: link to model preview image.
     """
-    return (
-        "./mo/thumbnail?filename="
-        + urllib.parse.quote(preview_path.replace("\\", "/"))
-        + "&mtime="
-        + str(os.path.getmtime(preview_path))
-    )
+    return "./mo/thumbnail?filename=" + urllib.parse.quote(preview_path.replace('\\', '/')) + "&mtime=" + \
+        str(os.path.getmtime(preview_path))
 
 
 def resize_preview_image(input_file, output_file):
@@ -169,21 +163,21 @@ def resize_preview_image(input_file, output_file):
 
         canvas.paste(resized_image, (x_position, y_position))
 
-        if "parameters" in image.info:
+        if 'parameters' in image.info:
             pnginfo = PngInfo()
-            pnginfo.add_text("parameters", image.info["parameters"])
+            pnginfo.add_text('parameters', image.info['parameters'])
             canvas.save(output_file, image_format, pnginfo=pnginfo)
-        elif "exif" in image.info:
-            image.save(output_file, image_format, exif=image.info["exif"])
+        elif 'exif' in image.info:
+            canvas.save(output_file, image_format, exif=image.info['exif'])
         else:
-            image.save(output_file, image_format)
+            canvas.save(output_file, image_format)
     else:
-        if "parameters" in image.info:
+        if 'parameters' in image.info:
             pnginfo = PngInfo()
-            pnginfo.add_text("parameters", image.info["parameters"])
+            pnginfo.add_text('parameters', image.info['parameters'])
             image.save(output_file, image_format, pnginfo=pnginfo)
-        elif "exif" in image.info:
-            image.save(output_file, image_format, exif=image.info["exif"])
+        elif 'exif' in image.info:
+            image.save(output_file, image_format, exif=image.info['exif'])
         else:
             image.save(output_file, image_format)
 
@@ -203,10 +197,10 @@ def calculate_file_temp_hash(file_path):
 
     size = os.path.getsize(file_path)
 
-    input_string = f"{creation_datetime} {modification_datetime} {size}"
+    input_string = f'{creation_datetime} {modification_datetime} {size}'
 
     md5_hash = hashlib.md5()
-    md5_hash.update(input_string.encode("utf-8"))
+    md5_hash.update(input_string.encode('utf-8'))
     return md5_hash.hexdigest()
 
 
@@ -216,7 +210,7 @@ def calculate_sha256(file_path):
     :param file_path: target file path.
     :return: SHA256 hex digest string.
     """
-    with open(file_path, "rb") as file:
+    with open(file_path, 'rb') as file:
         sha256_hash = hashlib.sha256()
         while chunk := file.read(4096):
             sha256_hash.update(chunk)
@@ -249,7 +243,7 @@ def write_hash_cache(hash_cache: List):
     :param hash_cache: list of dictionaries to save.
     :return: None.
     """
-    with open(get_hash_cache_file(), "w") as file:
+    with open(get_hash_cache_file(), 'w') as file:
         json.dump(hash_cache, file, indent=4)
 
 
