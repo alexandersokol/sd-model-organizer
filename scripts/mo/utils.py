@@ -7,6 +7,7 @@ import urllib.parse
 from typing import List
 
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 
 from scripts.mo.environment import env
 from scripts.mo.models import Record
@@ -136,31 +137,49 @@ def resize_preview_image(input_file, output_file):
     :return: None
     """
     image = Image.open(input_file)
+    image_format = image.format
 
-    desired_width = int(env.card_width() * 1.5)
-    desired_height = int(env.card_height() * 1.5)
+    if env.resize_preview():
+        desired_width = int(env.card_width() * 1.5)
+        desired_height = int(env.card_height() * 1.5)
 
-    aspect_ratio = image.width / image.height
+        aspect_ratio = image.width / image.height
 
-    desired_aspect_ratio = desired_width / desired_height
+        desired_aspect_ratio = desired_width / desired_height
 
-    if aspect_ratio > desired_aspect_ratio:
-        new_width = int(desired_height * aspect_ratio)
-        new_height = desired_height
+        if aspect_ratio > desired_aspect_ratio:
+            new_width = int(desired_height * aspect_ratio)
+            new_height = desired_height
+        else:
+            new_width = desired_width
+            new_height = int(desired_width / aspect_ratio)
+
+        resized_image = image.resize((new_width, new_height), Image.LANCZOS)
+
+        canvas = Image.new("RGB", (desired_width, desired_height))
+
+        x_position = (desired_width - new_width) // 2
+        y_position = (desired_height - new_height) // 2
+
+        canvas.paste(resized_image, (x_position, y_position))
+
+        if 'parameters' in image.info:
+            pnginfo = PngInfo()
+            pnginfo.add_text('parameters', image.info['parameters'])
+            canvas.save(output_file, image_format, pnginfo=pnginfo)
+        elif 'exif' in image.info:
+            canvas.save(output_file, image_format, exif=image.info['exif'])
+        else:
+            canvas.save(output_file, image_format)
     else:
-        new_width = desired_width
-        new_height = int(desired_width / aspect_ratio)
-
-    resized_image = image.resize((new_width, new_height), Image.LANCZOS)
-
-    canvas = Image.new("RGB", (desired_width, desired_height))
-
-    x_position = (desired_width - new_width) // 2
-    y_position = (desired_height - new_height) // 2
-
-    canvas.paste(resized_image, (x_position, y_position))
-
-    canvas.save(output_file, "JPEG")
+        if 'parameters' in image.info:
+            pnginfo = PngInfo()
+            pnginfo.add_text('parameters', image.info['parameters'])
+            image.save(output_file, image_format, pnginfo=pnginfo)
+        elif 'exif' in image.info:
+            image.save(output_file, image_format, exif=image.info['exif'])
+        else:
+            image.save(output_file, image_format)
 
 
 def calculate_file_temp_hash(file_path):

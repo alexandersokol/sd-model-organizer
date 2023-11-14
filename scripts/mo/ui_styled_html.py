@@ -79,6 +79,26 @@ def _model_type_css_class(model_type: ModelType) -> str:
     return css_class
 
 
+def _model_card_type_css_class(model_type: ModelType) -> str:
+    if model_type == ModelType.CHECKPOINT:
+        css_class = 'mo-card-checkpoint'
+    elif model_type == ModelType.VAE:
+        css_class = 'mo-card-vae'
+    elif model_type == ModelType.LORA:
+        css_class = 'mo-card-lora'
+    elif model_type == ModelType.HYPER_NETWORK:
+        css_class = 'mo-card-hyper-network'
+    elif model_type == ModelType.LYCORIS:
+        css_class = 'mo-card-lycoris'
+    elif model_type == ModelType.EMBEDDING:
+        css_class = 'mo-card-embedding'
+    elif model_type == ModelType.OTHER:
+        css_class = 'mo-card-other'
+    else:
+        raise ValueError(f'Unhandled model_type value: {model_type}')
+    return css_class
+
+
 def _no_preview_image_url() -> str:
     if env.theme() == 'dark':
         return _NO_PREVIEW_DARK
@@ -317,7 +337,7 @@ def records_cards(records: List) -> str:
 
     for record in records:
         contains_nsfw = any('nsfw' in group.lower() for group in record.groups) and nsfw_blur
-        content += f'<div class="mo-card {"blur" if contains_nsfw else ""}">'
+        content += f'<div class="mo-card {_model_card_type_css_class(record.model_type)} {"blur" if contains_nsfw else ""}">'
 
         preview_url = get_best_preview_url(record)
         content += f'<img src="{preview_url}" alt="Preview Image" ' \

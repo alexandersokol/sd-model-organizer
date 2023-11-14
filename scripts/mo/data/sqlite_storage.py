@@ -2,6 +2,7 @@ import os
 import sqlite3
 import threading
 from typing import List
+from modules import shared
 
 from scripts.mo.data.storage import Storage
 from scripts.mo.environment import env, logger
@@ -42,7 +43,9 @@ class SQLiteStorage(Storage):
 
     def _connection(self):
         if not hasattr(self.local, "connection"):
-            db_file_path = os.path.join(env.script_dir, _DB_FILE)
+            mo_database_dir = getattr(shared.cmd_opts, "mo_database_dir")
+            database_dir = mo_database_dir if mo_database_dir is not None else env.script_dir
+            db_file_path = os.path.join(database_dir, _DB_FILE)
             self.local.connection = sqlite3.connect(db_file_path, _DB_TIMEOUT)
         return self.local.connection
 

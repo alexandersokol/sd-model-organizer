@@ -60,6 +60,7 @@ class Environment:
 
     storage_type: Callable[[], str]
     download_preview: Callable[[], bool]
+    resize_preview: Callable[[], bool]
     nsfw_blur: Callable[[], bool]
     model_path: Callable[[], str]
     vae_path: Callable[[], str]

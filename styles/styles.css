@@ -263,7 +263,7 @@
     line-height: 1;
     text-align: center;
     vertical-align: baseline;
-    border-radius: .25rem
+    border-bottom-right-radius: .25rem
 }
 
 .mo-details-badge {
@@ -475,6 +475,34 @@
     object-position: center;
 }
 
+.mo-card-checkpoint {
+    border: 1px solid var(--mo-badge-checkpoint-background-color) !important;
+}
+
+.mo-card-vae {
+    border: 1px solid var(--mo-badge-vae-background-color) !important;
+}
+
+.mo-card-lora {
+    border: 1px solid var(--mo-badge-lora-background-color) !important;
+}
+
+.mo-card-hyper-network {
+    border: 1px solid var(--mo-badge-hyper-network-background-color) !important;
+}
+
+.mo-card-lycoris {
+    border: 1px solid var(--mo-badge-lycoris-background-color) !important;
+}
+
+.mo-card-embedding {
+    border: 1px solid var(--mo-badge-embedding-background-color) !important;
+}
+
+.mo-card-other {
+    border: 1px solid var(--mo-badge-other-background-color) !important;
+}
+
 .blur img {
     filter: blur(10px);
 }
@@ -505,7 +533,6 @@
     width: 100%;
     height: auto;
     background: transparent;
-    padding: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -513,7 +540,7 @@
 
 .mo-card-text-left {
     margin: 0;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .mo-card-hover {

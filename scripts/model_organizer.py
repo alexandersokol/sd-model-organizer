@@ -98,6 +98,12 @@ env.download_preview = (
     else True
 )
 
+env.resize_preview = (
+    lambda: shared.opts.mo_resize_preview
+    if hasattr(shared.opts, "mo_resize_preview")
+    else True
+)
+
 env.nsfw_blur = (
     lambda: shared.opts.mo_nsfw_blur
     if hasattr(shared.opts, 'mo_nsfw_blur')
@@ -162,6 +168,7 @@ def on_ui_settings():
             {"choices": [STORAGE_SQLITE, STORAGE_FIREBASE]},
         ),
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
+        'mo_resize_preview': OptionInfo(True, 'Resize Preview'),
         'mo_nsfw_blur': OptionInfo(True, 'Blur NSFW Previews (models with "nsfw" tag)'),
     }
 
