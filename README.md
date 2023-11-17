@@ -1,6 +1,6 @@
 # SD Model Organizer
 
-SD Model Organizer is a [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui]) extension
+SD Model Organizer is a [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) extension
 that allows to store and manage own model collections, add information, own notes, previews about model. Easily download
 from any external direct link or shared file link from Google Drive. Share own models collection with json file or use
 remote Firestore database to make it available and synced on several devices.
