@@ -11,7 +11,7 @@ from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
-from scripts.mo.utils import is_blank, is_valid_filename, is_valid_url, get_model_files_in_dir
+from scripts.mo.utils import is_blank, is_valid_filename, is_valid_url, get_model_files_in_dir, find_preview_file
 
 
 def is_directory_path_valid(path):
@@ -27,7 +27,7 @@ def is_directory_path_valid(path):
 
 
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
-                                   download_path: str, download_filename: str, download_subdir: str, preview_url: str,
+                                   download_path: str, download_filename: str, rename_filename: bool, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
                                    groups, back_token: str, sha256_state, location):
     errors = []
@@ -69,6 +69,9 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         dl_subdir = os.path.join(path, download_subdir)
         if not is_directory_path_valid(dl_subdir):
             errors.append(f'Download path with SUBDIR is incorrect: {dl_subdir}')
+
+    if rename_filename:
+        _if_rename_filename_checkbox_checked(location, download_filename)
 
     if errors:
         return [
@@ -267,6 +270,24 @@ def _on_add_groups_button_click(new_groups_str: str, selected_groups, available_
         gr.Dropdown.update(choices=available_groups, value=selected_groups)
     ]
 
+def _if_rename_filename_checkbox_checked(location, download_filename):
+    if not is_blank(location) and download_filename is not None:
+        location_filename = os.path.basename(location)
+        location_extension = os.path.splitext(location_filename)[1]
+
+        download_filename = download_filename if not is_blank(os.path.splitext(download_filename)[1]) else download_filename + location_extension
+        new_location = os.path.join(os.path.dirname(location), download_filename)
+
+        location_preview = find_preview_file(location)
+        if location_preview is not None:
+            location_preview_extension = os.path.splitext(location_preview)[1]
+            preview_filename = download_filename + location_preview_extension if is_blank(os.path.splitext(download_filename)[1]) else os.path.splitext(download_filename)[0] + location_preview_extension
+            new_location_preview = os.path.join(os.path.dirname(location), preview_filename)
+            if location_preview != new_location_preview:
+                os.rename(location_preview, new_location_preview)
+
+        if location != new_location:
+            os.rename(location, new_location)
 
 def _on_local_bind_change(model_file_name, model_type_value):
     if not model_type_value:
@@ -366,6 +387,9 @@ def edit_ui_block():
                                                       max_lines=1,
                                                       info='Downloaded file name with extension. Default if empty ('
                                                            'Optional)')
+                rename_filename_checkbox_widget = gr.Checkbox(label='Rename local filename',
+                                                              value=False,
+                                                              info='Rename local filename if download filename is presented.')
                 download_subdir_widget = gr.Textbox(label='Subdir',
                                                     value='',
                                                     max_lines=1,
@@ -401,7 +425,7 @@ def edit_ui_block():
     description_output_widget.change(_on_description_output_changed,
                                      inputs=[edit_id_box, name_widget, model_type_widget,
                                              download_url_widget, url_widget,
-                                             download_path_widget, download_filename_widget, download_subdir_widget,
+                                             download_path_widget, download_filename_widget, rename_filename_checkbox_widget, download_subdir_widget,
                                              preview_url_widget, description_output_widget, positive_prompts_widget,
                                              negative_prompts_widget, groups_widget, edit_back_box,
                                              sha256_preload_state, location_widget],
