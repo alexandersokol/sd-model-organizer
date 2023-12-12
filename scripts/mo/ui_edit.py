@@ -58,7 +58,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if model_type is not None and model_type == ModelType.OTHER and is_blank(download_path):
         errors.append('Download path for type "Other" must be defined.')
 
-    if not is_blank(download_filename) and not is_valid_filename(download_filename) or not is_filename_with_extension(download_filename):
+    if not is_blank(download_filename) and (not is_valid_filename(download_filename) or not is_filename_with_extension(download_filename)):
         errors.append('Download filename is incorrect.')
 
     if not is_blank(preview_url) and not is_valid_url(preview_url):
