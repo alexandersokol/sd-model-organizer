@@ -211,6 +211,7 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
   in `{sd-webui}/extensions/sd-model-organizer/database.sqlite` file. `Firebase` option allows to store records data in
   the remove Firestore database, follow instruction in the separate section of this page for setup.
 - **Download Preview** - Enabled downloading models preview with model. Checked by default.
+- **Blur NSFW Previews** - Blur in image previews for models tagged (grouped) as nsfw.✨
 - **Model directory** - Model's directory to download checkpoints, uses default path if empty.
 - **VAE directory** - VAE directory to download VAE files, uses default path if empty.
 - **Lora directory** - Lora directory to download Lora files, uses default path if empty.
