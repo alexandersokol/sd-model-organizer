@@ -211,6 +211,8 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
   in `{sd-webui}/extensions/sd-model-organizer/database.sqlite` file. `Firebase` option allows to store records data in
   the remove Firestore database, follow instruction in the separate section of this page for setup.
 - **Download Preview** - Enabled downloading models preview with model. Checked by default.
+- **Resize Preview** - Enable resize downloaded preview image. Checked by default. ✨
+- **Blur NSFW Previews** - Blur in image previews for models tagged (grouped) as nsfw. ✨
 - **Model directory** - Model's directory to download checkpoints, uses default path if empty.
 - **VAE directory** - VAE directory to download VAE files, uses default path if empty.
 - **Lora directory** - Lora directory to download Lora files, uses default path if empty.
@@ -219,7 +221,17 @@ SD Model Organizer's settings in the webui `Settings Tab` -> `Model Organizer` M
 
 <br></br>
 
-## 7. Firestore setup
+## 7. Command Line Arguments ✨
+
+This extension adds these command line arguments to the webui:
+
+- **SQLite database path** - set the directory for sqlite database. ✨
+
+  `--mo-database-dir <path to directory with sqlite database> `
+
+<br></br>
+
+## 8. Firestore setup
 
 - install `pip install firebase-admin==4.5.0` (latest firebase-admin (6.1.0) has an incompatible protobuf (4.22.0)
   version
