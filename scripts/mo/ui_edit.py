@@ -11,7 +11,7 @@ from scripts.mo.dl.download_manager import DownloadManager, calculate_sha256
 from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 from scripts.mo.ui_navigation import generate_ui_token
-from scripts.mo.utils import is_blank, is_valid_filename, is_valid_url, get_model_files_in_dir
+from scripts.mo.utils import is_blank, is_valid_filename, is_valid_url, get_model_files_in_dir, find_preview_file
 
 
 def is_directory_path_valid(path):
@@ -25,11 +25,14 @@ def is_directory_path_valid(path):
             logger.warning(ex)
             return False
 
+def is_filename_with_extension(download_filename):
+    filename, extension = os.path.splitext(download_filename)
+    return bool(filename and extension)
 
 def _on_description_output_changed(record_data, name: str, model_type_value: str, download_url: str, url: str,
-                                   download_path: str, download_filename: str, download_subdir: str, preview_url: str,
+                                   download_path: str, download_filename: str, rename_filename: bool, download_subdir: str, preview_url: str,
                                    description_output: str, positive_prompts: str, negative_prompts: str,
-                                   groups, back_token: str, sha256_state, location):
+                                   groups, back_token: str, sha256_state, location, current_location):
     errors = []
     if is_blank(name):
         errors.append('Name field is empty.')
@@ -55,7 +58,7 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
     if model_type is not None and model_type == ModelType.OTHER and is_blank(download_path):
         errors.append('Download path for type "Other" must be defined.')
 
-    if not is_blank(download_filename) and not is_valid_filename(download_filename):
+    if not is_blank(download_filename) and (not is_valid_filename(download_filename) or not is_filename_with_extension(download_filename)):
         errors.append('Download filename is incorrect.')
 
     if not is_blank(preview_url) and not is_valid_url(preview_url):
@@ -69,6 +72,17 @@ def _on_description_output_changed(record_data, name: str, model_type_value: str
         dl_subdir = os.path.join(path, download_subdir)
         if not is_directory_path_valid(dl_subdir):
             errors.append(f'Download path with SUBDIR is incorrect: {dl_subdir}')
+
+    if rename_filename and location != current_location:
+
+        preview_current_location = find_preview_file(current_location)
+        if preview_current_location:
+            new_filename = os.path.splitext(location)[0]
+            extension = os.path.splitext(preview_current_location)[1]
+            preview_location = os.path.join(os.path.dirname(preview_current_location), new_filename + extension)
+            os.rename(preview_current_location, preview_location)
+
+        os.rename(current_location, location)
 
     if errors:
         return [
@@ -196,9 +210,11 @@ def _on_id_changed(record_data):
     else:
         description = f'<[[token="{generate_ui_token()}"]]>{description}'
 
+    rename_filename_checkbox = ''
+
     return [title, name, model_type, download_url, preview_url, url, download_path, download_filename, download_subdir,
             description, positive_prompts, negative_prompts, groups, available_groups, gr.HTML.update(visible=False),
-            sha256, location, _get_bind_location_dropdown_update(model_type, location)]
+            sha256, location, _get_bind_location_dropdown_update(model_type, location), rename_filename_checkbox, location]
 
 
 def _get_bind_location_dropdown_update(model_type_value, current_location: str):
@@ -286,6 +302,19 @@ def _on_local_bind_change(model_file_name, model_type_value):
     else:
         return gr.Textbox.update('')
 
+def _on_rename_filename_checkbox_change(rename_filename_checkbox, location, download_filename, current_location):
+
+    if rename_filename_checkbox:
+        location_widget_label = "File location (renamed)"
+        location_widget_value = os.path.join(os.path.dirname(location), download_filename)
+    else:
+        location_widget_label = "File location"
+        location_widget_value = current_location
+
+    location_widget = gr.Textbox.update(label=location_widget_label,
+                                        value=location_widget_value)
+
+    return location_widget
 
 def edit_ui_block():
     edit_id_box = gr.Textbox(label='edit_id_box',
@@ -366,6 +395,12 @@ def edit_ui_block():
                                                       max_lines=1,
                                                       info='Downloaded file name with extension. Default if empty ('
                                                            'Optional)')
+                rename_filename_checkbox_widget = gr.Checkbox(label='Rename local filename if download filename is presented.',
+                                                              value=False)
+                current_location_widget = gr.Textbox(label="Current File location",
+                                                     info="Local file location path. Not editable.",
+                                                     interactive=False,
+                                                     visible=False)
                 download_subdir_widget = gr.Textbox(label='Subdir',
                                                     value='',
                                                     max_lines=1,
@@ -401,10 +436,10 @@ def edit_ui_block():
     description_output_widget.change(_on_description_output_changed,
                                      inputs=[edit_id_box, name_widget, model_type_widget,
                                              download_url_widget, url_widget,
-                                             download_path_widget, download_filename_widget, download_subdir_widget,
+                                             download_path_widget, download_filename_widget, rename_filename_checkbox_widget, download_subdir_widget,
                                              preview_url_widget, description_output_widget, positive_prompts_widget,
                                              negative_prompts_widget, groups_widget, edit_back_box,
-                                             sha256_preload_state, location_widget],
+                                             sha256_preload_state, location_widget, current_location_widget],
                                      outputs=[error_widget, edit_back_box])
 
     edit_id_box.change(_on_id_changed,
@@ -413,8 +448,12 @@ def edit_ui_block():
                                 preview_url_widget, url_widget, download_path_widget, download_filename_widget,
                                 download_subdir_widget, description_input_widget, positive_prompts_widget,
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget,
-                                sha256_preload_state, location_widget, location_bind_widget]
+                                sha256_preload_state, location_widget, location_bind_widget, rename_filename_checkbox_widget, current_location_widget]
                        )
+
+    rename_filename_checkbox_widget.change(_on_rename_filename_checkbox_change,
+                                           inputs=[rename_filename_checkbox_widget, location_widget, download_filename_widget, current_location_widget],
+                                           outputs=[location_widget])
 
     model_type_widget.change(_on_model_type_changed,
                              inputs=[model_type_widget, location_widget],
