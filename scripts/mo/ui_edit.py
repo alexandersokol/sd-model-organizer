@@ -302,6 +302,11 @@ def _on_local_bind_change(model_file_name, model_type_value):
     else:
         return gr.Textbox.update('')
 
+def _on_download_filename_change(rename_filename_checkbox, location, download_filename, current_location):
+    if rename_filename_checkbox:
+        return _on_rename_filename_checkbox_change(rename_filename_checkbox, location, download_filename, current_location)
+    return current_location
+
 def _on_rename_filename_checkbox_change(rename_filename_checkbox, location, download_filename, current_location):
 
     if rename_filename_checkbox:
@@ -450,6 +455,10 @@ def edit_ui_block():
                                 negative_prompts_widget, groups_widget, available_groups_state, error_widget,
                                 sha256_preload_state, location_widget, location_bind_widget, rename_filename_checkbox_widget, current_location_widget]
                        )
+
+    download_filename_widget.change(_on_download_filename_change,
+                                    inputs=[rename_filename_checkbox_widget, location_widget, download_filename_widget, current_location_widget],
+                                    outputs=location_widget)
 
     rename_filename_checkbox_widget.change(_on_rename_filename_checkbox_change,
                                            inputs=[rename_filename_checkbox_widget, location_widget, download_filename_widget, current_location_widget],
