@@ -126,7 +126,7 @@ function handleRecordSave() {
     }
 
     const textArea = findElem('mo-description-output-widget').querySelector('textarea')
-    const event = new Event('input', {'bubbles': true, "composed": true});
+    const event = new Event('input', { 'bubbles': true, "composed": true });
     textArea.value = output
     findElem('mo-description-output-widget').querySelector('textarea').dispatchEvent(event);
     logMo('Description content dispatched: ' + output)
@@ -345,7 +345,9 @@ function navigateBack() {
     return []
 }
 
-function navigateDetails(id) {
+function navigateDetails(id, event) {
+    event.stopPropagation();
+    event.preventDefault();
     logMo('Navigate details screen for id: ' + id)
     const navObj = {
         screen: "details",
@@ -380,7 +382,7 @@ function navigateImportExport(filter_state) {
     return []
 }
 
-function navigateDebug() {
+function navigateDebug(event) {
     logMo('Navigate debug screen')
     const navObj = {
         screen: "debug",
@@ -391,7 +393,9 @@ function navigateDebug() {
     return []
 }
 
-function navigateEdit(id) {
+function navigateEdit(id, event) {
+    event.stopPropagation();
+    event.preventDefault();
     logMo('Navigate edit screen for id: ' + id)
     const navObj = {
         screen: "edit",
@@ -403,7 +407,9 @@ function navigateEdit(id) {
     return []
 }
 
-function navigateEditPrefilled(json_data) {
+function navigateEditPrefilled(json_data, event) {
+    event.stopPropagation();
+    event.preventDefault();
     logMo('Navigate edit screen for prefilled json: ' + json_data)
     const navObj = {
         screen: "edit",
@@ -411,11 +417,34 @@ function navigateEditPrefilled(json_data) {
         token: generateUUID(),
         backstack: populateBackstack()
     };
+
+
+    setTimeout((event) => {
+        //Get config options
+        var json_elem = gradioApp().getElementById('settings_json');
+        if (json_elem == null) return;
+
+        var textarea = json_elem.querySelector('textarea');
+        var jsdata = textarea.value;
+        opts = JSON.parse(jsdata);
+
+        if (opts['mo_autobind_file']) {
+            //setTimeout((event) => {
+            var bind = gradioApp().querySelector('#model_organizer_add_bind input');
+            var modelName = gradioApp().querySelector('#model_organizer_edit_name input');
+            bind.value = modelName.value;
+        }
+    }, 300);
+
     deliverNavObject(navObj)
+
+
     return []
 }
 
-function navigateDownloadRecord(id) {
+function navigateDownloadRecord(id, event) {
+    event.stopPropagation();
+    event.preventDefault();
     logMo('Navigate download screen for id: ' + id)
     const navObj = {
         screen: "download",
@@ -451,7 +480,9 @@ function navigateDownloadGroup(groupName) {
     return []
 }
 
-function navigateRemove(id) {
+function navigateRemove(id, event) {
+    event.stopPropagation();
+    event.preventDefault();
     logMo('Navigate removal screen for id: ' + id)
     const navObj = {
         screen: "remove",
@@ -466,7 +497,7 @@ function navigateRemove(id) {
 function deliverNavObject(navObj) {
     const navJson = JSON.stringify(navObj);
     const textArea = findElem('mo_json_nav_box').querySelector('textarea')
-    const event = new Event('input', {'bubbles': true, "composed": true});
+    const event = new Event('input', { 'bubbles': true, "composed": true });
     textArea.value = navJson
     findElem('mo_json_nav_box').querySelector('textarea').dispatchEvent(event);
     logMo('JSON Nav dispatched: ' + navJson)
@@ -478,7 +509,7 @@ function invokeHomeInitialStateLoad() {
         const initialStateTextArea = findElem('mo-initial-state-box').querySelector('textarea')
         const stateTextArea = findElem('mo-home-state-box').querySelector('textarea')
         stateTextArea.value = initialStateTextArea.value
-        const event = new Event('input', {'bubbles': true, "composed": true});
+        const event = new Event('input', { 'bubbles': true, "composed": true });
         findElem('mo-home-state-box').querySelector('textarea').dispatchEvent(event);
         isHomeInitialStateInvoked = true
         logMo('initial home state invoked')
@@ -510,15 +541,15 @@ function getTheme() {
 
 function getCardsSize() {
     return new Promise((resolve) => {
-            fetch(origin + '/mo/display-options')
-                .then(response => response.json())
-                .then(data => {
-                    resolve([data.card_width, data.card_height])
-                })
-                .catch(_ => {
-                    resolve([250, 350])
-                });
-        }
+        fetch(origin + '/mo/display-options')
+            .then(response => response.json())
+            .then(data => {
+                resolve([data.card_width, data.card_height])
+            })
+            .catch(_ => {
+                resolve([250, 350])
+            });
+    }
     )
 }
 
@@ -573,3 +604,146 @@ onUiLoaded(function () {
             installCardsSize(size[0], size[1])
         })
 })
+
+let organizerTab = null;
+let lastTabName = 'txt2img';
+
+const inputEvent = new Event('input', { 'bubbles': true, "composed": true });
+const changeEvent = new Event('change', { 'bubbles': true, "composed": true });
+// Extra networks tab integration
+// Huge thanks to https://github.com/CurtisDS/sd-model-preview-xd/tree/main for how to do this
+onUiUpdate(function () {
+
+    // get the organizer tab
+    let tabs = gradioApp().querySelectorAll("#tabs > div:first-of-type button");
+    if (typeof tabs != "undefined" && tabs != null && tabs.length > 0) {
+        tabs.forEach(tab => {
+            if (tab.innerText == "Model Organizer") {
+                organizerTab = tab;
+            }
+        });
+    }
+
+    // Get
+    let thumbCards = gradioApp().querySelectorAll("#txt2img_extra_tabs .card:not([organizer-hijack]), #img2img_extra_tabs .card:not([organizer-hijack])");
+    if (typeof thumbCards != "undefined" && thumbCards != null && thumbCards.length > 0) {
+        thumbCards.forEach(card => {
+            let buttonRow = card.querySelector('.button-row');
+            // the name of the model is stored in a span beside the .additional div
+            //let modelName = card.getAttribute('data-name');
+            let modelName = card.getAttribute('data-sort-name');
+
+            // Button to open organizer
+            let organizerBtnOpen = document.createElement("div");
+            organizerBtnOpen.className = "organizer-buttonOpen card-button info";
+            organizerBtnOpen.title = "Go To Record";
+            organizerBtnOpen.onclick = function (event) {
+                addRecordClick(event, modelName);
+            };
+            buttonRow.prepend(organizerBtnOpen);
+
+            // we are finished so add the hijack attribute so we know not we don't need to do this card again
+            card.setAttribute("organizer-hijack", true);
+        });
+    }
+})
+
+// Switch to Organizer Tab
+function switchToOrganizerTab(event, name) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    var tabs = gradioApp().querySelectorAll('#tab_txt2img, #tab_img2img');
+    if (typeof tabs != "undefined" && tabs != null && tabs.length > 0) {
+        tabs.forEach(tab => {
+            styleattr = tab.getAttribute('style');
+            if (styleattr.includes('block')) {
+                lastTabName = tab.id.substring(4);
+            }
+        });
+    }
+
+
+    organizerTab.click();
+    organizerTab.dispatchEvent(inputEvent);
+
+    var statebox = gradioApp().querySelector("#mo-home-state-box");
+    statebox.dispatchEvent(changeEvent);
+
+    var accordion = gradioApp().querySelector("#model_organizer_accordion");
+    var labelWrap = accordion.querySelector('.label-wrap');
+
+    if (!labelWrap.classList.contains('open')) {
+        labelWrap.click();
+        labelWrap.dispatchEvent(inputEvent);
+    }
+
+    var searchArea = gradioApp().querySelector("#model_organizer_searchbox textarea");
+    setTimeout((event) => {
+        searchArea.value = name;
+        searchArea.dispatchEvent(inputEvent);
+    }, 150);
+}
+
+function addRecordClick(event, name) {
+    switchToOrganizerTab(event, name);
+
+    //Find the card and click add button
+
+    setTimeout((event) => {
+        var recordButtons = gradioApp().querySelectorAll('#organizer_record_table button.mo-btn.mo-btn-success, #organizer_record_card_grid button.mo-btn.mo-btn-success');
+        if (recordButtons.length == 1) {
+            recordButtons[0].click();
+        }
+    }, 400);
+
+}
+
+function fillPrompt(recordid) {
+    logMo('Loading record info for id: ' + recordid)
+    const navObj = {
+        screen: "record_info",
+        record_info_id: recordid,
+        token: generateUUID(),
+        backstack: populateBackstack()
+    };
+    deliverNavObject(navObj)
+
+    var timer = setInterval(() => {
+        record_data = gradioApp().querySelector('#mo_record_info_nav_box textarea');
+
+        if (record_data == null) return;
+        var terminate = false;
+        var jsdata = record_data.value;
+        var jsdata = jsdata.replace(/'/g, '"').replace(/"checkpoint": True/mg, '"checkpoint": true').replace(/"checkpoint": False/mg, '"checkpoint": false');
+        recordInfo = JSON.parse(jsdata);
+        if (recordInfo.hasOwnProperty("id") && recordInfo["id"] === recordid) {
+            var pos = "";
+            var neg = "";
+            if (recordInfo.hasOwnProperty('positive_prompts')) {
+                pos = recordInfo['positive_prompts'];
+                terminate = true;
+            }
+            if (recordInfo.hasOwnProperty('negative_prompts')) {
+                neg = recordInfo['negative_prompts'];
+                terminate = true;
+            }
+            if (recordInfo.hasOwnProperty('checkpoint') && recordInfo['checkpoint']) {
+                selectCheckpoint(recordInfo['positive_prompts']);
+                terminate = true;
+            } else {
+                if (pos !== "") {
+                    cardClicked(lastTabName, pos, "", false);
+                }
+                if (neg !== "") {
+                    cardClicked(lastTabName, "", neg, true);
+                }
+            }
+        }
+        if (terminate) {
+            clearInterval(timer);
+        }
+    }, 100)
+
+    return []
+}

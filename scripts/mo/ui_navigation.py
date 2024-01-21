@@ -9,12 +9,13 @@ _REMOVE = 'remove'
 _DOWNLOAD = 'download'
 _IMPORT_EXPORT = 'import_export'
 _DEBUG = 'debug'
+_RECORD_INFO = 'record_info'
 
 _NODE_SCREEN = 'screen'
 _NODE_RECORD_ID = 'record_id'
 _NODE_PREFILLED_JSON = 'prefilled_json'
 _NODE_GROUP = 'group'
-
+_NODE_RECORD_INFO_ID = 'record_info_id'
 
 def navigate_home() -> str:
     return '{}'
@@ -81,7 +82,8 @@ def get_nav_state(json_nav) -> dict:
         'edit_data': {},
         'remove_record_id': '',
         'download_info': '',
-        'filter_state': {}
+        'filter_state': {},
+        'details_record_info_id': ''
     }
 
     if nav_dict.get(_NODE_SCREEN) is None:
@@ -124,6 +126,9 @@ def get_nav_state(json_nav) -> dict:
             state['filter_state'] = nav_dict['filter_state']
         elif nav_dict[_NODE_SCREEN] == _DEBUG:
             state['is_debug_visible'] = True
+        elif nav_dict[_NODE_SCREEN] == _RECORD_INFO:
+            state['details_record_info_id'] = nav_dict[_NODE_RECORD_INFO_ID]
+            state['is_home_visible'] = True
 
     return state
 

@@ -337,7 +337,8 @@ def edit_ui_block():
             name_widget = gr.Textbox(label='Name:',
                                      value='',
                                      max_lines=1,
-                                     info='Model title to display (Required)')
+                                     info='Model title to display (Required)',
+                                     elem_id='model_organizer_edit_name')
             model_type_widget = gr.Dropdown(
                 [model_type.value for model_type in ModelType],
                 value='',
@@ -382,7 +383,8 @@ def edit_ui_block():
 
             location_bind_widget = gr.Dropdown(label='Bind with local file',
                                                info='Choose a local file to associate this record with.',
-                                               interactive=True)
+                                               interactive=True,
+                                               elem_id='model_organizer_add_bind')
 
             with gr.Accordion(label='Download options', open=False):
                 download_path_widget = gr.Textbox(label='Download Path:',

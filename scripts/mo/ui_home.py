@@ -138,7 +138,7 @@ def home_ui_block():
             import_export_button = gr.Button('Import/Export')
             add_button = gr.Button('Add')
 
-        with gr.Accordion(label='Display options', open=False):
+        with gr.Accordion(label='Display options', open=False, elem_id='model_organizer_accordion'):
             with gr.Group():
                 sort_box = gr.Dropdown([model_sort.value for model_sort in ModelSort],
                                        value=sort_order,
@@ -150,7 +150,7 @@ def home_ui_block():
 
             with gr.Group():
                 search_box = gr.Textbox(label='Search by name',
-                                        value=initial_state['query'])
+                                        value=initial_state['query'], elem_id='model_organizer_searchbox')
                 model_types_dropdown = gr.Dropdown([model_type.value for model_type in ModelType],
                                                    value=initial_state['model_types'],
                                                    label='Model types',

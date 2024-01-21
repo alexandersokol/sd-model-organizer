@@ -5,7 +5,7 @@ from typing import List, Dict
 from scripts.mo.data.mapping_utils import create_version_dict
 from scripts.mo.environment import env
 from scripts.mo.models import ModelSort, Record, ModelType
-from scripts.mo.utils import get_model_files_in_dir, find_info_file
+from scripts.mo.utils import get_model_files_in_dir, find_info_file, find_info_json_file
 
 
 def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: bool) -> List:
@@ -78,7 +78,7 @@ def _create_model_from_info_file(path, info_file_path, model_type):
 
 def _create_model_from_local_file(path, model_type):
     filename = os.path.basename(path)
-    return Record(
+    record = Record(
         id_=None,
         name=filename,
         model_type=model_type,
@@ -87,6 +87,19 @@ def _create_model_from_local_file(path, model_type):
         download_filename=filename,
         download_path=os.path.dirname(path)
     )
+    jsonFile = find_info_json_file(path)
+    if jsonFile:
+        try:
+            jsontxt = open(jsonFile)
+            jsonobj = json.load(jsontxt)
+            if ("activation text" in jsonobj) and (env.prefill_pos_prompt()):
+                record.positive_prompts = jsonobj["activation text"]
+            if ("negative text" in jsonobj) and (env.prefill_neg_prompt()):  
+                record.negative_prompts = jsonobj["negative text"]
+            jsontxt.close()    
+        except Exception as ex:
+            jsontxt.close()
+    return record
 
 
 def _get_model_type_from_file(path):
