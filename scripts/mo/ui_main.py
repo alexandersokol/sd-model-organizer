@@ -75,7 +75,6 @@ def main_ui_block():
             else:
                 gr.Row()
 
-       #TODO Write record data json into this 
         details_data_box = gr.Textbox(value='\{\}', label='mo_record_info_nav_box', elem_id='mo_record_info_nav_box', elem_classes='mo-alert-warning', visible=False)        
 
         _json_nav_box.change(on_json_box_change,

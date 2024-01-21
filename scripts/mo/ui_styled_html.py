@@ -129,18 +129,7 @@ def records_table(records: List) -> str:
         # Add preview URL column
         table_html += '<div class="mo-col mo-col-preview">'
 
-        ###
         isLocalFileRecord = record.is_local_file_record()
-        
-        # Taken from extra networks cards.
-        # cardStr = f'<div class="mo-card {_model_card_type_css_class(record.model_type)} {"blur" if contains_nsfw else ""}"'
-        # if not isLocalFileRecord:
-        #     cardStr += f'onclick="fillPrompt({record.id_})"'
-        # cardStr += '>'    
-
-        # content += cardStr
-        ###
-
 
         img = f'<img class="mo-preview-image" src="{preview_url}" ' \
                       f'alt="Preview image"' \
@@ -149,10 +138,7 @@ def records_table(records: List) -> str:
             img += f'onclick="fillPrompt({record.id_})"'
         img += '>'
         table_html += img
-        # table_html += f'<img class="mo-preview-image" src="{preview_url}" ' \
-        #               f'alt="Preview image"' \
-        #               f' onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';"/' \
-        #               f'onclick="fillPrompt({record.id_})"'  
+
         table_html += '</div>'
 
         # Add type column
@@ -259,6 +245,8 @@ def _create_top_fields_dict(record: Record) -> dict:
     if record.subdir:
         result['Subdir'] = _create_content_text(record.subdir)
 
+    if record.weight != 1:
+        result['Prompt Weight']= _create_content_text(str(record.weight))
     return result
 
 

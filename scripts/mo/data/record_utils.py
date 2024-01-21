@@ -96,6 +96,8 @@ def _create_model_from_local_file(path, model_type):
                 record.positive_prompts = jsonobj["activation text"]
             if ("negative text" in jsonobj) and (env.prefill_neg_prompt()):  
                 record.negative_prompts = jsonobj["negative text"]
+            if("preferred weight" in jsonobj):
+                record.weight = jsonobj["preferred weight"]
             jsontxt.close()    
         except Exception as ex:
             jsontxt.close()

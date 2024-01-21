@@ -9,7 +9,7 @@ from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 
 _DB_FILE = 'database.sqlite'
-_DB_VERSION = 5
+_DB_VERSION = 6
 _DB_TIMEOUT = 30
 
 
@@ -31,7 +31,8 @@ def map_row_to_record(row) -> Record:
         created_at=row[13],
         groups=row[14].split(',') if row[14] else [],
         subdir=row[15],
-        location=row[16]
+        location=row[16],
+        weight=row[17]
     )
 
 
@@ -69,7 +70,8 @@ class SQLiteStorage(Storage):
                                     created_at INTEGER DEFAULT 0,
                                     groups TEXT DEFAULT '',
                                     subdir TEXT DEFAULT '',
-                                    location TEXT DEFAULT '')
+                                    location TEXT DEFAULT '',
+                                    weight REAL DEFAULT 1)
                                  ''')
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
@@ -100,6 +102,8 @@ class SQLiteStorage(Storage):
                 self._migrate_3_to_4()
             elif ver == 4:
                 self._migrate_4_to_5()
+            elif ver == 5:
+                self._migrage_5_to_6()
             else:
                 raise Exception(f'Missing SQLite migration from {ver} to {_DB_VERSION}')
 
@@ -130,6 +134,13 @@ class SQLiteStorage(Storage):
         cursor.execute("ALTER TABLE Record ADD COLUMN location TEXT DEFAULT '';")
         cursor.execute("DELETE FROM Version")
         cursor.execute('INSERT INTO Version VALUES (5)')
+        self._connection().commit()
+    
+    def _migrage_5_to_6(self):
+        cursor = self._connection().cursor()
+        cursor.execute("ALTER TABLE Record ADD COLUMN weight REAL DEFAULT 1;")
+        cursor.execute("DELETE FROM Version")
+        cursor.execute('INSERT INTO Version VALUES (6)')
         self._connection().commit()
 
     def get_all_records(self) -> List:
@@ -237,7 +248,8 @@ class SQLiteStorage(Storage):
             record.created_at,
             ",".join(record.groups),
             record.subdir,
-            record.location
+            record.location,
+            record.weight
         )
         cursor.execute(
             """INSERT INTO Record(
@@ -256,7 +268,8 @@ class SQLiteStorage(Storage):
                     created_at,
                     groups,
                     subdir,
-                    location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    location,
+                    weight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             data)
         self._connection().commit()
 
@@ -278,6 +291,7 @@ class SQLiteStorage(Storage):
             ",".join(record.groups),
             record.subdir,
             record.location,
+            record.weight,
             record.id_
         )
         cursor.execute(
@@ -296,7 +310,8 @@ class SQLiteStorage(Storage):
                     md5_hash=?,
                     groups=?,
                     subdir=?,
-                    location=?
+                    location=?,
+                    weight=?
                 WHERE id=?
             """, data
         )

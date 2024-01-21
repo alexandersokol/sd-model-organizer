@@ -50,7 +50,8 @@ class Record:
                  location: str = '',
                  created_at: float = 0,
                  groups=None,
-                 subdir: str = ''):
+                 subdir: str = '',
+                 weight: float = 1):
         if groups is None:
             groups = []
 
@@ -71,6 +72,7 @@ class Record:
         self.created_at = created_at
         self.groups = groups
         self.subdir = subdir
+        self.weight = weight;
 
     def is_file_exists(self) -> bool:
         return bool(self.location) and os.path.isfile(self.location)
@@ -101,4 +103,5 @@ class Record:
                f'location="{self.location}", ' \
                f'created_at="{self.created_at}", ' \
                f'groups="{self.groups}", ' \
-               f'subdir="{self.subdir}".'
+               f'subdir="{self.subdir}",' \
+               f'weight="{self.weight}".'

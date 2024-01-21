@@ -420,22 +420,37 @@ function navigateEditPrefilled(json_data, event) {
 
 
     setTimeout((event) => {
-        //Get config options
-        var json_elem = gradioApp().getElementById('settings_json');
-        if (json_elem == null) return;
+            //Get config options
+            var json_elem = gradioApp().getElementById('settings_json');
+            if (json_elem == null) return;
 
-        var textarea = json_elem.querySelector('textarea');
-        var jsdata = textarea.value;
-        opts = JSON.parse(jsdata);
+            var textarea = json_elem.querySelector('textarea');
+            var jsdata = textarea.value;
+            opts = JSON.parse(jsdata);
 
-        if (opts['mo_autobind_file']) {
-            //setTimeout((event) => {
-            var bind = gradioApp().querySelector('#model_organizer_add_bind input');
-            var modelName = gradioApp().querySelector('#model_organizer_edit_name input');
-            bind.value = modelName.value;
-        }
+
+
+
+            // record_data = gradioApp().querySelector('#mo_record_info_nav_box textarea');
+
+            // if (record_data == null) return;
+            // var terminate = false;
+            // var jsdata = record_data.value;
+            // var jsdata = jsdata.replace(/'/g, '"').replace(/"checkpoint": True/mg, '"checkpoint": true').replace(/"checkpoint": False/mg, '"checkpoint": false');
+            // recordInfo = JSON.parse(jsdata);
+
+            // var weight = gradioApp().querySelector('#mo-edit-prompt-weight');
+            // weight.value = recordInfo["weight"];
+            // weight.dispatchEvent(changeEvent);
+
+            if (opts['mo_autobind_file']) {
+                var bind = gradioApp().querySelector('#model_organizer_add_bind input');
+                var modelName = gradioApp().querySelector('#model_organizer_edit_name input');
+                bind.value = modelName.value;
+                bind.dispatchEvent(changeEvent);
+                terminate = true;
+            }
     }, 300);
-
     deliverNavObject(navObj)
 
 
@@ -607,7 +622,7 @@ onUiLoaded(function () {
 
 let organizerTab = null;
 let lastTabName = 'txt2img';
-
+let finishedSearching = false;
 const inputEvent = new Event('input', { 'bubbles': true, "composed": true });
 const changeEvent = new Event('change', { 'bubbles': true, "composed": true });
 // Extra networks tab integration
@@ -689,7 +704,6 @@ function addRecordClick(event, name) {
     switchToOrganizerTab(event, name);
 
     //Find the card and click add button
-
     setTimeout((event) => {
         var recordButtons = gradioApp().querySelectorAll('#organizer_record_table button.mo-btn.mo-btn-success, #organizer_record_card_grid button.mo-btn.mo-btn-success');
         if (recordButtons.length == 1) {

@@ -286,16 +286,13 @@ def get_json_record_data(id):
     result = {}
     if (id != None) and (isinstance(id, int)) and (id > 0):
         record = env.storage.get_record_by_id(id)
-
+        weight = 1 if record is None else record.weight
         pos = '' if record is None else record.positive_prompts
         neg = '' if record is None else record.negative_prompts
         isCheckPoint = False
         if (record.model_type == ModelType.CHECKPOINT):   
             isCheckPoint = True
             pos = record.name  
-
-
-
 
         elif(record.model_type == ModelType.LORA or record.model_type == ModelType.LYCORIS):
             lora_on_disk = networks.available_networks.get(get_model_filename_without_extension(record.name))
@@ -304,7 +301,7 @@ def get_json_record_data(id):
             alias = lora_on_disk.get_alias()
 
             activation_text = record.positive_prompts
-            preferred_weight = 1.0 #item["user_metadata"].get("preferred weight", 0.0)
+            preferred_weight = record.weight
             pos = f'<lora:{alias}:' + (str(preferred_weight) if preferred_weight else '1')  + '>'
 
             if activation_text:
@@ -317,7 +314,8 @@ def get_json_record_data(id):
 
 
         elif(record.model_type == ModelType.HYPER_NETWORK):
-            pos = f'<hypernet:{get_model_filename_without_extension(record.name)}:1>'
+            preferred_weight = record.weight
+            pos = f'<hypernet:{get_model_filename_without_extension(record.name)}:{preferred_weight}>'
 
         
 
@@ -338,7 +336,8 @@ def get_json_record_data(id):
             "id": id,
             "positive_prompts": pos,
             "negative_prompts": neg,
-            "checkpoint": isCheckPoint            
+            "checkpoint": isCheckPoint,
+            "weight": weight            
         }
         
     return json.loads(json.dumps(result));
