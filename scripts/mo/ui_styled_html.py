@@ -107,7 +107,7 @@ def _no_preview_image_url() -> str:
 
 
 def records_table(records: List) -> str:
-    table_html = '<div class="mo-container">'
+    table_html = '<div id="organizer_record_table" class="mo-container">'
     table_html += '<div class="mo-row mo-row-header">'
     table_html += '<div class="mo-col mo-col-preview"><span class="mo-text-header">Preview</span></div>'
     table_html += '<div class="mo-col mo-col-type"><span class="mo-text-header">Type</span></div>'
@@ -115,7 +115,9 @@ def records_table(records: List) -> str:
     table_html += '<div class="mo-col mo-col-description"><span class="mo-text-header">Description</span></div>'
     table_html += '<div class="mo-col mo-col-actions"><span class="mo-text-header">Actions</span></div>'
     table_html += '</div>'
+    nsfw_blur = env.nsfw_blur()
     for record in records:
+        contains_nsfw = any('nsfw' in group.lower() for group in record.groups) and nsfw_blur
         name = html.escape(record.name)
         type_ = record.model_type.value
         preview_url = get_best_preview_url(record)
@@ -126,9 +128,17 @@ def records_table(records: List) -> str:
 
         # Add preview URL column
         table_html += '<div class="mo-col mo-col-preview">'
-        table_html += f'<img class="mo-preview-image" src="{preview_url}" ' \
+
+        isLocalFileRecord = record.is_local_file_record()
+
+        img = f'<img class="mo-preview-image" src="{preview_url}" ' \
                       f'alt="Preview image"' \
-                      f' onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';"/>'
+                      f' onerror="this.onerror=null; this.src=\'{_no_preview_image_url()}\';"/'
+        if not isLocalFileRecord:
+            img += f'onclick="fillPrompt({record.id_})"'
+        img += '>'
+        table_html += img
+
         table_html += '</div>'
 
         # Add type column
@@ -137,7 +147,7 @@ def records_table(records: List) -> str:
 
         # Add name column
         table_html += f'<div class="mo-col mo-col-name">'
-        table_html += f'<button class="mo-button-name" onclick="navigateDetails(\'{record.id_}\')">{name}</button>'
+        table_html += f'<button class="mo-button-name" onclick="navigateDetails(\'{record.id_}\', event)">{name}</button>'
         table_html += '</div>'
 
         # Add description column
@@ -152,23 +162,23 @@ def records_table(records: List) -> str:
             json_record = html.escape(json.dumps(map_record_to_dict(record)))
 
             table_html += '<button type="button" class="mo-btn mo-btn-success" ' \
-                          f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
+                          f'onclick="navigateEditPrefilled(\'{json_record}\', event)">Add</button><br>'
 
             table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                          f'onclick="navigateRemove(\'{record.location}\')">Remove</button><br>'
+                          f'onclick="navigateRemove(\'{record.location}\', event)">Remove</button><br>'
         else:
             table_html += '<button type="button" class="mo-btn mo-btn-success" ' \
-                          f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
+                          f'onclick="navigateDetails(\'{record.id_}\', event)">Details</button><br>'
 
             if record.is_download_possible():
                 table_html += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                              f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+                              f'onclick="navigateDownloadRecord(\'{record.id_}\', event)">Download</button><br>'
 
             table_html += '<button type="button" class="mo-btn mo-btn-warning" ' \
-                          f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
+                          f'onclick="navigateEdit(\'{record.id_}\', event)">Edit</button><br>'
 
             table_html += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                          f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+                          f'onclick="navigateRemove(\'{record.id_}\', event)">Remove</button><br>'
 
         table_html += '</div>'
         # Close row
@@ -235,6 +245,8 @@ def _create_top_fields_dict(record: Record) -> dict:
     if record.subdir:
         result['Subdir'] = _create_content_text(record.subdir)
 
+    if record.weight != 1:
+        result['Prompt Weight']= _create_content_text(str(record.weight))
     return result
 
 
@@ -331,13 +343,22 @@ def record_details(record: Record) -> str:
 
 
 def records_cards(records: List) -> str:
-    content = '<div class="mo-card-grid">'
+    content = '<div id="organizer_record_card_grid" class="mo-card-grid">'
 
     nsfw_blur = env.nsfw_blur()
 
     for record in records:
         contains_nsfw = any('nsfw' in group.lower() for group in record.groups) and nsfw_blur
-        content += f'<div class="mo-card {_model_card_type_css_class(record.model_type)} {"blur" if contains_nsfw else ""}">'
+
+        isLocalFileRecord = record.is_local_file_record()
+        
+        # Taken from extra networks cards.
+        cardStr = f'<div class="mo-card {_model_card_type_css_class(record.model_type)} {"blur" if contains_nsfw else ""}"'
+        if not isLocalFileRecord:
+            cardStr += f'onclick="fillPrompt({record.id_})"'
+        cardStr += '>'    
+
+        content += cardStr
 
         preview_url = get_best_preview_url(record)
         content += f'<img src="{preview_url}" alt="Preview Image" ' \
@@ -353,28 +374,28 @@ def records_cards(records: List) -> str:
         content += '<div class="mo-card-hover">'
         content += '<div class="mo-card-hover-buttons">'
 
-        if record.is_local_file_record():
+        if isLocalFileRecord:
             json_record = html.escape(json.dumps(map_record_to_dict(record)))
 
             content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                       f'onclick="navigateEditPrefilled(\'{json_record}\')">Add</button><br>'
+                       f'onclick="navigateEditPrefilled(\'{json_record}\', event)">Add</button><br>'
 
             location = record.location.replace("\\", "\\\\")
             content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                       f'onclick="navigateRemove(\'{location}\')">Remove</button><br>'
+                       f'onclick="navigateRemove(\'{location}\', event)">Remove</button><br>'
         else:
             content += '<button type="button" class="mo-btn mo-btn-success" ' \
-                       f'onclick="navigateDetails(\'{record.id_}\')">Details</button><br>'
+                       f'onclick="navigateDetails(\'{record.id_}\', event)">Details</button><br>'
 
             if record.is_download_possible():
                 content += '<button type="button" class="mo-btn mo-btn-primary" ' \
-                           f'onclick="navigateDownloadRecord(\'{record.id_}\')">Download</button><br>'
+                           f'onclick="navigateDownloadRecord(\'{record.id_}\', event)">Download</button><br>'
 
             content += '<button type="button" class="mo-btn mo-btn-warning" ' \
-                       f'onclick="navigateEdit(\'{record.id_}\')">Edit</button><br>'
+                       f'onclick="navigateEdit(\'{record.id_}\', event)">Edit</button><br>'
 
             content += '<button type="button" class="mo-btn mo-btn-danger" ' \
-                       f'onclick="navigateRemove(\'{record.id_}\')">Remove</button><br>'
+                       f'onclick="navigateRemove(\'{record.id_}\', event)">Remove</button><br>'
 
         content += '</div>'
         content += '</div>'

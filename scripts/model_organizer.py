@@ -110,6 +110,25 @@ env.nsfw_blur = (
     else True
 )
 
+env.prefill_pos_prompt = (
+    lambda: shared.opts.mo_prefill_pos_prompt
+    if hasattr(shared.opts, 'mo_prefill_pos_prompt')
+    else True
+)
+
+env.prefill_neg_prompt = (
+    lambda: shared.opts.mo_prefill_neg_prompt
+    if hasattr(shared.opts, 'mo_prefill_neg_prompt')
+    else True
+)
+
+env.autobind_file = (
+    lambda: shared.opts.mo_autobind_file
+    if hasattr(shared.opts, 'mo_autobind_file')
+    else True
+)
+
+
 env.model_path = (
     lambda: shared.opts.mo_model_path
     if hasattr(shared.opts, 'mo_model_path') and shared.opts.mo_model_path
@@ -170,6 +189,9 @@ def on_ui_settings():
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
         'mo_resize_preview': OptionInfo(True, 'Resize Preview'),
         'mo_nsfw_blur': OptionInfo(True, 'Blur NSFW Previews (models with "nsfw" tag)'),
+        'mo_prefill_pos_prompt': OptionInfo(True, 'When creating a record based on local file, automatically import the added positive prompts'),
+        'mo_prefill_neg_prompt': OptionInfo(True, 'When creating a record based on local file, automatically import the added negative prompts'),
+        'mo_autobind_file': OptionInfo(True, 'Automatically bind record to local file'),
     }
 
     dir_opts = {

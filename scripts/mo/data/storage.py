@@ -22,7 +22,8 @@ def map_dict_to_record(id_, raw: Dict) -> Record:
         created_at=raw['created_at'],
         groups=raw['groups'],
         subdir=raw['subdir'],
-        location=raw['location']
+        location=raw['location'],
+        weight=raw['weight']
     )
 
 
@@ -44,7 +45,8 @@ def map_record_to_dict(record: Record) -> dict:
         'created_at': record.created_at,
         'groups': record.groups,
         'subdir': record.subdir,
-        'location': record.location
+        'location': record.location,
+        "weight": record.weight
     }
 
 

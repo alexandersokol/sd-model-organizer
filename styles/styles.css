@@ -642,3 +642,11 @@
     align-items: center;
     margin-top: 8px;
 }
+/* Extra network tab integration*/
+.extra-network-cards .card .organizer-buttonOpen::before {
+	content: "🔎︎"
+}
+
+.extra-network-cards .card .organizer-buttonNew::before {
+	content: "+"
+}

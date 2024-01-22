@@ -10,6 +10,7 @@ from scripts.mo.ui_edit import edit_ui_block
 from scripts.mo.ui_home import home_ui_block
 from scripts.mo.ui_import_export import import_export_ui_block
 from scripts.mo.ui_remove import remove_ui_block
+from scripts.mo.utils import get_json_record_data
 
 
 def on_json_box_change(json_state, home_refresh_token):
@@ -33,7 +34,8 @@ def on_json_box_change(json_state, home_refresh_token):
         gr.Textbox.update(value=state['edit_data']),
         gr.Textbox.update(value=state['remove_record_id']),
         gr.Textbox.update(value=state['download_info']),
-        gr.Textbox.update(value=state['filter_state'])
+        gr.Textbox.update(value=state['filter_state']),
+        gr.Textbox.update(value=get_json_record_data(state['details_record_info_id']))
     ]
 
 
@@ -73,6 +75,8 @@ def main_ui_block():
             else:
                 gr.Row()
 
+        details_data_box = gr.Textbox(value='\{\}', label='mo_record_info_nav_box', elem_id='mo_record_info_nav_box', elem_classes='mo-alert-warning', visible=False)        
+
         _json_nav_box.change(on_json_box_change,
                              inputs=[_json_nav_box, home_refresh_box],
                              outputs=[home_block,
@@ -88,7 +92,8 @@ def main_ui_block():
                                       edit_id_box,
                                       remove_id_box,
                                       download_id_box,
-                                      filter_state_box
+                                      filter_state_box,
+                                      details_data_box
                                       ])
 
     return main_block

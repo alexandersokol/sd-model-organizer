@@ -4,13 +4,18 @@ import json
 import os
 import re
 import urllib.parse
+import sys
+sys.path.append('extensions-builtin/Lora')
+import networks
+
 from typing import List
 
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
 from scripts.mo.environment import env
-from scripts.mo.models import Record
+from scripts.mo.models import Record, ModelType
+from modules import sd_hijack
 
 _HASH_CACHE_FILENAME = 'hash_cache.json'
 
@@ -260,3 +265,80 @@ def get_best_preview_url(record: Record) -> str:
         else:
             return link_preview(preview_path)
     return record.preview_url
+
+def find_info_json_file(model_file_path):
+    """
+    Looks for model info json file.
+    :param model_file_path: path to model file.
+    :return: path to model info file if exists, None otherwise.
+    """
+    if model_file_path:
+        filename_no_ext = get_model_filename_without_extension(model_file_path)
+        path = os.path.join(os.path.dirname(model_file_path), filename_no_ext)
+
+        file = path + ".json"
+        if os.path.isfile(file):
+            return file
+
+    return None
+
+def get_json_record_data(id):
+    result = {}
+    if (id != None) and (isinstance(id, int)) and (id > 0):
+        record = env.storage.get_record_by_id(id)
+        weight = 1 if record is None else record.weight
+        pos = '' if record is None else record.positive_prompts
+        neg = '' if record is None else record.negative_prompts
+        isCheckPoint = False
+        if (record.model_type == ModelType.CHECKPOINT):   
+            isCheckPoint = True
+            pos = record.name  
+
+        elif(record.model_type == ModelType.LORA or record.model_type == ModelType.LYCORIS):
+            lora_on_disk = networks.available_networks.get(get_model_filename_without_extension(record.name))
+            if lora_on_disk is None:
+                return {}
+            alias = lora_on_disk.get_alias()
+
+            activation_text = record.positive_prompts
+            preferred_weight = record.weight
+            pos = f'<lora:{alias}:' + (str(preferred_weight) if preferred_weight else '1')  + '>'
+
+            if activation_text:
+                pos += " " + activation_text
+
+            negative_prompt = record.negative_prompts
+            if negative_prompt:
+                neg = negative_prompt 
+
+
+
+        elif(record.model_type == ModelType.HYPER_NETWORK):
+            preferred_weight = record.weight
+            pos = f'<hypernet:{get_model_filename_without_extension(record.name)}:{preferred_weight}>'
+
+        
+
+        elif(record.model_type == ModelType.EMBEDDING):
+            embedding = sd_hijack.model_hijack.embedding_db.word_embeddings.get(get_model_filename_without_extension(record.name))
+            if embedding is None:
+                return {}
+            if pos:
+                pos = embedding.name
+            if neg: 
+                neg = embedding.name 
+
+
+        elif(record.model_type == ModelType.VAE or record.model_type == ModelType.OTHER):
+            return {}
+        
+        result = {
+            "id": id,
+            "positive_prompts": pos,
+            "negative_prompts": neg,
+            "checkpoint": isCheckPoint,
+            "weight": weight            
+        }
+        
+    return json.loads(json.dumps(result));
+
