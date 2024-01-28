@@ -5,7 +5,7 @@ import requests
 from tqdm import tqdm
 
 from scripts.mo.dl.downloader import Downloader
-
+from scripts.mo.environment import env
 
 class HttpDownloader(Downloader):
 
@@ -30,7 +30,14 @@ class HttpDownloader(Downloader):
 
         yield {'bytes_ready': 'None', 'bytes_total': 'None', 'speed_rate': 'None', 'elapsed': 'None'}
 
-        response = requests.get(url, stream=True)
+        apiKey = env.api_key()
+        if apiKey:
+            authHeader = {'Content-Type':'application/json',
+                        'Authorization': 'Bearer ' + apiKey}
+            response = requests.get(url, stream=True, headers=authHeader)
+        else:
+            response = requests.get(url, stream=True)
+            
         total_size = int(response.headers.get('content-length', 0))
 
         yield {'bytes_ready': 0, 'bytes_total': total_size, 'speed_rate': 0, 'elapsed': 0}
