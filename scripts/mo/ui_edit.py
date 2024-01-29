@@ -249,6 +249,7 @@ def _get_bind_location_dropdown_update(model_type_value, current_location: str):
     chosen = 'None'
     if current_location:
         model_local_path = current_location.replace(env.get_model_path(model_type) + '/', '')
+        model_local_path = model_local_path.replace(lookup_dir, '') 
         if model_local_path in choices:
             chosen = model_local_path
 
