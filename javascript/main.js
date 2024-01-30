@@ -346,8 +346,10 @@ function navigateBack() {
 }
 
 function navigateDetails(id, event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event !== undefined) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     logMo('Navigate details screen for id: ' + id)
     const navObj = {
         screen: "details",
@@ -394,8 +396,10 @@ function navigateDebug(event) {
 }
 
 function navigateEdit(id, event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event !== undefined) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     logMo('Navigate edit screen for id: ' + id)
     const navObj = {
         screen: "edit",
@@ -408,8 +412,10 @@ function navigateEdit(id, event) {
 }
 
 function navigateEditPrefilled(json_data, event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event !== undefined) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     logMo('Navigate edit screen for prefilled json: ' + json_data)
     const navObj = {
         screen: "edit",
@@ -458,8 +464,10 @@ function navigateEditPrefilled(json_data, event) {
 }
 
 function navigateDownloadRecord(id, event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event !== undefined) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     logMo('Navigate download screen for id: ' + id)
     const navObj = {
         screen: "download",
@@ -496,8 +504,10 @@ function navigateDownloadGroup(groupName) {
 }
 
 function navigateRemove(id, event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (event !== undefined) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     logMo('Navigate removal screen for id: ' + id)
     const navObj = {
         screen: "remove",
