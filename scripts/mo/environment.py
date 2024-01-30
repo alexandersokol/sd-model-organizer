@@ -3,8 +3,8 @@ import logging
 import os.path
 from typing import Callable
 
-from scripts.mo.models import ModelType, Record
 from scripts.mo.data.storage import Storage
+from scripts.mo.models import ModelType
 
 STORAGE_SQLITE = 'SQLite'
 STORAGE_FIREBASE = 'Firebase'
@@ -77,7 +77,7 @@ class Environment:
     card_height: Callable[[], str]
     is_debug_mode_enabled: Callable[[], bool]
     api_key: Callable[[], str]
-    
+
     def is_storage_initialized(self) -> bool:
         return hasattr(self, 'storage')
 
