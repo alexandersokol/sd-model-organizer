@@ -20,8 +20,9 @@ def create_version_dict(version_data):
         images_data = version_data['images']
         images = []
         for image_data in images_data:
-            url = image_data['url'].replace('/width=450', '') if '/width=450' in image_data['url'] else image_data['url']
-            images.append((url, url))
+            if image_data['type'] == 'image':
+                url = image_data['url'].replace('/width=450', '') if '/width=450' in image_data['url'] else image_data['url']
+                images.append((url, url))
         version['images'] = images
 
     if version_data.get('files') is not None:
