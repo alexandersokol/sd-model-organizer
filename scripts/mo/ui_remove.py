@@ -63,7 +63,13 @@ def _on_remove_record_button_click(record_id):
 
 def _on_remove_files_button_click(record_id):
     if os.path.isfile(record_id):
+        logger.info('removed local model file: %s', record_id)
         os.remove(record_id)
+
+        preview_path = find_preview_file(record_id)
+        if preview_path and os.path.exists(preview_path):
+            logger.info('removed local preview files: %s', preview_path)
+            os.remove(preview_path)
     else:
         record = env.storage.get_record_by_id(record_id)
         if record.location and os.path.exists(record.location):
