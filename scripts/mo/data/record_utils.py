@@ -19,9 +19,9 @@ def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: b
                                     reverse=True)
         elif sort_order == ModelSort.NAME_ASC:
             sorted_records = sorted(records,
-                                    key=lambda r: (not (bool(r.location) and os.path.exists(r.location)), r.name))
+                                    key=lambda r: (not (bool(r.location) and os.path.exists(r.location)), r.name.lower()))
         elif sort_order == ModelSort.NAME_DESC:
-            sorted_records = sorted(records, key=lambda r: (bool(r.location) and os.path.exists(r.location), r.name),
+            sorted_records = sorted(records, key=lambda r: (bool(r.location) and os.path.exists(r.location), r.name.lower()),
                                     reverse=True)
         else:
             raise ValueError(f'An unhandled sort_order value: {sort_order.value}')
@@ -31,9 +31,9 @@ def _sort_records(records: List, sort_order: ModelSort, sort_downloaded_first: b
         elif sort_order == ModelSort.TIME_ADDED_DESC:
             sorted_records = sorted(records, key=lambda record: record.created_at, reverse=True)
         elif sort_order == ModelSort.NAME_ASC:
-            sorted_records = sorted(records, key=lambda record: record.name)
+            sorted_records = sorted(records, key=lambda record: record.name.lower())
         elif sort_order == ModelSort.NAME_DESC:
-            sorted_records = sorted(records, key=lambda record: record.name, reverse=True)
+            sorted_records = sorted(records, key=lambda record: record.name.lower(), reverse=True)
         else:
             raise ValueError(f'An unhandled sort_order value: {sort_order.value}')
     return sorted_records
