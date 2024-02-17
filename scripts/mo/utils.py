@@ -290,12 +290,13 @@ def get_json_record_data(id):
         pos = '' if record is None else record.positive_prompts
         neg = '' if record is None else record.negative_prompts
         isCheckPoint = False
-        if (record.model_type == ModelType.CHECKPOINT):   
+        flname = os.path.basename(record.location) 
+        if (record.model_type == ModelType.CHECKPOINT):  
             isCheckPoint = True
-            pos = record.name  
+            pos = flname  
 
         elif(record.model_type == ModelType.LORA or record.model_type == ModelType.LYCORIS):
-            lora_on_disk = networks.available_networks.get(get_model_filename_without_extension(record.name))
+            lora_on_disk = networks.available_networks.get(get_model_filename_without_extension(flname))
             if lora_on_disk is None:
                 return {}
             alias = lora_on_disk.get_alias()
@@ -315,12 +316,12 @@ def get_json_record_data(id):
 
         elif(record.model_type == ModelType.HYPER_NETWORK):
             preferred_weight = record.weight
-            pos = f'<hypernet:{get_model_filename_without_extension(record.name)}:{preferred_weight}>'
+            pos = f'<hypernet:{get_model_filename_without_extension(flname)}:{preferred_weight}>'
 
         
 
         elif(record.model_type == ModelType.EMBEDDING):
-            embedding = sd_hijack.model_hijack.embedding_db.word_embeddings.get(get_model_filename_without_extension(record.name))
+            embedding = sd_hijack.model_hijack.embedding_db.word_embeddings.get(get_model_filename_without_extension(flname))
             if embedding is None:
                 return {}
             if pos:
