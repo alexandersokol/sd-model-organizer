@@ -229,6 +229,15 @@ class SQLiteStorage(Storage):
         for row in rows:
             result.append(map_row_to_record(row))
         return result
+    
+    def get_records_by_query(self, query: str) -> List:
+        cursor = self._connection().cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.append(map_row_to_record(row))
+        return result
 
     def add_record(self, record: Record):
         cursor = self._connection().cursor()
