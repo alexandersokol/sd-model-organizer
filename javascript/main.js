@@ -732,10 +732,11 @@ function fillPrompt(recordid) {
         backstack: populateBackstack()
     };
     deliverNavObject(navObj)
-
+    var counter = 0;
     var timer = setInterval(() => {
+        counter++;
         record_data = gradioApp().querySelector('#mo_record_info_nav_box textarea');
-
+        if (counter > 10) clearInterval(timer);
         if (record_data == null) return;
         var terminate = false;
         var jsdata = record_data.value;
