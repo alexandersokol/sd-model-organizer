@@ -15,34 +15,34 @@ _NO_PREVIEW_LIGHT = 'file=extensions/sd-model-organizer/pic/no-preview-light.png
 
 def alert_danger(value) -> str:
     if isinstance(value, list):
-        text = "<br>".join(value)
+        text = "<br>".join([html.escape(s) for s in value])
     else:
-        text = value
-    return f'<div class="mo-alert mo-alert-danger">{html.escape(text)}</div>'
+        text = html.escape(value)
+    return f'<div class="mo-alert mo-alert-danger">{text}</div>'
 
 
 def alert_primary(value) -> str:
     if isinstance(value, list):
-        text = "<br>".join(value)
+        text = "<br>".join([html.escape(s) for s in value])
     else:
-        text = value
-    return f'<div class="mo-alert mo-alert-primary">{html.escape(text)}</div>'
+        text = html.escape(value)
+    return f'<div class="mo-alert mo-alert-primary">{text}</div>'
 
 
 def alert_success(value) -> str:
     if isinstance(value, list):
-        text = "<br>".join(value)
+        text = "<br>".join([html.escape(s) for s in value])
     else:
-        text = value
-    return f'<div class="mo-alert mo-alert-success">{html.escape(text)}</div>'
+        text = html.escape(value)
+    return f'<div class="mo-alert mo-alert-success">{text}</div>'
 
 
 def alert_warning(value) -> str:
     if isinstance(value, list):
-        text = "<br>".join(value)
+        text = "<br>".join([html.escape(s) for s in value])
     else:
-        text = value
-    return f'<div class="mo-alert mo-alert-warning">{html.escape(text)}</div>'
+        text = html.escape(value)
+    return f'<div class="mo-alert mo-alert-warning">{text}</div>'
 
 
 def _limit_description(text):
