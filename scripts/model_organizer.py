@@ -134,6 +134,12 @@ env.api_key = (
     else ""
 )
 
+env.check_duplicates = (
+    lambda: shared.opts.mo_check_duplicates
+    if hasattr(shared.opts, 'mo_check_duplicates')
+    else ""
+)
+
 env.model_path = (
     lambda: shared.opts.mo_model_path
     if hasattr(shared.opts, 'mo_model_path') and shared.opts.mo_model_path
@@ -198,6 +204,7 @@ def on_ui_settings():
         'mo_prefill_neg_prompt': OptionInfo(True, 'When creating a record based on local file, automatically import the added negative prompts'),
         'mo_autobind_file': OptionInfo(True, 'Automatically bind record to local file'),
         'mo_api_key': OptionInfo("", "Civitai API Key. Create an API key under 'https://civitai.com/user/account' all the way at the bottom. Don't share the token!"),
+        'mo_check_duplicates': OptionInfo(False, "Should a duplicate check be performed, upon fetching a file from Civitai"),
     }
 
     dir_opts = {

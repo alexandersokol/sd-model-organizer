@@ -9,7 +9,7 @@ import requests
 from scripts.mo.data.storage import map_record_to_dict
 from scripts.mo.environment import env
 from scripts.mo.models import ModelType, Record
-from scripts.mo.ui_styled_html import alert_danger
+from scripts.mo.ui_styled_html import alert_danger, alert_warning
 from scripts.mo.utils import is_blank
 from scripts.mo.data.mapping_utils import create_version_dict
 
@@ -120,9 +120,19 @@ def _on_fetch_url_clicked(url):
         data = response.json()
         data_dict = create_model_dict(data)
 
+        duplicate_warning = ''
+        if env.check_duplicates():
+            civurl = f"https://civitai.com/models/{model_id}"
+            duplicate_candidates = env.storage.get_records_by_query(f"SELECT * FROM RECORD WHERE URL = '{civurl}'")
+            if len(duplicate_candidates) > 0:
+                duplicate_list = ['Fetched Model already has at least a version present as record']
+                for record in duplicate_candidates:
+                    duplicate_list.append(record.name)
+                duplicate_warning = alert_warning(duplicate_list)
+
         return [
             data_dict,
-            gr.HTML.update(value=''),
+            gr.HTML.update(value='' if duplicate_warning =='' else duplicate_warning),
             gr.Column.update(visible=True),
             *_create_ui_update(data_dict=data_dict, selected_version_id=selected_model_version_id)
         ]
