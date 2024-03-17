@@ -66,6 +66,9 @@ def import_export_ui_block():
             gr.Markdown('## Records import/export')
             gr.Markdown('')
             back_button = gr.Button('Back')
+        with gr.Tab("Import Civitai URL"):
+            with gr.Column():
+                civitai_import_ui_block()
         with gr.Tab("Import JSON"):
             import_file_widget = gr.File(label='Import .json file', file_types=['.json'])
             import_result_widget = gr.HTML()
@@ -82,9 +85,6 @@ def import_export_ui_block():
                                            value='Export All')
             export_button = gr.Button(value='Export')
             export_file_widget = gr.File(visible=False)
-        with gr.Tab("Import Civitai URL"):
-            with gr.Column():
-                civitai_import_ui_block()
 
     back_button.click(fn=None, _js='navigateBack')
 

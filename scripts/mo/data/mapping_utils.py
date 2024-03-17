@@ -5,7 +5,7 @@ def create_version_dict(version_data):
     version = {
         'id': version_data['id'],
         'name': version_data['name'],
-        'updated_at': version_data['updatedAt'],
+        # 'updated_at': version_data['updatedAt'],
     }
 
     trained_words = []
