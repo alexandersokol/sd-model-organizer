@@ -41,7 +41,8 @@ class HttpDownloader(Downloader):
         if api_key:
             auth_header = {'Content-Type': 'application/json',
                            'Authorization': 'Bearer ' + api_key}
-            response = requests.get(url, stream=True, headers=auth_header)
+            api_url = url + '&token=' + api_key if "?" in url else url + '?token=' + api_key
+            response = requests.get(api_url, stream=True, headers=auth_header)
         else:
             response = requests.get(url, stream=True)
 
