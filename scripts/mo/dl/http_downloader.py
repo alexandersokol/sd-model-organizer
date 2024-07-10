@@ -37,14 +37,12 @@ class HttpDownloader(Downloader):
 
         yield {'bytes_ready': 'None', 'bytes_total': 'None', 'speed_rate': 'None', 'elapsed': 'None'}
 
-        api_key = env.api_key()
-        if api_key:
-            auth_header = {'Content-Type': 'application/json',
-                           'Authorization': 'Bearer ' + api_key}
-            api_url = url + '&token=' + api_key if "?" in url else url + '?token=' + api_key
-            response = requests.get(api_url, stream=True, headers=auth_header)
-        else:
-            response = requests.get(url, stream=True)
+        civitai_api_key = env.api_key()
+        is_civitai_url = urlparse(url).hostname == 'civitai.com'
+        if civitai_api_key and is_civitai_url:
+            url = url + '&token=' + civitai_api_key if "?" in url else url + '?token=' + civitai_api_key
+
+        response = requests.get(url, stream=True)
 
         total_size = int(response.headers.get('content-length', 0))
 
