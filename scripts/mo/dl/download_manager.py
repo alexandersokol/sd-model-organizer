@@ -229,6 +229,14 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
+            check_url_available = downloader.is_url_available(record.download_url)
+            if check_url_available is not None:
+                yield {'status': RECORD_STATUS_ERROR, 'exception': check_url_available}
+                return
+
+            if self._stop_event.is_set():
+                return
+
             with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
                 self._temp_files.add(temp)
