@@ -34,8 +34,9 @@ class HttpDownloader(Downloader):
     def is_url_available(self, url: str):
         url = self.civitai_api_url(url, env.api_key())
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, stream=True, timeout=10)
             response.raise_for_status()
+            response.close()
             return None
         except Exception as ex:
             if response.status_code == 401:
