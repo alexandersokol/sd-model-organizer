@@ -14,3 +14,7 @@ class Downloader(ABC):
     @abstractmethod
     def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         pass
+
+    @abstractmethod
+    def is_url_available(self, url: str):
+        pass
