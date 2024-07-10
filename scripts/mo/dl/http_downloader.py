@@ -38,6 +38,9 @@ class HttpDownloader(Downloader):
             response.raise_for_status()
             return None
         except Exception as ex:
+            if response.status_code == 401:
+                error_message = 'Invalid API key, please check API key in "Settings > Model Organizer > Civitai API Key".'
+                raise requests.HTTPError(error_message) from ex
             return ex
 
     def civitai_api_url(self, url: str, api_key: str = None) -> str:
