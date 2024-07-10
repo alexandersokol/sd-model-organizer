@@ -31,16 +31,31 @@ class HttpDownloader(Downloader):
         else:
             return None
 
+    def is_url_available(self, url: str):
+        url = self.civitai_api_url(url, env.api_key())
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return None
+        except Exception as ex:
+            if response.status_code == 401:
+                error_message = 'Invalid API key, please check API key in "Settings > Model Organizer > Civitai API Key".'
+                raise requests.HTTPError(error_message) from ex
+            return ex
+
+    def civitai_api_url(self, url: str, api_key: str = None) -> str:
+        parsed_url = urlparse(url)
+        if api_key and parsed_url.hostname == 'civitai.com':
+            url = url + '&token=' + api_key if "?" in url else url + '?token=' + api_key
+        return url
+
     def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         if stop_event.is_set():
             return
 
         yield {'bytes_ready': 'None', 'bytes_total': 'None', 'speed_rate': 'None', 'elapsed': 'None'}
 
-        civitai_api_key = env.api_key()
-        is_civitai_url = urlparse(url).hostname == 'civitai.com'
-        if civitai_api_key and is_civitai_url:
-            url = url + '&token=' + civitai_api_key if "?" in url else url + '?token=' + civitai_api_key
+        url = self.civitai_api_url(url, env.api_key())
 
         response = requests.get(url, stream=True)
 

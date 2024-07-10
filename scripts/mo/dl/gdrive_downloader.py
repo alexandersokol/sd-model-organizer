@@ -368,6 +368,9 @@ class GDriveDownloader(Downloader):
                     return match.group(0)
         else:
             return None
+    def is_url_available(self, url: str):
+        #TODO: check if url is available for gdrive
+        return None
 
     def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         yield from _download(url=url,
