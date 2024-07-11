@@ -278,12 +278,12 @@ def _download(
 
     logger.info("Downloading...")
     if resume:
-        logger.info(f"Resume: {tmp_file}")
+        logger.info("Resume: %s", tmp_file)
     if url_origin != url:
-        logger.info(f"From (uriginal): {url_origin}")
-        logger.info(f"From (redirected): {url}")
+        logger.info("From (uriginal): %s", url_origin)
+        logger.info("From (redirected): %s", url)
     else:
-        logger.info(f"From: {url}")
+        logger.info("From: %s", url)
     logger.info(f"To: {osp.abspath(output) if output_is_path else output}")
 
     if stop_event.is_set():
@@ -368,9 +368,9 @@ class GDriveDownloader(Downloader):
                     return match.group(0)
         else:
             return None
-    def is_url_available(self, url: str):
-        #TODO: check if url is available for gdrive
-        return None
+    def check_url_available(self, url: str):
+        #TODO: Check if url available for gdrive
+        return True, None
 
     def download(self, url: str, destination_file: str, description: str, stop_event: threading.Event):
         yield from _download(url=url,
