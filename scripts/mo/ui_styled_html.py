@@ -414,11 +414,12 @@ def _downloads_header(record_id, title) -> str:
     return content
 
 
-def _download_url(record_id, url: str, is_preview: bool) -> str:
+def _download_url(record_id, url: str, is_preview: bool, backup_url: str) -> str:
     preview = '-preview' if is_preview else ''
     hint = 'Preview URL' if is_preview else 'Model URL'
+    bacup_hint = f'</br>[Backup URL]: {backup_url}' if backup_url is not '' and not is_preview else ''
     content = f'<p style="margin-top: 2rem; display: block; overflow-wrap: anywhere;" id="url{preview}-{record_id}">' \
-              f'[{hint}]: {url}</p>'
+              f'[{hint}]: {url} {bacup_hint}</p>'
     return content
 
 
@@ -455,12 +456,12 @@ def download_cards(records: List, token) -> str:
 
         content += _downloads_header(id_, record.name)
 
-        content += _download_url(id_, record.download_url, False)
+        content += _download_url(id_, record.download_url, False, record.backup_url)
         content += _download_info(id_, False)
         content += _download_progress_bar(id_, False)
 
         if record.preview_url and env.download_preview():
-            content += _download_url(id_, record.preview_url, True)
+            content += _download_url(id_, record.preview_url, True, False)
             content += _download_info(id_, True)
             content += _download_progress_bar(id_, True)
 

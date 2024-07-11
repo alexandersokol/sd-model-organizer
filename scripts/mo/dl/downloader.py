@@ -16,5 +16,5 @@ class Downloader(ABC):
         pass
 
     @abstractmethod
-    def is_url_available(self, url: str):
+    def check_url_available(self, url: str):
         pass

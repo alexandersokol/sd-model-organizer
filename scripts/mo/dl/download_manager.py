@@ -54,14 +54,14 @@ def _get_filename_from_url(url):
     return filename + extension
 
 
-def _get_filename(downloader: Downloader, record: Record) -> str:
+def _get_filename(downloader: Downloader,url , record: Record) -> str:
     if record.download_filename:
         filename = record.download_filename
     else:
-        url_filename = _get_filename_from_url(record.download_url)
+        url_filename = _get_filename_from_url(url)
         if url_filename is not None:
             return url_filename
-        filename = downloader.fetch_filename(record.download_url)
+        filename = downloader.fetch_filename(url)
         if filename is None:
             filename = str(record.id_)
     return filename
@@ -204,10 +204,34 @@ class DownloadManager:
             downloader = self._get_downloader(record.download_url)
             logger.debug('Start download record with id: %s', record.id_)
 
+            download_url = record.download_url
+            url_availability, url_exception_message = downloader.check_url_available(download_url)
+
+            if not url_availability:
+                logger.debug(
+                    'Download URL(%s) not available(%s), trying backup URL.',
+                    download_url,
+                    url_exception_message,
+                    exc_info=True
+                )
+
+                download_url = record.backup_url
+                downloader = self._get_downloader(download_url)
+                url_availability, url_exception_message = downloader.check_url_available(download_url)
+
+                if not url_availability:
+                    logger.debug(
+                        'Backup URL(%s) also not available(%s), raising exception.',
+                        download_url,
+                        url_exception_message,
+                    )
+                    yield {'status': RECORD_STATUS_ERROR, 'exception': url_exception_message}
+                    return
+
             if self._stop_event.is_set():
                 return
 
-            filename = _get_filename(downloader, record)
+            filename = _get_filename(downloader, download_url, record)
             logger.debug('filename: %s', filename)
 
             yield {'filename': filename}
@@ -229,18 +253,10 @@ class DownloadManager:
             if self._stop_event.is_set():
                 return
 
-            check_url_available = downloader.is_url_available(record.download_url)
-            if check_url_available is not None:
-                yield {'status': RECORD_STATUS_ERROR, 'exception': check_url_available}
-                return
-
-            if self._stop_event.is_set():
-                return
-
             with tempfile.NamedTemporaryFile(delete=False, dir=destination_dir) as temp:
                 logger.debug('Downloading into tmp file: %s', temp.name)
                 self._temp_files.add(temp)
-                for upd in downloader.download(record.download_url, temp.name, filename, self._stop_event):
+                for upd in downloader.download(download_url, temp.name, filename, self._stop_event):
                     yield {'dl': upd}
 
                 temp.close()
@@ -329,5 +345,5 @@ class DownloadManager:
                 if os.path.exists(temp_file.name):
                     os.remove(temp_file.name)
             except Exception as ex:
-                logger.warning(f'Failed to remove temp_file: {temp_file.name}')
+                logger.warning('Failed to remove temp_file: %s', temp_file.name)
                 logger.exception(ex)
