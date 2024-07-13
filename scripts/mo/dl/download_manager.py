@@ -214,8 +214,11 @@ class DownloadManager:
                     url_exception_message,
                     exc_info=True
                 )
-
-                download_url = record.backup_url
+                if record.backup_url != '':
+                    download_url = record.backup_url
+                else:
+                    yield {'status': RECORD_STATUS_ERROR, 'exception': url_exception_message}
+                    return
                 downloader = self._get_downloader(download_url)
                 url_availability, url_exception_message = downloader.check_url_available(download_url)
 

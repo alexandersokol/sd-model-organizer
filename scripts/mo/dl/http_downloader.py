@@ -6,7 +6,6 @@ from tqdm import tqdm
 
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.environment import env
-from scripts.mo.utils import is_blank
 
 class HttpDownloader(Downloader):
 
@@ -32,8 +31,6 @@ class HttpDownloader(Downloader):
             return None
 
     def check_url_available(self, url: str):
-        if is_blank(url):
-            return False, 'URL not found.'
         url = self.civitai_api_url(url, env.api_key())
         try:
             response = requests.get(url, stream=True, timeout=10)
@@ -42,8 +39,7 @@ class HttpDownloader(Downloader):
             return True, None
         except Exception as ex:
             if response.status_code == 401:
-                error_message = 'Invalid API key, please check API key in Settings > Model Organizer > Civitai API Key.'
-                raise requests.HTTPError(error_message) from ex
+                ex = 'Invalid API key, please check API key in Settings > Model Organizer > Civitai API Key.'
             return False, ex
 
     def civitai_api_url(self, url: str, api_key: str = None) -> str:
