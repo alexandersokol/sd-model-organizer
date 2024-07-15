@@ -9,7 +9,7 @@ from scripts.mo.environment import env, logger
 from scripts.mo.models import Record, ModelType
 
 _DB_FILE = 'database.sqlite'
-_DB_VERSION = 6
+_DB_VERSION = 7
 _DB_TIMEOUT = 30
 
 
@@ -32,7 +32,8 @@ def map_row_to_record(row) -> Record:
         groups=row[14].split(',') if row[14] else [],
         subdir=row[15],
         location=row[16],
-        weight=row[17]
+        weight=row[17],
+        backup_url=row[18]
     )
 
 
@@ -71,7 +72,8 @@ class SQLiteStorage(Storage):
                                     groups TEXT DEFAULT '',
                                     subdir TEXT DEFAULT '',
                                     location TEXT DEFAULT '',
-                                    weight REAL DEFAULT 1)
+                                    weight REAL DEFAULT 1,
+                                    backup_url TEXT)
                                  ''')
 
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS Version
@@ -103,7 +105,9 @@ class SQLiteStorage(Storage):
             elif ver == 4:
                 self._migrate_4_to_5()
             elif ver == 5:
-                self._migrage_5_to_6()
+                self._migrate_5_to_6()
+            elif ver == 6:
+                self._migrate_6_to_7()
             else:
                 raise Exception(f'Missing SQLite migration from {ver} to {_DB_VERSION}')
 
@@ -135,12 +139,19 @@ class SQLiteStorage(Storage):
         cursor.execute("DELETE FROM Version")
         cursor.execute('INSERT INTO Version VALUES (5)')
         self._connection().commit()
-    
-    def _migrage_5_to_6(self):
+
+    def _migrate_5_to_6(self):
         cursor = self._connection().cursor()
         cursor.execute("ALTER TABLE Record ADD COLUMN weight REAL DEFAULT 1;")
         cursor.execute("DELETE FROM Version")
         cursor.execute('INSERT INTO Version VALUES (6)')
+        self._connection().commit()
+
+    def _migrate_6_to_7(self):
+        cursor = self._connection().cursor()
+        cursor.execute("ALTER TABLE Record ADD COLUMN backup_url TEXT DEFAULT '';")
+        cursor.execute("DELETE FROM Version")
+        cursor.execute('INSERT INTO Version VALUES (7)')
         self._connection().commit()
 
     def get_all_records(self) -> List:
@@ -199,7 +210,7 @@ class SQLiteStorage(Storage):
                 query += f" LOWER(groups) LIKE '%{group}%'"
                 append_and = True
 
-        logger.debug(f'query: {query}')
+        logger.debug('query: %s',query)
         cursor = self._connection().cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -229,7 +240,7 @@ class SQLiteStorage(Storage):
         for row in rows:
             result.append(map_row_to_record(row))
         return result
-    
+
     def get_records_by_query(self, query: str) -> List:
         cursor = self._connection().cursor()
         cursor.execute(query)
@@ -258,7 +269,8 @@ class SQLiteStorage(Storage):
             ",".join(record.groups),
             record.subdir,
             record.location,
-            record.weight
+            record.weight,
+            record.backup_url
         )
         cursor.execute(
             """INSERT INTO Record(
@@ -278,7 +290,8 @@ class SQLiteStorage(Storage):
                     groups,
                     subdir,
                     location,
-                    weight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    weight,
+                    backup_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             data)
         self._connection().commit()
 
@@ -301,6 +314,7 @@ class SQLiteStorage(Storage):
             record.subdir,
             record.location,
             record.weight,
+            record.backup_url,
             record.id_
         )
         cursor.execute(
@@ -320,7 +334,8 @@ class SQLiteStorage(Storage):
                     groups=?,
                     subdir=?,
                     location=?,
-                    weight=?
+                    weight=?,
+                    backup_url=?
                 WHERE id=?
             """, data
         )
