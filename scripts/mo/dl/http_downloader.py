@@ -2,6 +2,7 @@ import threading
 from urllib.parse import urlparse
 
 import requests
+from requests.exceptions import ConnectTimeout, HTTPError, ConnectionError
 from tqdm import tqdm
 
 from scripts.mo.dl.downloader import Downloader
@@ -26,9 +27,16 @@ class HttpDownloader(Downloader):
             response.raise_for_status()
             response.close()
             return True, None
+        except ConnectTimeout as ex:
+            return False, ex
+        except ConnectionError as ex:
+            return False, ex
+        except HTTPError as ex:
+            if ex.response.status_code == 401:
+                error_message = 'Invalid API key, please check API key in Settings > Model Organizer > Civitai API Key.'
+                return False, error_message
+            return False, ex
         except Exception as ex:
-            if response.status_code == 401:
-                ex = 'Invalid API key, please check API key in Settings > Model Organizer > Civitai API Key.'
             return False, ex
 
     def fetch_filename(self, url):
