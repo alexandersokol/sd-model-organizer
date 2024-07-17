@@ -389,7 +389,7 @@ def civitai_import_ui_block():
         gr.Markdown()
         gr.Markdown()
         gr.Markdown()
-        fetch_url_button = gr.Button('Fetch URL')
+        fetch_url_button = gr.Button('🌐 Fetch URL')
 
     fetch_result_html = gr.HTML('')
     import_model_state = gr.State(None)

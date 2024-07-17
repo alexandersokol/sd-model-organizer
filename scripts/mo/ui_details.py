@@ -37,10 +37,10 @@ def details_ui_block():
     with gr.Blocks():
         details_id_box = gr.Textbox(label='details_id_box', elem_classes='mo-alert-warning', visible=False)
         with gr.Row():
-            back_button = gr.Button("Back")
-            remove_button = gr.Button("Remove")
-            edit_button = gr.Button('Edit')
-            download_button = gr.Button("Download")
+            back_button = gr.Button("⬅️ Back")
+            remove_button = gr.Button("🗑️ Remove")
+            edit_button = gr.Button('✏️ Edit')
+            download_button = gr.Button("🌐 Download")
 
         content_widget = gr.HTML()
         description_html = '<div><p style="margin-left: 0.2rem;">Description:</p>' \

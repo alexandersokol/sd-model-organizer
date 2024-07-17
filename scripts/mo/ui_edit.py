@@ -342,7 +342,7 @@ def edit_ui_block():
 
     with gr.Row():
         with gr.Column():
-            cancel_button = gr.Button('Cancel')
+            cancel_button = gr.Button('❎ Cancel')
             name_widget = gr.Textbox(label='Name:',
                                      value='',
                                      max_lines=1,
@@ -369,7 +369,8 @@ def edit_ui_block():
                                     info='Link to the model page (Optional)')
 
         with gr.Column():
-            save_widget = gr.Button('Save', elem_classes='mo-alert-primary')
+            save_widget = gr.Button('💾 Save')
+            # save_widget = gr.Button('💾 Save', elem_classes='mo-alert-primary')
 
             error_widget = gr.HTML(visible=False)
             groups_widget = gr.Dropdown(label='Groups',
@@ -384,7 +385,7 @@ def edit_ui_block():
                                                 max_lines=1,
                                                 info='Type comma-separated group names',
                                                 elem_id='mo-add-groups-box')
-                    add_groups_button = gr.Button('Add Group')
+                    add_groups_button = gr.Button('➕ Add Group')
 
             location_widget = gr.Textbox(label="File location",
                                          info="Local file location path. Not editable.",
