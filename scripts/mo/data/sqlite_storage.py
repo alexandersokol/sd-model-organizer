@@ -1,4 +1,5 @@
 import os
+import shutil
 import sqlite3
 import threading
 from typing import List
@@ -43,12 +44,15 @@ class SQLiteStorage(Storage):
         self.local = threading.local()
         self._initialize()
 
+    def _database_path(self):
+        mo_database_dir = getattr(shared.cmd_opts, "mo_database_dir")
+        database_dir = mo_database_dir if mo_database_dir is not None else env.script_dir
+        db_file_path = os.path.join(database_dir, _DB_FILE)
+        return db_file_path
+
     def _connection(self):
         if not hasattr(self.local, "connection"):
-            mo_database_dir = getattr(shared.cmd_opts, "mo_database_dir")
-            database_dir = mo_database_dir if mo_database_dir is not None else env.script_dir
-            db_file_path = os.path.join(database_dir, _DB_FILE)
-            self.local.connection = sqlite3.connect(db_file_path, _DB_TIMEOUT)
+            self.local.connection = sqlite3.connect(self._database_path(), _DB_TIMEOUT)
         return self.local.connection
 
     def _initialize(self):
@@ -95,21 +99,30 @@ class SQLiteStorage(Storage):
             self._run_migration(version)
 
     def _run_migration(self, current_version):
+        migration_map = {
+            1: self._migrate_1_to_2,
+            2: self._migrate_2_to_3,
+            3: self._migrate_3_to_4,
+            4: self._migrate_4_to_5,
+            5: self._migrate_5_to_6,
+            6: self._migrate_6_to_7,
+        }
         for ver in range(current_version, _DB_VERSION):
-            if ver == 1:
-                self._migrate_1_to_2()
-            elif ver == 2:
-                self._migrate_2_to_3()
-            elif ver == 3:
-                self._migrate_3_to_4()
-            elif ver == 4:
-                self._migrate_4_to_5()
-            elif ver == 5:
-                self._migrate_5_to_6()
-            elif ver == 6:
-                self._migrate_6_to_7()
-            else:
+            self._backup_database(ver)
+            migration = migration_map.get(ver)
+            if migration is None:
                 raise Exception(f'Missing SQLite migration from {ver} to {_DB_VERSION}')
+            migration()
+
+    def _backup_database(self, migrate_from):
+        db_file_path = self._database_path()
+        backup_db_file_path = f'{db_file_path}.v{migrate_from}.bak'
+        last_backup_db_file_path = f'{db_file_path}.v{migrate_from-1}.bak' if migrate_from > 1 else None
+        if last_backup_db_file_path and os.path.isfile(last_backup_db_file_path):
+            os.remove(last_backup_db_file_path)
+            logger.info('Backup database v%s removed', migrate_from - 1)
+        shutil.copy(db_file_path, backup_db_file_path)
+        logger.info('Database v%s backup created', migrate_from)
 
     def _migrate_1_to_2(self):
         cursor = self._connection().cursor()
