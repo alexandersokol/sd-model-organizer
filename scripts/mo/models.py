@@ -38,6 +38,7 @@ class Record:
                  name: str,
                  model_type: ModelType,
                  download_url: str = '',
+                 backup_url: str = '',
                  url: str = '',
                  download_path: str = '',
                  download_filename: str = '',
@@ -60,6 +61,7 @@ class Record:
         self.model_type = model_type
         self.url = url
         self.download_url = download_url
+        self.backup_url = backup_url
         self.download_path = download_path
         self.download_filename = download_filename
         self.preview_url = preview_url
@@ -72,7 +74,7 @@ class Record:
         self.created_at = created_at
         self.groups = groups
         self.subdir = subdir
-        self.weight = weight;
+        self.weight = weight
 
     def is_file_exists(self) -> bool:
         return bool(self.location) and os.path.isfile(self.location)

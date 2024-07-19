@@ -2,17 +2,42 @@ import threading
 from urllib.parse import urlparse
 
 import requests
+from requests.exceptions import ConnectTimeout, HTTPError, ConnectionError
 from tqdm import tqdm
 
 from scripts.mo.dl.downloader import Downloader
 from scripts.mo.environment import env
 
+def _civitai_api_url(url: str, api_key: str = None) -> str:
+    parsed_url = urlparse(url)
+    if api_key and parsed_url.hostname == 'civitai.com':
+        url = url + '&token=' + api_key if "?" in url else url + '?token=' + api_key
+    return url
 
 class HttpDownloader(Downloader):
 
     def accepts_url(self, url: str) -> bool:
         parsed_url = urlparse(url)
         return parsed_url.scheme in ['http', 'https'] and parsed_url.hostname not in ['drive.google.com', 'mega.nz']
+
+    def check_url_available(self, url: str):
+        url = _civitai_api_url(url, env.api_key())
+        try:
+            response = requests.get(url, stream=True, timeout=10)
+            response.raise_for_status()
+            response.close()
+            return True, None
+        except ConnectTimeout as ex:
+            return False, ex
+        except ConnectionError as ex:
+            return False, ex
+        except HTTPError as ex:
+            if ex.response.status_code == 401:
+                error_message = 'Invalid API key, please check API key in Settings > Model Organizer > Civitai API Key.'
+                return False, error_message
+            return False, ex
+        except Exception as ex:
+            return False, ex
 
     def fetch_filename(self, url):
 
