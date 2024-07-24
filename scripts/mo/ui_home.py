@@ -132,11 +132,11 @@ def home_ui_block():
             gr.Markdown('## Records list')
             if not env.is_debug_mode_enabled():
                 gr.Markdown('')
-            debug_button = gr.Button('Debug', visible=env.is_debug_mode_enabled())
-            reload_button = gr.Button('Reload')
-            download_all_button = gr.Button('Download All', visible=False)
-            import_export_button = gr.Button('Import/Export')
-            add_button = gr.Button('Add')
+            debug_button = gr.Button('🛠️ Debug', visible=env.is_debug_mode_enabled())
+            reload_button = gr.Button('🔄 Reload')
+            download_all_button = gr.Button('📥 Download All', visible=False)
+            import_export_button = gr.Button('↩️ Import/Export')
+            add_button = gr.Button('🆕 Add')
 
         with gr.Accordion(label='Display options', open=False, elem_id='model_organizer_accordion'):
             with gr.Group():

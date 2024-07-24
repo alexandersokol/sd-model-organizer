@@ -248,9 +248,9 @@ def download_ui_block():
         status_message_widget = gr.HTML(visible=False)
         with gr.Row():
             gr.Markdown()
-            back_button = gr.Button('Back', visible=True)
-            start_button = gr.Button('Start Download', visible=True)
-            cancel_button = gr.Button('Cancel Download', visible=False)
+            back_button = gr.Button('⬅️ Back', visible=True)
+            start_button = gr.Button('📥 Start Download', visible=True)
+            cancel_button = gr.Button('❎ Cancel Download', visible=False)
             gr.Markdown()
         gr.HTML('</hr>')
         html_widget = gr.HTML()

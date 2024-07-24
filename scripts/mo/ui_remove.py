@@ -104,10 +104,10 @@ def remove_ui_block():
 
         with gr.Row():
             gr.Markdown()
-            cancel_button = gr.Button('Cancel')
-            remove_record_button = gr.Button('Remove Record', visible=False, elem_id='mo_button_remove')
-            remove_files_button = gr.Button('Remove Files', visible=False, elem_id='mo_button_remove')
-            remove_both_button = gr.Button('Remove Record and Files', visible=False, elem_id='mo_button_remove')
+            cancel_button = gr.Button('❎ Cancel')
+            remove_record_button = gr.Button('📑 Remove Record', visible=False, elem_id='mo_button_remove')
+            remove_files_button = gr.Button('📦 Remove Files', visible=False, elem_id='mo_button_remove')
+            remove_both_button = gr.Button('⚠️ Remove Record and Files', visible=False, elem_id='mo_button_remove')
             gr.Markdown()
 
         remove_record_button.click(_on_remove_record_button_click,

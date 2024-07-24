@@ -65,7 +65,7 @@ def import_export_ui_block():
         with gr.Row():
             gr.Markdown('## Records import/export')
             gr.Markdown('')
-            back_button = gr.Button('Back')
+            back_button = gr.Button('⬅️ Back')
         with gr.Tab("Import Civitai URL"):
             with gr.Column():
                 civitai_import_ui_block()
