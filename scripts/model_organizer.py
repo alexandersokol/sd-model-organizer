@@ -5,7 +5,7 @@ import modules.scripts as scripts
 from fastapi import FastAPI
 from gradio import Blocks
 from modules import script_callbacks
-from modules import shared, sd_models, sd_vae, paths, ui_extra_networks
+from modules import shared, sd_models, sd_vae, paths
 from modules.shared import OptionInfo
 
 from scripts.mo.api import init_extension_api
@@ -40,10 +40,7 @@ def _default_lora_path() -> str:
 
 
 def _default_hypernetworks_path() -> str:
-    if (
-        hasattr(shared.cmd_opts, 'hypernetwork_dir')
-        and shared.cmd_opts.hypernetwork_dir
-    ):
+    if hasattr(shared.cmd_opts, 'hypernetwork_dir') and shared.cmd_opts.hypernetwork_dir:
         return shared.cmd_opts.hypernetwork_dir
     else:
         return os.path.join(paths.models_path, 'hypernetworks')
@@ -127,7 +124,7 @@ env.autobind_file = (
     if hasattr(shared.opts, 'mo_autobind_file')
     else True
 )
-	
+
 env.api_key = (
     lambda: shared.opts.mo_api_key
     if hasattr(shared.opts, 'mo_api_key')
@@ -155,7 +152,7 @@ env.lora_path = (
 env.hypernetworks_path = (
     lambda: shared.opts.mo_hypernetworks_path
     if hasattr(shared.opts, 'mo_hypernetworks_path')
-    and shared.opts.mo_hypernetworks_path
+       and shared.opts.mo_hypernetworks_path
     else _default_hypernetworks_path()
 )
 
@@ -194,10 +191,13 @@ def on_ui_settings():
         'mo_download_preview': OptionInfo(True, 'Download Preview'),
         'mo_resize_preview': OptionInfo(True, 'Resize Preview'),
         'mo_nsfw_blur': OptionInfo(True, 'Blur NSFW Previews (models with "nsfw" tag)'),
-        'mo_prefill_pos_prompt': OptionInfo(True, 'When creating a record based on local file, automatically import the added positive prompts'),
-        'mo_prefill_neg_prompt': OptionInfo(True, 'When creating a record based on local file, automatically import the added negative prompts'),
+        'mo_prefill_pos_prompt': OptionInfo(True,
+                                            'When creating a record based on local file, automatically import the added positive prompts'),
+        'mo_prefill_neg_prompt': OptionInfo(True,
+                                            'When creating a record based on local file, automatically import the added negative prompts'),
         'mo_autobind_file': OptionInfo(True, 'Automatically bind record to local file'),
-        'mo_api_key': OptionInfo("", "Civitai API Key. Create an API key under 'https://civitai.com/user/account' all the way at the bottom. Don't share the token!"),
+        'mo_api_key': OptionInfo("",
+                                 "Civitai API Key. Create an API key under 'https://civitai.com/user/account' all the way at the bottom. Don't share the token!"),
     }
 
     dir_opts = {
@@ -226,8 +226,8 @@ def on_ui_settings():
     }
 
     if (
-        hasattr(shared.cmd_opts, 'mo_show_dir_settings')
-        and shared.cmd_opts.mo_show_dir_settings
+            hasattr(shared.cmd_opts, 'mo_show_dir_settings')
+            and shared.cmd_opts.mo_show_dir_settings
     ):
         opts.update(dir_opts)
 
