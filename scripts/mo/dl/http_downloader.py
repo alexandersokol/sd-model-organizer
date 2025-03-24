@@ -2,6 +2,7 @@ import threading
 from urllib.parse import urlparse
 
 import requests
+import requests_cache
 from tqdm import tqdm
 
 from scripts.mo.dl.downloader import Downloader
@@ -41,9 +42,11 @@ class HttpDownloader(Downloader):
         if api_key:
             auth_header = {'Content-Type': 'application/json',
                            'Authorization': 'Bearer ' + api_key}
-            response = requests.get(url, stream=True, headers=auth_header)
+            with requests_cache.disabled():
+                response = requests.get(url, stream=True, headers=auth_header)
         else:
-            response = requests.get(url, stream=True)
+            with requests_cache.disabled():
+                response = requests.get(url, stream=True)
 
         total_size = int(response.headers.get('content-length', 0))
 
