@@ -132,7 +132,7 @@ def _on_fetch_url_clicked(url):
 
         return [
             data_dict,
-            gr.HTML.update(value='' if duplicate_warning =='' else duplicate_warning),
+            gr.HTML.update(value='' if duplicate_warning == '' else duplicate_warning),
             gr.Column.update(visible=True),
             *_create_ui_update(data_dict=data_dict, selected_version_id=selected_model_version_id)
         ]
@@ -240,7 +240,8 @@ def _on_model_type_changed(model_type_value):
     ]
 
 
-def _prepare_import_data(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+def _prepare_import_data(state, import_url, name, use_model_name_as_download_filename, model_type_value, tags,
+                         model_version_value, preview_url, file_value,
                          prompts, include_description):
     errors = []
     if is_blank(name):
@@ -288,11 +289,17 @@ def _prepare_import_data(state, import_url, name, model_type_value, tags, model_
     groups = list(map(lambda x: x.strip(), tags.split(','))) if bool(tags.strip()) else []
     sha256 = file['sha256']
 
+    if use_model_name_as_download_filename:
+        download_filename = f'{name}.safetensors'
+    else:
+        download_filename = ''
+
     return Record(
         id_=None,
         name=name,
         model_type=model_type,
         download_url=download_url,
+        download_filename=download_filename,
         url=model_url.strip(),
         preview_url=preview_url.strip(),
         description=description,
@@ -303,12 +310,14 @@ def _prepare_import_data(state, import_url, name, model_type_value, tags, model_
     )
 
 
-def _on_import_clicked(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+def _on_import_clicked(state, import_url, name, use_model_name_as_download_filename, model_type_value, tags,
+                       model_version_value, preview_url, file_value,
                        prompts, include_description):
     result = _prepare_import_data(
         state=state,
         import_url=import_url,
         name=name,
+        use_model_name_as_download_filename=use_model_name_as_download_filename,
         model_type_value=model_type_value,
         tags=tags,
         model_version_value=model_version_value,
@@ -337,12 +346,13 @@ def _on_import_clicked(state, import_url, name, model_type_value, tags, model_ve
         ]
 
 
-def _on_edit_clicked(state, import_url, name, model_type_value, tags, model_version_value, preview_url, file_value,
+def _on_edit_clicked(state, import_url, name, use_model_name_as_download_filename, model_type_value, tags, model_version_value, preview_url, file_value,
                      prompts, include_description):
     result = _prepare_import_data(
         state=state,
         import_url=import_url,
         name=name,
+        use_model_name_as_download_filename=use_model_name_as_download_filename,
         model_type_value=model_type_value,
         tags=tags,
         model_version_value=model_version_value,
@@ -396,6 +406,10 @@ def civitai_import_ui_block():
 
     with gr.Column(visible=False) as content_container:
         name_widget = gr.Textbox(label='Name', interactive=True)
+        use_name_as_filename = gr.Checkbox(label='Use name as download filename',
+                                           interactive=True,
+                                           info='Adds a custom filename to for downloading file name from the model '
+                                                'name with .safetensors extension.')
 
         model_type_dropdown = gr.Dropdown(choices=[model_type.value for model_type in ModelType],
                                           value='',
@@ -489,6 +503,7 @@ def civitai_import_ui_block():
                         inputs=[import_model_state,
                                 import_url_textbox,
                                 name_widget,
+                                use_name_as_filename,
                                 model_type_dropdown,
                                 tags_textbox,
                                 model_version_dropdown,
@@ -505,6 +520,7 @@ def civitai_import_ui_block():
                       inputs=[import_model_state,
                               import_url_textbox,
                               name_widget,
+                              use_name_as_filename,
                               model_type_dropdown,
                               tags_textbox,
                               model_version_dropdown,
