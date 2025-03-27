@@ -122,19 +122,9 @@ def _on_fetch_url_clicked(url):
             data = response.json()
             data_dict = create_model_dict(data)
 
-            duplicate_warning = ''
-            if env.check_duplicates():
-                civurl = f"https://civitai.com/models/{model_id}"
-                duplicate_candidates = env.storage.get_records_by_query(f"SELECT * FROM RECORD WHERE URL = '{civurl}'")
-                if len(duplicate_candidates) > 0:
-                    duplicate_list = ['Fetched Model already has at least a version present as record']
-                    for record in duplicate_candidates:
-                        duplicate_list.append(record.name)
-                    duplicate_warning = alert_warning(duplicate_list)
-
             return [
                 data_dict,
-                gr.HTML.update(value='' if duplicate_warning == '' else duplicate_warning),
+                gr.HTML.update(value='', visible=False),
                 gr.Column.update(visible=True),
                 *_create_ui_update(data_dict=data_dict, selected_version_id=selected_model_version_id)
             ]
@@ -202,13 +192,24 @@ def _create_ui_update(data_dict=None, selected_version=None, selected_version_id
     if file is None:
         file = version['files'][0]
 
-    name = f"{data_dict['name']} [{version['name']}]"
+    name = f"{data_dict['name']} ({version['name']})"
+
     model_type = data_dict['mode_type'].value
     tags = data_dict['tags']
+    tags = [tag.strip() for tag in tags.split(',') if tag.strip()] if tags else []
+
+    if version['base_model']:
+        if version['base_model'] == 'Illustrious':
+            base_model_name = 'Illustrious XL'
+        elif version['base_model'] == 'Pony':
+            base_model_name = 'Pony XL'
+        else:
+            base_model_name = version['base_model']
+
+        name = f"{name} [{base_model_name}]"
+        tags.append(base_model_name)
 
     available_groups = env.storage.get_available_groups()
-
-    tags = [tag.strip() for tag in tags.split(',') if tag.strip()] if tags else []
     all_tags = list(set(available_groups + tags))
     all_tags.sort()
 
@@ -423,6 +424,31 @@ def _on_new_tags_to_add(tags_add_textbox, tags_dropdown):
     ]
 
 
+def _on_name_changed(name, import_url, use_name_as_filename):
+    records_with_same_name = env.storage.get_records_by_name(name)
+
+    warnings_list = []
+
+    if records_with_same_name:
+        record_names = ', '.join(record.name for record in records_with_same_name)
+        warnings_list.append(f'Records with the same name: {record_names}')
+
+    records_with_same_url = env.storage.get_records_by_url(import_url)
+    if records_with_same_url:
+        record_names = ', '.join(record.name for record in records_with_same_url)
+        warnings_list.append(f'Records with the same url: {record_names}')
+
+    if use_name_as_filename:
+        records_with_same_dest = env.storage.get_records_by_download_destination('', f'{name}.safetensors')
+        if records_with_same_dest:
+            record_names = ', '.join(record.name for record in records_with_same_dest)
+            warnings_list.append(f'Records with the same download filename: {record_names}')
+
+    warning_message = '\n'.join(warnings_list)
+
+    return gr.HTML.update(value=alert_warning(warnings_listgi), visible=bool(warning_message))
+
+
 def civitai_import_ui_block():
     import_url_textbox = gr.Textbox('',
                                     label='civitai model url or id.',
@@ -498,6 +524,7 @@ def civitai_import_ui_block():
         with gr.Accordion(label='Description (Click to expand):', open=False) as description_accordion:
             description_html = gr.HTML()
 
+        import_warning_html = gr.HTML('', visible=False)
         import_result_html = gr.HTML('', visible=False)
 
         with gr.Row():
@@ -509,6 +536,9 @@ def civitai_import_ui_block():
                                       interactive=False,
                                       visible=False)
 
+    name_widget.change(_on_name_changed,
+                       inputs=[name_widget, import_url_textbox, use_name_as_filename],
+                       outputs=[import_warning_html])
 
     tags_add_button.click(_on_new_tags_to_add,
                           inputs=[tags_add_textbox, tags_dropdown],

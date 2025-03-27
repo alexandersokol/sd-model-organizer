@@ -77,7 +77,6 @@ class Environment:
     card_height: Callable[[], str]
     is_debug_mode_enabled: Callable[[], bool]
     api_key: Callable[[], str]
-    check_duplicates: Callable[[], bool]
 
     def is_storage_initialized(self) -> bool:
         return hasattr(self, 'storage')

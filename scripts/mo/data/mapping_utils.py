@@ -16,6 +16,9 @@ def create_version_dict(version_data):
 
     version['trained_words'] = ', '.join(trained_words) if len(trained_words) > 0 else ''
 
+    if version_data.get('baseModel') is not None:
+        version['base_model'] = version_data['baseModel']
+
     if version_data.get('images') is not None:
         images_data = version_data['images']
         images = []

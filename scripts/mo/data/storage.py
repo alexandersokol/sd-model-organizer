@@ -88,3 +88,15 @@ class Storage(ABC):
     @abstractmethod
     def get_all_records_locations(self) -> List:
         pass
+
+    @abstractmethod
+    def get_records_by_name(self, record_name) -> List:
+        pass
+
+    @abstractmethod
+    def get_records_by_url(self, url) -> List:
+        pass
+
+    @abstractmethod
+    def get_records_by_download_destination(self, download_path, download_filename) -> List:
+        pass

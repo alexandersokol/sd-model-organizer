@@ -98,3 +98,12 @@ class FirebaseStorage(Storage):
             if record.location:
                 locations.append(record.location)
         return list(set(locations))
+
+    def get_records_by_name(self, record_name) -> List:
+        return []  # No implementation for firebase storage
+
+    def get_records_by_url(self, url) -> List:
+        return []  # No implementation for firebase storage
+
+    def get_records_by_download_destination(self, download_path, download_filename) -> List:
+        return []  # No implementation for firebase storage

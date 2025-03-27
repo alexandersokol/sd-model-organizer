@@ -2,6 +2,7 @@ import os
 import sqlite3
 import threading
 from typing import List
+
 from modules import shared
 
 from scripts.mo.data.storage import Storage
@@ -135,7 +136,7 @@ class SQLiteStorage(Storage):
         cursor.execute("DELETE FROM Version")
         cursor.execute('INSERT INTO Version VALUES (5)')
         self._connection().commit()
-    
+
     def _migrage_5_to_6(self):
         cursor = self._connection().cursor()
         cursor.execute("ALTER TABLE Record ADD COLUMN weight REAL DEFAULT 1;")
@@ -224,15 +225,6 @@ class SQLiteStorage(Storage):
     def get_records_by_group(self, group: str) -> List:
         cursor = self._connection().cursor()
         cursor.execute(f"SELECT * FROM Record WHERE LOWER(groups) LIKE '%{group}%'")
-        rows = cursor.fetchall()
-        result = []
-        for row in rows:
-            result.append(map_row_to_record(row))
-        return result
-    
-    def get_records_by_query(self, query: str) -> List:
-        cursor = self._connection().cursor()
-        cursor.execute(query)
         rows = cursor.fetchall()
         result = []
         for row in rows:
@@ -353,4 +345,32 @@ class SQLiteStorage(Storage):
             if row[0]:
                 result.append(row[0])
 
+        return result
+
+    def get_records_by_name(self, record_name) -> List:
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT * FROM Record WHERE _name=?', (record_name,))
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.append(map_row_to_record(row))
+        return result
+
+    def get_records_by_url(self, url) -> List:
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT * FROM Record WHERE url=?', (url,))
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.append(map_row_to_record(row))
+        return result
+
+    def get_records_by_download_destination(self, download_path, download_filename) -> List:
+        cursor = self._connection().cursor()
+        cursor.execute('SELECT * FROM Record WHERE download_path=? AND download_filename=?',
+                       (download_path, download_filename,))
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            result.append(map_row_to_record(row))
         return result
