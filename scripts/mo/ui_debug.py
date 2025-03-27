@@ -285,16 +285,35 @@ def _on_remove_all_records_click():
     return "All records has been removed."
 
 
+def _on_add_tag_to_all_records_click(tag):
+    records = env.storage.get_all_records()
+    records_updated_count = 0
+    for record in records:
+        if tag not in record.groups:
+            record.groups.append(tag)
+            env.storage.update_record(record)
+            records_updated_count += 1
+
+    return f'{records_updated_count} records has been updated.'
+
+
 def _ui_debug_utils():
     with gr.Row():
         with gr.Column():
             remove_duplicates_button = gr.Button("Remove Records duplicate")
             remove_all_records = gr.Button("Remove all Records")
+            add_all_records_tag_text = gr.Textbox(label='Tag to add all to records:',
+                                                  value='',
+                                                  max_lines=1,
+                                                  info='This tag will be added to all records.')
+            add_tag_to_all_records_button = gr.Button("Add tag to all records")
         with gr.Column():
             debug_html_output = gr.HTML()
 
     remove_duplicates_button.click(fn=_on_remove_duplicates_click, outputs=[debug_html_output])
     remove_all_records.click(fn=_on_remove_all_records_click, outputs=[debug_html_output])
+    add_tag_to_all_records_button.click(fn=_on_add_tag_to_all_records_click,
+                                        inputs=[add_all_records_tag_text], outputs=[debug_html_output])
 
 
 def debug_ui_block():
