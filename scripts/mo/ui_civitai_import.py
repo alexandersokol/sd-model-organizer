@@ -444,9 +444,7 @@ def _on_name_changed(name, import_url, use_name_as_filename):
             record_names = ', '.join(record.name for record in records_with_same_dest)
             warnings_list.append(f'Records with the same download filename: {record_names}')
 
-    warning_message = '\n'.join(warnings_list)
-
-    return gr.HTML.update(value=alert_warning(warnings_listgi), visible=bool(warning_message))
+    return gr.HTML.update(value=alert_warning(warnings_list), visible=bool(warnings_list))
 
 
 def civitai_import_ui_block():
