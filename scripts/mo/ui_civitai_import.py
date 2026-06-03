@@ -80,7 +80,7 @@ def create_model_dict(json_data):
 
 
 def _on_fetch_url_clicked(url):
-    pattern = r'^https:\/\/civitai\.com\/models\/\d+'
+    pattern = r'^https:\/\/civitai\.(?:com|red)\/models\/\d+'
     if not re.match(pattern, url) and not url.isdigit():
         return [
             None,
