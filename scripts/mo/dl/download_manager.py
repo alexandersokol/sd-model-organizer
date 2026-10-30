@@ -240,6 +240,10 @@ class DownloadManager:
                 if self._stop_event.is_set():
                     return
 
+                sha256_hash = calculate_sha256(temp.name)
+                if record.sha256_hash and sha256_hash.lower() != record.sha256_hash.strip().lower():
+                    raise ValueError('Downloaded file SHA-256 does not match the expected model. File was not saved.')
+
                 os.rename(temp.name, destination_file_path)
                 self._temp_files.remove(temp)
                 os.chmod(destination_file_path, 0o644)
@@ -247,11 +251,12 @@ class DownloadManager:
 
             record.location = destination_file_path
             record.md5_hash = calculate_md5(destination_file_path)
-            record.sha256_hash = calculate_sha256(destination_file_path)
+            record.sha256_hash = sha256_hash
 
             env.storage.update_record(record)
 
         except Exception as ex:
+            self._clear_temp_files()
             yield {'status': RECORD_STATUS_ERROR, 'exception': ex}
             logger.exception(ex)
             return
